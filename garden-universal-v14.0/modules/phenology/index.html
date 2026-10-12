@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌸 Народный календарь</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🌸 Народный календарь</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <h3>📅 Что происходит в природе сегодня</h3>
+    <p id="phenology-today" style="font-size: 1.05rem; line-height: 1.6; margin: 0;"></p>
+  </div>
+
+  <div class="card">
+    <h3>🌱 Что сажаем по приметам</h3>
+    <div id="phenology-list"></div>
+  </div>
+
+  <div class="card">
+    <h3>📖 Полный народный календарь</h3>
+    <div id="calendar-full"></div>
+  </div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/seasonEngine.js"></script>
+
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/phacelia.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/potato.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+<script src="../../data/plants/cabbage.js"></script>
+<script src="../../data/plants/beet.js"></script>
+<script src="../../data/plants/raspberry.js"></script>
+<script src="../../data/plants/currant.js"></script>
+
+<script>
+// ─── Полный народный календарь ──────────────────────────────────────────
+const FOLK_CALENDAR = [
+  { month: 1,  event: '❄️ Глухая зима',                    action: 'Проверяем семена на всхожесть, планируем грядки' },
+  { month: 2,  event: '🌱 Сретенье (15.02)',                action: 'Сейте ранние сорта томатов, перца, баклажанов на рассаду' },
+  { month: 3,  event: '🌼 Мать-и-мачеха зацвела',           action: 'Пора сеять томаты на рассаду' },
+  { month: 4,  event: '🌳 Берёза зазеленела',               action: 'Сажайте картофель, морковь, свёклу' },
+  { month: 5,  event: '🌸 Черёмуха зацвела',                action: 'Пора сажать картофель, холодостойкие культуры' },
+  { month: 5,  event: '🌸 Сирень зацвела',                  action: 'Высаживайте томаты, перцы, огурцы в открытый грунт' },
+  { month: 6,  event: '🌾 Калина зацвела',                  action: 'Сейте огурцы в открытый грунт, тыкву' },
+  { month: 7,  event: '☀️ Липа зацвела',                    action: 'Сбор первого урожая, подкормка ягодников' },
+  { month: 8,  event: '🍎 Яблоки наливаются',               action: 'Собираем урожай, готовим грядки под осень' },
+  { month: 9,  event: '🍂 Листва желтеет',                  action: 'Убираем урожай, сажаем озимый чеснок' },
+  { month: 10, event: '🍁 Глубокая осень',                  action: 'Укрываем многолетники, вносим калийно-фосфорные удобрения' },
+  { month: 11, event: '❄️ Первый снег',                     action: 'Готовим почву к весне, укрываем теплолюбивые' },
+  { month: 12, event: '❄️ Зимний покой',                    action: 'Планируем грядки на весну, закупаем семена' }
+];
+
+function getTodayAdvice() {
+  const now = new Date();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+  const todayItem = FOLK_CALENDAR.find(x => x.month === m && Math.abs(x.month - m) < 1);
+  return todayItem || FOLK_CALENDAR.find(x => x.month === m) || { event: '-', action: 'Загляните в Энциклопедию' };
+}
+
+function render() {
+  const now = new Date();
+  const today = getTodayAdvice();
+  document.getElementById('phenology-today').innerHTML =
+    `<b>${today.event}</b><br>➡️ ${today.action}`;
+
+  // Растения с фенологией
+  const plants = window.GARDEN_GET_ALL().filter(p => p.phenology);
+  const list = document.getElementById('phenology-list');
+  if (!plants.length) {
+    list.innerHTML = '<p style="color:var(--muted);">Пока нет растений с народными приметами.</p>';
+  } else {
+    list.innerHTML = plants.map(p => `
+      <div class="card" style="margin-bottom: 12px; border-left: 5px solid var(--accent);">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <span style="font-size:2rem;">${p.meta.icon}</span>
+          <div style="flex:1;">
+            <div style="font-weight:700; margin-bottom:6px;">${p.meta.name}</div>
+            ${p.phenology.seedling ? `<div style="font-size:0.9rem; margin:2px 0;">🌱 <b>Рассада:</b> ${p.phenology.seedling}</div>` : ''}
+            ${p.phenology.transplant ? `<div style="font-size:0.9rem; margin:2px 0;">🌿 <b>Высадка:</b> ${p.phenology.transplant}</div>` : ''}
+            ${p.phenology.harvest ? `<div style="font-size:0.9rem; margin:2px 0;">🧺 <b>Урожай:</b> ${p.phenology.harvest}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Полный календарь
+  const full = document.getElementById('calendar-full');
+  const months = ['январь','февраль','март','апрель','май','июнь',
+                  'июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+  full.innerHTML = FOLK_CALENDAR.map(item => {
+    const isCurrent = item.month === (now.getMonth() + 1);
+    return `
+      <div style="padding:10px 12px; margin-bottom:8px; border-radius:8px;
+                  background:${isCurrent ? 'var(--accent)' : 'var(--bg)'};
+                  color:${isCurrent ? '#fff' : 'var(--text)'};">
+        <div style="font-weight:700;">${item.event} <span style="opacity:.7;font-weight:400;">- ${months[item.month-1]}</span></div>
+        <div style="font-size:.9rem; margin-top:2px;">${item.action}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

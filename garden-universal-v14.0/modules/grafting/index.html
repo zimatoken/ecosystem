@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍎 Скрещивание деревьев</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+<style>
+.tree-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.tree-card {
+  background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+  padding: 16px; cursor: pointer; transition: .2s; text-align: center;
+}
+.tree-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+.tree-card.selected { border-color: var(--accent); background: var(--bg-soft); box-shadow: 0 0 0 3px rgba(22,163,74,.15); }
+.tree-card .tree-icon { font-size: 2.5rem; margin-bottom: 6px; }
+.tree-card .tree-name { font-weight: 700; }
+.tree-card .tree-latin { font-size: .75rem; color: var(--muted); font-style: italic; }
+
+.graft-result {
+  background: var(--card); border: 2px solid var(--accent);
+  border-radius: 12px; padding: 20px; margin-top: 20px;
+}
+.compat-badge {
+  display: inline-block; padding: 6px 14px; border-radius: 20px;
+  font-weight: 700; font-size: .85rem; margin-bottom: 10px;
+}
+.compat-high { background: #dcfce7; color: #166534; }
+.compat-medium { background: #fef3c7; color: #92400e; }
+.compat-low { background: #fee2e2; color: #991b1b; }
+
+.method-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 5px solid var(--accent); border-radius: 12px;
+  padding: 16px; margin-bottom: 12px;
+}
+.method-card h4 { margin: 0 0 8px; }
+.method-card .method-meta { font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🍎 Скрещивание деревьев</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <h3 style="margin-top:0">🌳 Что это?</h3>
+    <p style="margin:0;line-height:1.6;">
+      Прививка — древнее искусство <b>соединения двух деревьев</b> в одно.
+      Одно дерево даёт корни (подвой), второе — крону и плоды (привой).
+      Так получают <b>гибриды</b>: яблоня-груша, слива-вишня, персик-абрикос.
+      Мичурин, Ломоносов, Тимирязев — все практиковали прививку.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">🎯 Дерево-конструктор</h3>
+    <p style="color:var(--muted);font-size:.9rem;">Выбери <b>2 дерева</b>, чтобы проверить совместимость</p>
+
+    <div class="tree-grid" id="tree-grid"></div>
+
+    <div id="graft-result"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">🔪 Способы прививки</h3>
+    <div id="methods-list"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">📅 Календарь прививок</h3>
+    <div id="calendar-list"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ДАННЫЕ
+// ═══════════════════════════════════════════════════════════
+const TREES = [
+  { id: 'apple',     name: 'Яблоня',     latin: 'Malus',     icon: '🍎', family: 'rosaceae' },
+  { id: 'pear',      name: 'Груша',      latin: 'Pyrus',     icon: '🍐', family: 'rosaceae' },
+  { id: 'plum',      name: 'Слива',      latin: 'Prunus',    icon: '🟣', family: 'rosaceae' },
+  { id: 'cherry',    name: 'Вишня',      latin: 'Cerasus',   icon: '🍒', family: 'rosaceae' },
+  { id: 'sweetcherry', name: 'Черешня',  latin: 'Cerasus avium', icon: '🍒', family: 'rosaceae' },
+  { id: 'apricot',   name: 'Абрикос',    latin: 'Armeniaca', icon: '🍑', family: 'rosaceae' },
+  { id: 'peach',     name: 'Персик',     latin: 'Persica',   icon: '🍑', family: 'rosaceae' },
+  { id: 'quince',    name: 'Айва',       latin: 'Cydonia',   icon: '🍈', family: 'rosaceae' },
+  { id: 'rowan',     name: 'Рябина',     latin: 'Sorbus',    icon: '🌳', family: 'rosaceae' },
+  { id: 'hawthorn',  name: 'Боярышник',  latin: 'Crataegus', icon: '🌳', family: 'rosaceae' },
+  { id: 'blackthorn',name: 'Тёрн',       latin: 'Prunus spinosa', icon: '🌳', family: 'rosaceae' },
+  { id: 'irga',      name: 'Ирга',       latin: 'Amelanchier', icon: '🫐', family: 'rosaceae' }
+];
+
+// Гибриды (проверенные комбинации)
+const HYBRIDS = {
+  'apple+pear':       { name: 'Груша-яблоня', compatibility: 'medium', note: 'Возможна прививка на айву или боярышник. Растёт медленно.' },
+  'pear+apple':       { name: 'Яблоня-груша', compatibility: 'medium', note: 'Используют айву как посредника. Плоды — гибридные.' },
+  'plum+cherry':      { name: 'Сливовишня',   compatibility: 'high',   note: 'Классический гибрид. Устойчив, вкусные плоды.' },
+  'cherry+plum':      { name: 'Вишнеслива',   compatibility: 'high',   note: 'Обратная прививка. Работает.' },
+  'peach+apricot':    { name: 'Нектарин',     compatibility: 'high',   note: 'Прививка персика на абрикос — стабильный гибрид.' },
+  'apricot+peach':    { name: 'Абрикос-персик', compatibility: 'medium', note: 'Работает на юге. Зимой риск подмерзания.' },
+  'plum+apricot':     { name: 'Слива-абрикос', compatibility: 'high',  note: 'Чернослив, алыча — родственники. Хорошо совместимы.' },
+  'apple+quince':     { name: 'Яблоня на айве', compatibility: 'high', note: 'Карликовая яблоня. Раннее плодоношение.' },
+  'pear+quince':      { name: 'Груша на айве',  compatibility: 'high', note: 'Карликовая груша. Классика для юга.' },
+  'cherry+sweetcherry': { name: 'Дюк',           compatibility: 'high', note: 'Вишня-черешня. Крупные плоды, устойчивость.' },
+  'apple+rowan':      { name: 'Яблоня на рябине', compatibility: 'medium', note: 'Для карликовых форм. Ягоды — рябиновые.' },
+  'apple+hawthorn':   { name: 'Яблоня на боярышнике', compatibility: 'low', note: 'Работает только у опытных садоводов.' }
+};
+
+const METHODS = [
+  {
+    id: 'budding',
+    name: '🌱 Окулировка (прививка глазком)',
+    season: 'Июль–август',
+    difficulty: 'Средняя',
+    desc: 'В кору подвоя вставляют почку (глазок) привоя. Самый распространённый способ в питомниках.',
+    steps: [
+      'Срежь щиток с почкой привоя (длина 3-4 см)',
+      'На подвое сделай Т-образный разрез',
+      'Вставь щиток под кору',
+      'Обмотай плёнкой, оставь почку снаружи',
+      'Через 2-3 недели проверь — почка должна прижиться'
+    ]
+  },
+  {
+    id: 'copulation',
+    name: '✂️ Копулировка (вприклад)',
+    season: 'Март–апрель',
+    difficulty: 'Средняя',
+    desc: 'Привой и подвой одинаковой толщины соединяют косыми срезами. Простой и надёжный способ.',
+    steps: [
+      'Сделай одинаковые косые срезы на привое и подвое (3-4 см)',
+      'Совмести так, чтобы камбий совпал',
+      'Обмотай плёнкой плотно',
+      'Верхний срез привоя замажь садовым варом',
+      'Через месяц ослабь обмотку'
+    ]
+  },
+  {
+    id: 'cleft',
+    name: '🪓 В расщеп',
+    season: 'Март–апрель',
+    difficulty: 'Средняя',
+    desc: 'Подвой толще привоя. Спил подвоя расщепляют, вставляют черенки привоя.',
+    steps: [
+      'Спили подвой на нужной высоте',
+      'Расщепи пенёк по центру (топор + клин)',
+      'Заготовь 2 черенка с 3-4 почками',
+      'Вставь их в расщеп с двух сторон',
+      'Замажь варом, обмотай плёнкой'
+    ]
+  },
+  {
+    id: 'bark',
+    name: '🌳 За кору',
+    season: 'Апрель–май',
+    difficulty: 'Лёгкая',
+    desc: 'Прививка на толстый подвой. Черенки вставляют под кору без расщепа.',
+    steps: [
+      'Спили подвой, зачисти срез',
+      'Надрежь кору вертикально на 3-4 см (2-4 надреза)',
+      'Вставь черенки с косым срезом в надрез',
+      'Обмотай, замажь варом',
+      'Через год выбери самый сильный — остальные удали'
+    ]
+  }
+];
+
+const CALENDAR = [
+  { month: 'Март',    action: 'Копулировка, в расщеп — пока почки спят',      icon: '✂️' },
+  { month: 'Апрель',  action: 'За кору, копулировка — сокодвижение началось',  icon: '🌳' },
+  { month: 'Май',     action: 'За кору — активный рост',                       icon: '🌱' },
+  { month: 'Июнь',    action: 'Проверка весенних прививок, ослабление обмотки', icon: '👀' },
+  { month: 'Июль',    action: 'Окулировка (глазком) — пик сокодвижения',       icon: '🌱' },
+  { month: 'Август',  action: 'Окулировка — последний месяц',                  icon: '🌱' },
+  { month: 'Сентябрь', action: 'Проверка окулировки, удаление обмотки',       icon: '✅' },
+  { month: 'Октябрь', action: 'Укрытие молодых прививок на зиму',              icon: '❄️' },
+  { month: 'Ноябрь',  action: 'Заготовка черенков для весенних прививок',      icon: '🧺' },
+  { month: 'Декабрь–Февраль', action: 'Хранение черенков в холоде (+2°C)',    icon: '❄️' }
+];
+
+// ═══════════════════════════════════════════════════════════
+// ЛОГИКА
+// ═══════════════════════════════════════════════════════════
+let selected = [];
+
+function renderTrees() {
+  document.getElementById('tree-grid').innerHTML = TREES.map(t => `
+    <div class="tree-card ${selected.includes(t.id) ? 'selected' : ''}" onclick="toggleTree('${t.id}')">
+      <div class="tree-icon">${t.icon}</div>
+      <div class="tree-name">${t.name}</div>
+      <div class="tree-latin">${t.latin}</div>
+    </div>
+  `).join('');
+}
+
+function toggleTree(id) {
+  if (selected.includes(id)) {
+    selected = selected.filter(x => x !== id);
+  } else {
+    if (selected.length >= 2) selected.shift();
+    selected.push(id);
+  }
+  renderTrees();
+  renderResult();
+}
+
+function renderResult() {
+  const el = document.getElementById('graft-result');
+  if (selected.length < 2) {
+    el.innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px;">
+      Выбрано: ${selected.length} из 2
+    </p>`;
+    return;
+  }
+
+  const key = selected.join('+');
+  const reverseKey = [...selected].reverse().join('+');
+  const hybrid = HYBRIDS[key] || HYBRIDS[reverseKey];
+
+  if (hybrid) {
+    const cls = 'compat-' + hybrid.compatibility;
+    const label = { high: '✅ Отличная совместимость', medium: '⚠️ Возможна с оговорками', low: '❌ Сложно, для опытных' }[hybrid.compatibility];
+    el.innerHTML = `
+      <div class="graft-result">
+        <div class="compat-badge ${cls}">${label}</div>
+        <h3 style="margin-top:8px;">🌳 ${hybrid.name}</h3>
+        <p style="line-height:1.6;">${hybrid.note}</p>
+        <div style="margin-top:12px;font-size:.85rem;color:var(--muted);">
+          <b>Подвой:</b> ${TREES.find(t=>t.id===selected[1])?.name || ''} &nbsp;·&nbsp;
+          <b>Привой:</b> ${TREES.find(t=>t.id===selected[0])?.name || ''}
+        </div>
+      </div>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="graft-result" style="border-color:var(--warning);">
+        <div class="compat-badge compat-low">⚠️ Нет данных</div>
+        <h3 style="margin-top:8px;">Эту комбинацию мы пока не проверяли</h3>
+        <p style="line-height:1.6;">
+          Возможные гибриды: яблоня+груша, слива+вишня, персик+абрикос, яблоня+айва, груша+айва.
+        </p>
+        <p style="font-size:.85rem;color:var(--muted);">
+          В общем случае — прививка работает <b>внутри одного семейства</b>.
+          <br>Проверенные пары — самый безопасный путь.
+        </p>
+      </div>
+    `;
+  }
+}
+
+function renderMethods() {
+  document.getElementById('methods-list').innerHTML = METHODS.map(m => `
+    <div class="method-card">
+      <h4>${m.name}</h4>
+      <div class="method-meta">
+        📅 ${m.season} &nbsp;·&nbsp; 🎯 Сложность: ${m.difficulty}
+      </div>
+      <p style="line-height:1.6;margin:8px 0;">${m.desc}</p>
+      <ol style="line-height:1.8;padding-left:20px;margin:0;">
+        ${m.steps.map(s => `<li>${s}</li>`).join('')}
+      </ol>
+    </div>
+  `).join('');
+}
+
+function renderCalendar() {
+  document.getElementById('calendar-list').innerHTML = CALENDAR.map(c => `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-soft);border-radius:8px;margin-bottom:8px;">
+      <div style="font-size:1.6rem;">${c.icon}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;">${c.month}</div>
+        <div style="font-size:.85rem;color:var(--muted);">${c.action}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTrees();
+  renderResult();
+  renderMethods();
+  renderCalendar();
+});
+</script>
+</body>
+</html>

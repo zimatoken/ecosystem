@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Садовод">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="Умный помощник для садоводов">
+<title>Я в натуре Садовод 🌿</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="assets/icons/icon-192.svg">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.svg">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+#splash { position:fixed; inset:0; z-index:99999; background:linear-gradient(135deg,#16a34a,#059669); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-family:system-ui,sans-serif; transition:opacity .5s ease; }
+#splash.hide { opacity:0; pointer-events:none; }
+#splash .splash-icon { font-size:5rem; margin-bottom:16px; animation:splashPulse 1.5s ease-in-out infinite; }
+#splash .splash-title { font-size:1.5rem; font-weight:800; margin-bottom:8px; text-align:center; }
+#splash .splash-sub { font-size:.9rem; opacity:.9; }
+#splash .splash-loader { margin-top:32px; width:40px; height:40px; border:3px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:splashSpin .8s linear infinite; }
+@keyframes splashPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+@keyframes splashSpin { to{transform:rotate(360deg);} }
+</style>
+</head>
+<body>
+<div id="splash">
+  <div class="splash-icon">🌿</div>
+  <div class="splash-title">Я в натуре Садовод</div>
+  <div class="splash-sub">Умный помощник для твоего сада</div>
+  <div class="splash-loader"></div>
+</div>
+<div class="container">
+  <div class="header">
+    <h1>🌿 Я в натуре Садовод</h1>
+    <button class="btn btn-outline" onclick="toggleTheme()">🌓</button>
+    <button class="btn" id="install-btn" onclick="installPWA()" style="display:none; background: linear-gradient(135deg, #16a34a, #059669);">
+      📲 Установить
+    </button>
+  </div>
+
+  <!-- ⬇️ 1. СТАТИСТИКА — СРАЗУ ПОД ШАПКОЙ (мотивация) -->
+  <div class="stats-bar" style="flex-direction:column;align-items:stretch;gap:8px;">
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+      <div class="stat stat-xp">⭐ <span id="stat-level-title">🌱 Новичок</span></div>
+      <div class="stat stat-xp">✨ <span id="stat-xp">0</span> XP</div>
+      <div class="stat stat-streak" id="stat-streak-wrap">🔥 <span id="stat-streak">0</span> дн.</div>
+      <div class="stat">🌱 <span id="stat-plants">0</span> раст.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:.75rem;color:var(--muted);">
+      <span id="level-title-small">Уровень 1</span>
+      <div class="progress-bar" style="flex:1;height:6px;">
+        <div id="level-progress" style="width:0%;"></div>
+      </div>
+      <span id="level-next">До ур. 2: 100 XP</span>
+    </div>
+    <span id="stat-level" style="display:none;">1</span>
+  </div>
+
+  <!-- ⬇️ 2. ПРИВЕТСТВИЕ -->
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <h2 id="g-title" style="margin-top:0">Привет!</h2>
+    <p id="g-date" style="font-weight:600; color: var(--accent)"></p>
+    <p id="g-advice"></p>
+  </div>
+
+  <!-- ⬇️ 3. МЕНЮ МОДУЛЕЙ -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px;">
+    <a href="modules/mygarden/index.html"  class="btn btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">🌱</span>Мой сад</a>
+    <a href="modules/encyclopedia/index.html" class="btn btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">📖</span>Энциклопедия</a>
+    <a href="modules/calendar/index.html"  class="btn btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">📅</span>Календарь</a>
+    <a href="modules/calendar-month/index.html" class="btn btn-outline btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">🗓️</span>Месяц</a>
+    <a href="modules/pests/index.html" class="btn btn-block" style="flex-direction:column; padding: 18px; background: linear-gradient(135deg, #dc2626, #b91c1c);"><span style="font-size:1.8rem">🔬</span>Аптека Садовода</a>
+    <a href="modules/sos/index.html"       class="btn btn-danger btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">🆘</span>SOS Доктор</a>
+    <a href="modules/hydroponics/index.html" class="btn btn-block" style="flex-direction:column; padding: 18px; background: linear-gradient(135deg, #0891b2, #06b6d4);"><span style="font-size:1.8rem">💧</span>Гидропоника</a>
+    <a href="modules/planner/index.html" class="btn btn-block" style="flex-direction:column; padding: 18px; background: linear-gradient(135deg, #7c3aed, #a855f7);"><span style="font-size:1.8rem">📐</span>Планировщик</a>
+    <a href="modules/grafting/index.html" class="btn btn-block" style="flex-direction:column; padding: 18px; background: linear-gradient(135deg, #b45309, #d97706);"><span style="font-size:1.8rem">🍎</span>Скрещивание</a>
+    <a href="modules/phenology/index.html" class="btn btn-outline btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">🌸</span>Народный календарь</a>
+    <a href="modules/achievements/index.html" class="btn btn-outline btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">🏆</span>Награды</a>
+    <a href="modules/compare/index.html" class="btn btn-block" style="flex-direction:column; padding: 18px; background: linear-gradient(135deg, #059669, #10b981);"><span style="font-size:1.8rem">🔄</span>Сравнение</a>
+    <a href="modules/settings/index.html"  class="btn btn-outline btn-block" style="flex-direction:column; padding: 18px;"><span style="font-size:1.8rem">⚙️</span>Настройки</a>
+  </div>
+
+  <!-- ⬇️ 4. СОВЕТ ДНЯ -->
+  <div class="card" id="advice-card" style="border-left: 5px solid var(--warning); display:none;">
+    <h3 style="margin-top:0;">🎯 Совет дня</h3>
+    <p id="advice-text" style="margin:0;line-height:1.6;"></p>
+  </div>
+
+  <!-- ⬇️ 5. КВЕСТЫ ДНЯ -->
+  <div class="card" id="quests-card" style="border-left: 5px solid var(--accent); display:none;">
+    <h3 style="margin-top:0;">🎯 Квесты дня</h3>
+    <div id="quests-list"></div>
+    <p style="margin:8px 0 0;font-size:.8rem;color:var(--muted);">
+      Выполняй квесты — получай бонусный XP!
+    </p>
+  </div>
+
+  <!-- ⬇️ 6. АКТИВНОСТЬ (90 дней) -->
+  <div class="card" id="activity-card" style="display:none;">
+    <h3 style="margin-top:0;">📊 Активность (90 дней)</h3>
+    <div id="activity-grid" style="display:grid;grid-template-columns:repeat(15,1fr);gap:3px;"></div>
+    <p style="margin:8px 0 0;font-size:.8rem;color:var(--muted);">
+      Каждый квадратик — день. Чем зеленее — тем больше дел.
+    </p>
+  </div>
+
+  <!-- ⬇️ 7. КОЛЛЕКЦИЯ -->
+  <div class="card" id="collection-card" style="display:none;">
+    <h3 style="margin-top:0;">🌈 Коллекция растений</h3>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="font-size:2.5rem;">🌱</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:1.1rem;">
+          <span id="col-opened">0</span> из <span id="col-total">40</span> открыто
+        </div>
+        <div class="progress-bar" style="margin-top:6px;">
+          <div id="col-progress" style="width:0%;"></div>
+        </div>
+      </div>
+      <div style="font-size:1.5rem;font-weight:700;color:var(--accent);" id="col-percent">0%</div>
+    </div>
+  </div>
+
+  <!-- ⬇️ 8. ЗАДАЧИ -->
+  <div class="card">
+    <h3>📋 Задачи на сегодня <span id="task-progress" style="font-size:.85rem;color:var(--accent);font-weight:600;"></span></h3>
+    <div id="todays-tasks"></div>
+    <p id="no-tasks" style="color: var(--muted); display:none;">
+      У вас пока нет растений в «Моём саду». Добавьте их в Энциклопедии!
+    </p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="core/registry.js"></script>
+<script src="core/seasonEngine.js"></script>
+<script src="core/gardenStore.js"></script>
+<script src="core/sosEngine.js"></script>
+<script src="core/labels.js"></script>
+
+<!-- RU plants -->
+<script src="data/plants/tomato.js"></script>
+<script src="data/plants/apple.js"></script>
+<script src="data/plants/strawberry.js"></script>
+<script src="data/plants/carrot.js"></script>
+<script src="data/plants/cucumber.js"></script>
+<script src="data/plants/phacelia.js"></script>
+<script src="data/plants/marigold.js"></script>
+<script src="data/plants/potato.js"></script>
+<script src="data/plants/onion.js"></script>
+<script src="data/plants/garlic.js"></script>
+<script src="data/plants/pepper.js"></script>
+<script src="data/plants/cabbage.js"></script>
+<script src="data/plants/beet.js"></script>
+<script src="data/plants/raspberry.js"></script>
+<script src="data/plants/currant.js"></script>
+<script src="data/plants/radish.js"></script>
+<script src="data/plants/pea.js"></script>
+<script src="data/plants/bean.js"></script>
+<script src="data/plants/pumpkin.js"></script>
+<script src="data/plants/zucchini.js"></script>
+<script src="data/plants/eggplant.js"></script>
+<script src="data/plants/lettuce.js"></script>
+<script src="data/plants/spinach.js"></script>
+<script src="data/plants/arugula.js"></script>
+<script src="data/plants/dill.js"></script>
+<script src="data/plants/parsley.js"></script>
+<script src="data/plants/basil.js"></script>
+<script src="data/plants/mint.js"></script>
+<script src="data/plants/rosemary.js"></script>
+<script src="data/plants/lavender.js"></script>
+<script src="data/plants/sunflower.js"></script>
+<script src="data/plants/rose.js"></script>
+<script src="data/plants/gooseberry.js"></script>
+<script src="data/plants/blueberry.js"></script>
+<script src="data/plants/bilberry.js"></script>
+<script src="data/plants/blackberry.js"></script>
+<script src="data/plants/honeysuckle.js"></script>
+<script src="data/plants/sansevieria.js"></script>
+<script src="data/plants/pothos.js"></script>
+<script src="data/plants/chlorophytum.js"></script>
+
+<script>
+// ═══════════ ТЕМА ═══════════
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+if (localStorage.getItem('theme') === 'dark') {
+  document.documentElement.setAttribute('data-theme', 'dark');
+}
+
+// ═══════════ TOAST ═══════════
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════ СТАТИСТИКА ═══════════
+function updateStatsUI() {
+  const s = window.GARDEN_STORE.getStats();
+  const titleFn = window.GARDEN_STORE.getLevelTitle;
+  const title = titleFn ? titleFn(s.level) : `Уровень ${s.level}`;
+  const elTitle = document.getElementById('stat-level-title');
+  if (elTitle) elTitle.textContent = title;
+  const elSmall = document.getElementById('level-title-small');
+  if (elSmall) elSmall.textContent = `Уровень ${s.level}`;
+  const elLevel = document.getElementById('stat-level');
+  if (elLevel) elLevel.textContent = s.level;
+  document.getElementById('stat-xp').textContent = s.xp;
+  document.getElementById('stat-streak').textContent = s.streak;
+  document.getElementById('stat-plants').textContent = s.totalPlants;
+  const nextXP = s.level * 100;
+  const prevXP = (s.level - 1) * 100;
+  const range = nextXP - prevXP;
+  const pct = range > 0 ? Math.min(100, Math.round(((s.xp - prevXP) / range) * 100)) : 0;
+  const bar = document.getElementById('level-progress');
+  if (bar) bar.style.width = pct + '%';
+  const elNext = document.getElementById('level-next');
+  if (elNext) elNext.textContent = `До ур. ${s.level + 1}: ${Math.max(0, nextXP - s.xp)} XP`;
+  const streakWrap = document.getElementById('stat-streak-wrap');
+  if (streakWrap) {
+    let fire = '🔥';
+    if (s.streak >= 3)  fire = '🔥🔥';
+    if (s.streak >= 7)  fire = '🔥🔥🔥';
+    if (s.streak >= 14) fire = '🔥🔥🔥🔥';
+    if (s.streak >= 30) fire = '🔥🔥🔥🔥🔥';
+    streakWrap.innerHTML = `${fire} <span id="stat-streak">${s.streak}</span> дн.`;
+  }
+  const getCollection = window.GARDEN_STORE.getCollection;
+  if (getCollection) {
+    const col = getCollection();
+    const elOpened = document.getElementById('col-opened');
+    if (elOpened) {
+      elOpened.textContent = col.opened;
+      document.getElementById('col-total').textContent = col.total;
+      document.getElementById('col-percent').textContent = col.percent + '%';
+      document.getElementById('col-progress').style.width = col.percent + '%';
+      document.getElementById('collection-card').style.display = 'block';
+    }
+  }
+}
+
+// ═══════════ ЗАДАЧИ ═══════════
+function renderTasks() {
+  const tasks = window.GARDEN_STORE.getTodaysTasks();
+  const container = document.getElementById('todays-tasks');
+  const noTasks = document.getElementById('no-tasks');
+  const progressEl = document.getElementById('task-progress');
+  const stats = window.GARDEN_STORE.getCompletionStats();
+  progressEl.textContent = stats.total ? `(${stats.today}/${stats.total} · ${stats.percent}%)` : '';
+  if (!tasks.length) {
+    container.innerHTML = '';
+    noTasks.style.display = 'block';
+    return;
+  }
+  noTasks.style.display = 'none';
+  container.innerHTML = tasks.map(t => `
+    <div class="cal-task" style="opacity:${t.completed ? .55 : 1};">
+      <div class="cal-task-icon">${t.icon}</div>
+      <div class="cal-task-body">
+        <div class="cal-task-title">${t.plantName} <span style="color:var(--muted);font-weight:400;">· ${t.stage}</span></div>
+        <div class="cal-task-desc">${t.action}</div>
+      </div>
+      <button class="btn ${t.completed ? 'btn-outline' : ''}"
+              style="min-width:auto;padding:8px 12px;"
+              onclick="toggleTask('${t.taskId}', ${t.completed})">
+        ${t.completed ? '✅' : `+${t.xp} XP`}
+      </button>
+    </div>
+  `).join('');
+}
+
+function toggleTask(taskId, isCompleted) {
+  if (isCompleted) {
+    window.GARDEN_STORE.unmarkTask(taskId);
+    showToast('↩️ Отменено');
+  } else {
+    const res = window.GARDEN_STORE.markTaskComplete(taskId);
+    if (res.success) {
+      showToast(`✅ +${res.xp} XP` + (res.leveledUp ? ' — Новый уровень!' : ''));
+    }
+  }
+  renderTasks();
+  updateStatsUI();
+  renderQuests();
+  renderActivity();
+  checkNewAchievements();
+}
+
+// ═══════════ ДОСТИЖЕНИЯ ═══════════
+let lastAchievements = JSON.parse(localStorage.getItem('garden_last_achievements') || '[]');
+function checkNewAchievements() {
+  const stats = window.GARDEN_STORE.getStats();
+  const current = stats.achievements || [];
+  const newOnes = current.filter(a => !lastAchievements.includes(a));
+  if (newOnes.length) {
+    const all = window.GARDEN_STORE.ACHIEVEMENTS;
+    newOnes.forEach((id, i) => {
+      const a = all[id];
+      if (a) {
+        setTimeout(() => {
+          showToast(`🏆 ${a.title}! +${a.xp || 0} XP`, 'success');
+        }, 400 + i * 1400);
+      }
+    });
+    localStorage.setItem('garden_last_achievements', JSON.stringify(current));
+    lastAchievements = current;
+  }
+}
+
+// ═══════════ КВЕСТЫ ДНЯ ═══════════
+function renderQuests() {
+  const getQuests = window.GARDEN_STORE.getTodayQuests;
+  if (!getQuests) return;
+  const quests = getQuests();
+  const card = document.getElementById('quests-card');
+  const list = document.getElementById('quests-list');
+  if (!card || !list) return;
+  list.innerHTML = quests.map(q => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-soft);border-radius:8px;margin-bottom:8px;opacity:${q.done ? .55 : 1};">
+      <div style="font-size:1.5rem;">${q.done ? '✅' : '🎯'}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;">${q.title}</div>
+        <div style="font-size:.8rem;color:var(--muted);">${q.progress} / ${q.target}</div>
+      </div>
+      <div style="font-weight:700;color:var(--accent);">+${q.xp} XP</div>
+    </div>
+  `).join('');
+  card.style.display = 'block';
+}
+
+// ═══════════ АКТИВНОСТЬ 90 ДНЕЙ ═══════════
+function renderActivity() {
+  const getAct = window.GARDEN_STORE.getActivity;
+  if (!getAct) return;
+  const days = getAct(90);
+  const grid = document.getElementById('activity-grid');
+  if (!grid) return;
+  const max = Math.max(1, ...days.map(d => d.count));
+  grid.innerHTML = days.map(d => {
+    let bg = 'var(--bg-soft)';
+    if (d.count > 0) {
+      const intensity = Math.min(4, Math.ceil((d.count / max) * 4));
+      bg = ['', '#bbf7d0', '#4ade80', '#16a34a', '#15803d'][intensity] || 'var(--accent)';
+    }
+    return `<div title="${d.date}: ${d.count}" style="aspect-ratio:1;background:${bg};border-radius:3px;"></div>`;
+  }).join('');
+  document.getElementById('activity-card').style.display = 'block';
+}
+
+// ═══════════ СОВЕТ ДНЯ ═══════════
+function renderAdvice() {
+  const garden = window.GARDEN_STORE.get();
+  const card = document.getElementById('advice-card');
+  const textEl = document.getElementById('advice-text');
+  if (!card || !textEl) return;
+  if (!garden.length) return;
+  const month = new Date().getMonth() + 1;
+  const tasks = window.GARDEN_STORE.getTodaysTasks();
+  const stats = window.GARDEN_STORE.getCompletionStats();
+  let advice = '';
+  if (tasks.length === 0) {
+    advice = '📭 Сегодня задач нет. Загляните в Энциклопедию — может, добавите что-то новое?';
+  } else if (stats.percent === 100) {
+    advice = '🎉 Все задачи выполнены! Отличная работа, садовод!';
+  } else if (stats.percent >= 50) {
+    advice = `💪 Половина пути пройдена (${stats.today}/${stats.total}). Осталось немного!`;
+  } else {
+    advice = `📋 Сегодня ${tasks.length} задач. Начните с полива — это самое важное утром.`;
+  }
+  if (month >= 9 && month <= 11) advice += ' 🍂 Осень — время укрывать многолетники.';
+  else if (month >= 3 && month <= 5) advice += ' 🌱 Весна — готовьте рассаду!';
+  else if (month >= 6 && month <= 8) advice += ' ☀️ Лето — следите за поливом.';
+  else advice += ' ❄️ Зима — планируйте грядки.';
+  card.style.display = 'block';
+  textEl.textContent = advice;
+}
+
+// ═══════════ ИНИЦИАЛИЗАЦИЯ ═══════════
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.GARDEN_STORE || !window.SEASON_GET_GREETING) {
+    console.error('[GARDEN] Ядро не загружено!');
+    return;
+  }
+  const g = window.SEASON_GET_GREETING();
+  document.getElementById('g-title').textContent = g.title;
+  document.getElementById('g-date').textContent = g.date;
+  document.getElementById('g-advice').textContent = g.advice + ' ' + g.question;
+  updateStatsUI();
+  renderTasks();
+  renderAdvice();
+  renderQuests();
+  renderActivity();
+  checkNewAchievements();
+});
+
+// ═══════════ SERVICE WORKER ═══════════
+// SERVICE WORKER
+
+// ═══════════ PWA УСТАНОВКА ═══════════
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('[PWA] beforeinstallprompt fired');
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'inline-flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] installed');
+  deferredPrompt = null;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'none';
+  if (typeof showToast === 'function') showToast('🎉 Приложение установлено!');
+});
+
+function installPWA() {
+  if (!deferredPrompt) {
+    // Показываем инструкцию для тех, у кого кнопка не сработала
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
+    if (isIOS) {
+      alert('📱 Установка на iPhone:\n\n1. Нажми «Поделиться» (квадрат со стрелкой)\n2. Выбери «На экран «Домой»»\n3. Нажми «Добавить»');
+    } else if (isAndroid) {
+      alert('📱 Установка на Android:\n\n1. Открой меню браузера (⋮)\n2. Выбери «Установить приложение»\n3. Подтверди');
+    } else {
+      alert('📱 Установка приложения:\n\n1. Открой меню браузера\n2. Найди «Установить приложение»\n3. Подтверди');
+    }
+    return;
+  }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((choice) => {
+    console.log('[PWA] user choice:', choice.outcome);
+    if (choice.outcome === 'accepted') {
+      if (typeof showToast === 'function') showToast('🎉 Устанавливаем приложение...');
+    }
+    deferredPrompt = null;
+  });
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    setInterval(() => reg.update(), 60000);
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+          showToast('🔄 Доступно обновление!', 'success');
+        }
+      });
+    });
+  }).catch(() => {});
+}
+// SPLASH
+window.addEventListener('load', () => {
+  const splash = document.getElementById('splash');
+  if (splash) setTimeout(() => { splash.classList.add('hide'); setTimeout(() => splash.remove(), 500); }, 300);
+});
+</script>
+</body>
+</html>

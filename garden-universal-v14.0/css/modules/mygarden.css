@@ -1,0 +1,15 @@
+
+.garden-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.garden-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 5px solid var(--accent); border-radius: 12px;
+  padding: 16px; display: flex; flex-direction: column; gap: 10px;
+}
+.garden-card-head { display: flex; align-items: center; gap: 12px; }
+.garden-card-icon { font-size: 2.4rem; }
+.garden-card-title { font-weight: 700; }
+.garden-card-stage { font-size: .85rem; color: var(--muted); }
+.garden-card-actions { display: flex; gap: 8px; margin-top: auto; }

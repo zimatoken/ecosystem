@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🆘 SOS Доктор</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<link rel="stylesheet" href="../../css/modules/sos.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2 style="color:var(--danger)">🆘 SOS Доктор</h2>
+  </div>
+
+  <div class="card">
+    <p style="margin:0;">Выберите симптом, который вы наблюдаете — задам уточняющие вопросы и предложу решение.</p>
+  </div>
+
+  <input type="text" id="sos-search" placeholder="🔍 Поиск по симптому или растению..."
+         style="width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:10px;
+                background:var(--card);color:var(--text);font-size:1rem;margin-bottom:16px;font-family:inherit;">
+
+  <div id="sos-content"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/sosEngine.js"></script>
+
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/phacelia.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/potato.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+<script src="../../data/plants/cabbage.js"></script>
+<script src="../../data/plants/beet.js"></script>
+<script src="../../data/plants/raspberry.js"></script>
+<script src="../../data/plants/currant.js"></script>
+<script src="../../data/plants/radish.js"></script>
+<script src="../../data/plants/pea.js"></script>
+<script src="../../data/plants/bean.js"></script>
+<script src="../../data/plants/pumpkin.js"></script>
+<script src="../../data/plants/zucchini.js"></script>
+<script src="../../data/plants/eggplant.js"></script>
+<script src="../../data/plants/lettuce.js"></script>
+<script src="../../data/plants/spinach.js"></script>
+<script src="../../data/plants/arugula.js"></script>
+<script src="../../data/plants/dill.js"></script>
+<script src="../../data/plants/parsley.js"></script>
+<script src="../../data/plants/basil.js"></script>
+<script src="../../data/plants/mint.js"></script>
+<script src="../../data/plants/rosemary.js"></script>
+<script src="../../data/plants/lavender.js"></script>
+<script src="../../data/plants/sunflower.js"></script>
+<script src="../../data/plants/rose.js"></script>
+<script src="../../data/plants/gooseberry.js"></script>
+<script src="../../data/plants/blueberry.js"></script>
+<script src="../../data/plants/bilberry.js"></script>
+<script src="../../data/plants/blackberry.js"></script>
+<script src="../../data/plants/honeysuckle.js"></script>
+<script src="../../data/plants/sansevieria.js"></script>
+<script src="../../data/plants/pothos.js"></script>
+<script src="../../data/plants/chlorophytum.js"></script>
+
+<script>
+let currentTrigger = null;
+let answers = {};
+let searchQuery = '';
+
+function renderTriggers() {
+  const all = window.SOS_ENGINE.getAllTriggers();
+  const triggers = searchQuery
+    ? all.filter(t =>
+        (t.label + ' ' + t.plantName).toLowerCase().includes(searchQuery.toLowerCase()))
+    : all;
+
+  const el = document.getElementById('sos-content');
+  if (!triggers.length) {
+    el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:30px;">🤷 Ничего не найдено.</p>';
+    return;
+  }
+  el.innerHTML = `
+    <h3>Что случилось? <span style="color:var(--muted);font-size:.9rem;font-weight:400;">(${triggers.length})</span></h3>
+    <div class="sos-list">
+      ${triggers.map(t => `
+        <div class="sos-trigger" onclick="startTrigger('${t.id}')">
+          ${t.plantIcon} ${t.label}<br>
+          <small style="color:var(--muted);font-weight:400;">${t.plantName}</small>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function startTrigger(id) {
+  const all = window.SOS_ENGINE.getAllTriggers();
+  currentTrigger = all.find(t => t.id === id);
+  answers = {};
+  renderQuestions();
+}
+
+function renderQuestions() {
+  const el = document.getElementById('sos-content');
+  el.innerHTML = `
+    <button class="btn btn-outline" onclick="renderTriggers()">← Назад к симптомам</button>
+    <h3 style="margin-top:16px;">${currentTrigger.plantIcon} ${currentTrigger.label}</h3>
+    <p style="color:var(--muted);margin-top:-8px;">${currentTrigger.plantName}</p>
+    ${currentTrigger.questions.map((q, i) => `
+      <div class="sos-q">
+        <div class="sos-q-title">${i+1}. ${q.text}</div>
+        <div class="sos-options">
+          ${q.options.map(o => `
+            <button class="sos-opt" data-qid="${q.id}" data-optid="${o.id}"
+              onclick="pickAnswer('${q.id}','${o.id}', this)">${o.label}</button>
+          `).join('')}
+        </div>
+      </div>
+    `).join('')}
+    <button class="btn btn-block" style="margin-top:16px;" onclick="showSolution()" id="show-btn" disabled>Показать решение</button>
+  `;
+}
+
+function pickAnswer(qid, optid, btn) {
+  answers[qid] = optid;
+  btn.parentElement.querySelectorAll('.sos-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const allQ = currentTrigger.questions.length;
+  const ansQ = Object.keys(answers).length;
+  document.getElementById('show-btn').disabled = (ansQ < allQ);
+}
+
+function showSolution() {
+  const sol = window.SOS_ENGINE.findSolution(currentTrigger.id, answers);
+  const el = document.getElementById('sos-content');
+  if (!sol) return;
+
+  el.innerHTML = `
+    <button class="btn btn-outline" onclick="renderTriggers()">← Назад к симптомам</button>
+    <div class="sos-solution" style="margin-top:16px;">
+      <h3>${sol.icon || '🩺'} ${sol.title}</h3>
+      <ol class="sos-steps">
+        ${sol.steps.map(s => `<li>${s}</li>`).join('')}
+      </ol>
+      ${sol.warnings && sol.warnings.length ? `
+        <div class="sos-warn">
+          ⚠️ <b>Внимание:</b><br>${sol.warnings.join('<br>')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+document.getElementById('sos-search').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  renderTriggers();
+});
+
+document.addEventListener('DOMContentLoaded', renderTriggers);
+</script>
+</body>
+</html>

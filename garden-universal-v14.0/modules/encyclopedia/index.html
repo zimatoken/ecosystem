@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📖 Энциклопедия</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<link rel="stylesheet" href="../../css/modules/encyclopedia.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📖 Энциклопедия</h2>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="search" placeholder="🔍 Поиск по названию...">
+    <select id="filter-layer"><option value="">Все слои</option></select>
+    <select id="filter-family"><option value="">Все семейства</option></select>
+    <select id="filter-form"><option value="">Все формы</option></select>
+  </div>
+
+  <p id="count-info" style="color:var(--muted);font-size:.9rem;margin:0 0 12px;"></p>
+  <div id="plant-grid" class="plant-grid"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/seasonEngine.js"></script>
+<script src="../../core/gardenStore.js"></script>
+<script src="../../core/yieldEngine.js"></script>
+<script src="../../core/labels.js"></script>
+
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/phacelia.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/potato.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+<script src="../../data/plants/cabbage.js"></script>
+<script src="../../data/plants/beet.js"></script>
+<script src="../../data/plants/raspberry.js"></script>
+<script src="../../data/plants/currant.js"></script>
+<script src="../../data/plants/radish.js"></script>
+<script src="../../data/plants/pea.js"></script>
+<script src="../../data/plants/bean.js"></script>
+<script src="../../data/plants/pumpkin.js"></script>
+<script src="../../data/plants/zucchini.js"></script>
+<script src="../../data/plants/eggplant.js"></script>
+<script src="../../data/plants/lettuce.js"></script>
+<script src="../../data/plants/spinach.js"></script>
+<script src="../../data/plants/arugula.js"></script>
+<script src="../../data/plants/dill.js"></script>
+<script src="../../data/plants/parsley.js"></script>
+<script src="../../data/plants/basil.js"></script>
+<script src="../../data/plants/mint.js"></script>
+<script src="../../data/plants/rosemary.js"></script>
+<script src="../../data/plants/lavender.js"></script>
+<script src="../../data/plants/sunflower.js"></script>
+<script src="../../data/plants/rose.js"></script>
+<script src="../../data/plants/gooseberry.js"></script>
+<script src="../../data/plants/blueberry.js"></script>
+<script src="../../data/plants/bilberry.js"></script>
+<script src="../../data/plants/blackberry.js"></script>
+<script src="../../data/plants/honeysuckle.js"></script>
+<script src="../../data/plants/sansevieria.js"></script>
+<script src="../../data/plants/pothos.js"></script>
+<script src="../../data/plants/chlorophytum.js"></script>
+
+<script>
+// ═══════════ ПОЛНЫЕ СЛОВАРИ ═══════════
+const LAYER_LABELS = {
+  food: '🥕 Еда',
+  air: '💨 Чистый воздух',
+  soil: '🌱 Почва',
+  beauty_and_protection: '🌸 Красота',
+  soul: '💚 Душа'
+};
+
+const FAMILY_LABELS = {
+  solanaceae: 'Паслёновые',
+  rosaceae: 'Розовые',
+  apiaceae: 'Зонтичные',
+  cucurbitaceae: 'Тыквенные',
+  asteraceae: 'Астровые',
+  boraginaceae: 'Бурачниковые',
+  amaryllidaceae: 'Амариллисовые',
+  brassicaceae: 'Капустные',
+  amaranthaceae: 'Маревые',
+  grossulariaceae: 'Крыжовниковые',
+  fabaceae: 'Бобовые',
+  lamiaceae: 'Яснотковые',
+  ericaceae: 'Вересковые',
+  caprifoliaceae: 'Жимолостные',
+  asparagaceae: 'Спаржевые',
+  araceae: 'Ароидные'
+};
+
+const FORM_LABELS = {
+  tree: '🌳 Дерево',
+  shrub: '🌿 Кустарник',
+  subshrub: '🫐 Кустарничек',
+  herbaceous: '🌱 Травянистое',
+  liana: '🌾 Лиана',
+  root_crop: '🥕 Корнеплод',
+  half_shrub: '🌿 Полукустарник',
+  groundcover: '🍀 Почвопокровное',
+  bulb: '🧅 Луковичное',
+  vine: '🌿 Вьющееся'
+};
+
+const TYPE_LABELS = {
+  vegetable: 'Овощное',
+  annual: 'Однолетник',
+  perennial: 'Многолетник',
+  fruit: 'Плодовое',
+  berry: 'Ягодное',
+  green_manure: 'Сидерат',
+  ornamental: 'Декоративное',
+  repellent: 'Репеллент',
+  biennial: 'Двулетник',
+  spice: 'Пряность',
+  air_purifier: 'Очиститель воздуха',
+  cover_crop: 'Сидерат'
+};
+
+// ═══════════ УТИЛИТЫ ═══════════
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function render() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const layer  = document.getElementById('filter-layer').value;
+  const family = document.getElementById('filter-family').value;
+  const form   = document.getElementById('filter-form').value;
+
+  const plants = window.GARDEN_FILTER({
+    layer: layer || undefined,
+    family: family || undefined,
+    form: form || undefined
+  }).filter(p => p.meta.name.toLowerCase().includes(search));
+
+  const grid = document.getElementById('plant-grid');
+  const countInfo = document.getElementById('count-info');
+  const total = window.GARDEN_GET_ALL().length;
+  countInfo.textContent = `Показано: ${plants.length} из ${total}`;
+
+  grid.innerHTML = '';
+
+  if (!plants.length) {
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;">🤷 Ничего не найдено</p>';
+    return;
+  }
+
+  plants.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'plant-card';
+    div.onclick = () => showPlantDetails(p.meta.id);
+    div.innerHTML = `
+      <div class="plant-header">
+        <span class="plant-icon">${p.meta.icon}</span>
+        <div>
+          <div class="plant-name">${p.meta.name}</div>
+          <div class="plant-name-en">${p.meta.name_en || ''}</div>
+        </div>
+      </div>
+      <div class="plant-tags">
+        ${(p.meta.layers||[]).map(l => `<span class="badge badge-accent">${LAYER_LABELS[l] || l}</span>`).join('')}
+        <span class="badge">${FAMILY_LABELS[p.meta.bio_family] || p.meta.bio_family}</span>
+      </div>
+      <div class="plant-actions">
+        <button class="btn btn-block" onclick="event.stopPropagation(); addToGarden('${p.meta.id}')">+ В мой сад</button>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function addToGarden(id) {
+  const result = window.GARDEN_STORE.add(id);
+  if (!result || result.success === false) {
+    showToast('🌱 Это растение уже в вашем саду', 'warn');
+    return;
+  }
+  let msg = `✅ Добавлено! +${result.xpGain} XP`;
+  if (result.bonuses && result.bonuses.length) msg += ' - Бонус за соседство!';
+  showToast(msg);
+
+  if (result.warnings && result.warnings.length) {
+    setTimeout(() => alert('⚠️ ВНИМАНИЕ, КОНФЛИКТ:\n' + result.warnings.join('\n') + '\n\nРекомендуем разделить растения грядками или посадить между ними бархатцы/чеснок.'), 400);
+  }
+}
+
+function showPlantDetails(plantId) {
+  const plant = window.GARDEN_GET_PLANT(plantId);
+  if (!plant) return;
+
+  const windowInfo = window.SEASON_GET_PLANTING_WINDOW ? window.SEASON_GET_PLANTING_WINDOW(plant) : null;
+  const care = window.LABELS && window.LABELS.care ? window.LABELS.care(plantId) : null;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:flex;justify-content:center;align-items:flex-start;padding:20px;overflow-y:auto;';
+
+  // ─── Блок «Условия» — теперь на русском ───
+  let condHTML = '';
+  if (plant.requirements) {
+    const r = plant.requirements;
+    condHTML = `
+      <div class="card" style="background:var(--bg-soft);">
+        <h3>🌞 Условия для роста</h3>
+        <p style="margin:6px 0;"><b>Свет:</b> ${window.LABELS.light(r.light)}</p>
+        <p style="margin:6px 0;"><b>Полив:</b> ${window.LABELS.water(r.water)}</p>
+        <p style="margin:6px 0;"><b>Почва:</b> ${window.LABELS.ph(r.soil_ph)}</p>
+        <p style="margin:6px 0;"><b>Температура:</b> ${window.LABELS.temp(r.temp_min)}</p>
+      </div>
+    `;
+  }
+
+  // ─── Блок «Уход как хирург-агроном» ───
+  let careHTML = '';
+  if (care) {
+    careHTML = `
+      <div class="card" style="background:var(--bg-soft);">
+        <h3>👨‍🌾 Уход профессионала</h3>
+        ${care.watering ? `<div style="margin:10px 0;"><b>💧 Полив:</b><br><span style="color:var(--text-soft);">${care.watering}</span></div>` : ''}
+        ${care.fertilizing ? `<div style="margin:10px 0;"><b>🌾 Подкормка:</b><br><span style="color:var(--text-soft);">${care.fertilizing}</span></div>` : ''}
+        ${care.pruning ? `<div style="margin:10px 0;"><b>✂️ Обрезка:</b><br><span style="color:var(--text-soft);">${care.pruning}</span></div>` : ''}
+        ${care.light_need ? `<div style="margin:10px 0;"><b>☀️ Свет:</b><br><span style="color:var(--text-soft);">${care.light_need}</span></div>` : ''}
+        ${care.humidity ? `<div style="margin:10px 0;"><b>💦 Влажность:</b><br><span style="color:var(--text-soft);">${care.humidity}</span></div>` : ''}
+        ${care.ph_note ? `<div style="margin:10px 0;"><b>🧪 Кислотность почвы:</b><br><span style="color:var(--text-soft);">${care.ph_note}</span></div>` : ''}
+      </div>
+    `;
+  }
+
+  // ─── Блок «Окна посадки» ───
+  let windowsHTML = '';
+  if (windowInfo) {
+    const ru = {
+      seedling_indoor: '🌱 Рассада (дома)',
+      transplant_outdoor: '🌿 Высадка в открытый грунт',
+      harvest: '🧺 Сбор урожая'
+    };
+    windowsHTML = `
+      <div class="card" style="background:var(--bg-soft);">
+        <h3>📅 Окна посадки</h3>
+        ${Object.entries(windowInfo).map(([key, val]) => `
+          <div style="margin:6px 0;padding:10px;background:var(--card);border-radius:8px;">
+            <b>${ru[key] || key}:</b> ${val.label}<br>
+            <span style="color:var(--muted);font-size:.9rem;">с ${val.start} по ${val.end}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // ─── Блок «Цикл жизни» ───
+  const lifecycleHTML = (plant.lifecycle || []).map(st => `
+    <div style="background:var(--bg-soft); padding:12px 14px; border-radius:8px; margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <b>${st.name}</b>
+        <span style="color:var(--muted);font-size:.85rem;">${st.duration_weeks} нед.</span>
+      </div>
+      ${st.actions ? `<ul style="margin:8px 0;padding-left:20px;font-size:.9rem;">${st.actions.map(a => {
+        const act = window.LABELS && window.LABELS.ACTION[a.type] ? window.LABELS.ACTION[a.type] : null;
+        const icon = act ? act.icon + ' ' : '';
+        return `<li>${icon}${a.desc}</li>`;
+      }).join('')}</ul>` : ''}
+      ${st.warnings ? `<div style="color:#92400e;background:#fef3c7;padding:8px 10px;border-radius:6px;font-size:.85rem;margin-top:6px;">⚠️ ${st.warnings.join('<br>⚠️ ')}</div>` : ''}
+    </div>
+  `).join('');
+
+  // ─── Блок «Соседство» ───
+  let compHTML = '';
+  if (plant.companionship) {
+    const good = (plant.companionship.good_neighbors || []).map(id => {
+      const p = window.GARDEN_GET_PLANT(id);
+      return p ? `<span style="display:inline-block;background:#dcfce7;padding:3px 8px;border-radius:6px;margin:2px;">${p.meta.icon} ${p.meta.name}</span>` : `<span style="display:inline-block;background:#f3f4f6;padding:3px 8px;border-radius:6px;margin:2px;">${id}</span>`;
+    }).join(' ') || '—';
+    const bad = (plant.companionship.bad_neighbors || []).map(id => {
+      const p = window.GARDEN_GET_PLANT(id);
+      return p ? `<span style="display:inline-block;background:#fee2e2;padding:3px 8px;border-radius:6px;margin:2px;">${p.meta.icon} ${p.meta.name}</span>` : `<span style="display:inline-block;background:#f3f4f6;padding:3px 8px;border-radius:6px;margin:2px;">${id}</span>`;
+    }).join(' ') || '—';
+    compHTML = `
+      <div class="card" style="background:var(--bg-soft);">
+        <h3>👥 Соседство на грядке</h3>
+        <div style="margin:8px 0;padding:8px;background:#dcfce7;border-radius:8px;">
+          <b style="color:#166534;">✅ Хорошие соседи:</b><br>
+          <span style="color:#14532d;">${good}</span>
+        </div>
+        <div style="margin:8px 0;padding:8px;background:#fee2e2;border-radius:8px;">
+          <b style="color:#991b1b;">⚠️ Плохие соседи:</b><br>
+          <span style="color:#7f1d1d;">${bad}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // ─── Блок «Народные приметы» ───
+  let phenHTML = '';
+  if (plant.phenology) {
+    const ru = { seedling: '🌱 Рассада', transplant: '🌿 Высадка', harvest: '🧺 Уборка' };
+    phenHTML = `
+      <div class="card" style="background:var(--bg-soft);">
+        <h3>🌸 Народные приметы</h3>
+        ${Object.entries(plant.phenology).map(([key, val]) =>
+          `<div style="margin:8px 0;"><b>${ru[key] || key}:</b><br><span style="color:var(--text-soft);">${val}</span></div>`
+        ).join('')}
+      </div>
+    `;
+  }
+
+  modal.innerHTML = `
+    <div style="background:var(--card); padding:24px; border-radius:16px; max-width:680px; width:100%; max-height:90vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0;">${plant.meta.icon} ${plant.meta.name}</h2>
+        <button onclick="this.closest('.modal').remove()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">✕</button>
+      </div>
+      ${plant.meta.name_en ? `<p style="color:var(--muted);font-style:italic;margin-top:-14px;">${plant.meta.name_en}</p>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+        ${(plant.meta.layers||[]).map(l => `<span class="badge badge-accent">${LAYER_LABELS[l] || l}</span>`).join('')}
+        <span class="badge">${FAMILY_LABELS[plant.meta.bio_family] || plant.meta.bio_family}</span>
+        <span class="badge">${FORM_LABELS[plant.meta.phys_form] || plant.meta.phys_form}</span>
+      </div>
+
+      ${condHTML}
+      ${careHTML}
+      ${windowsHTML}
+
+      <div class="card" style="background:var(--bg-soft);">
+        <h3>🌱 Цикл жизни</h3>
+        ${lifecycleHTML}
+      </div>
+
+      ${compHTML}
+      ${phenHTML}
+
+      
+      <!-- 📈 Прогноз урожая -->
+      ${(() => {
+        const forecast = window.YIELD_ENGINE ? window.YIELD_ENGINE.getYieldForecast(plant, 1) : null;
+        const advice = window.YIELD_ENGINE ? window.YIELD_ENGINE.getSmartAdvice(plant, new Date().getMonth() + 1) : [];
+        if (!forecast && !advice.length) return '';
+        let html = '';
+        if (forecast) {
+          html += `
+            <div class="card" style="background:var(--bg-soft); border-left: 4px solid var(--warning);">
+              <h3>📈 Прогноз урожая</h3>
+              <p style="margin:8px 0;font-size:1.1rem;">
+                С 1 ${forecast.unit} при хорошем уходе: <b style="color:var(--accent);font-size:1.3rem;">${forecast.min}–${forecast.max} кг</b>
+              </p>
+              <p style="margin:0;color:var(--muted);font-size:.85rem;">${forecast.note}</p>
+            </div>
+          `;
+        }
+        if (advice.length) {
+          html += `
+            <div class="card" style="background:var(--bg-soft); border-left: 4px solid var(--accent-2);">
+              <h3>🧠 Умный советчик</h3>
+              ${advice.map(a => `<p style="margin:8px 0;line-height:1.6;">${a.icon} ${a.text}</p>`).join('')}
+            </div>
+          `;
+        }
+        return html;
+      })()}
+
+      <button class="btn btn-block" onclick="addToGarden('${plant.meta.id}'); this.closest('.modal').remove();">
+        🌱 Добавить в мой сад
+      </button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+}
+
+
+// ─── Проверка новых достижений (toast) ─────────────────────
+let lastAchievements = JSON.parse(localStorage.getItem('garden_last_achievements') || '[]');
+function checkNewAchievements() {
+  const stats = window.GARDEN_STORE.getStats();
+  const current = stats.achievements || [];
+  const newOnes = current.filter(a => !lastAchievements.includes(a));
+  if (newOnes.length) {
+    const all = window.GARDEN_STORE.ACHIEVEMENTS;
+    newOnes.forEach((id, i) => {
+      const a = all[id];
+      if (a) {
+        setTimeout(() => {
+          showToast(`🏆 ${a.title}! +${a.xp || 0} XP`, 'success');
+        }, 600 + i * 1200);
+      }
+    });
+    localStorage.setItem('garden_last_achievements', JSON.stringify(current));
+    lastAchievements = current;
+  }
+}
+
+// ═══════════ ИНИЦИАЛИЗАЦИЯ ФИЛЬТРОВ ═══════════
+const tax = window.GARDEN_GET_TAXONOMY();
+['layer','family','form'].forEach(key => {
+  const sel = document.getElementById('filter-' + key);
+  const values = tax[key === 'layer' ? 'layers' : key === 'family' ? 'families' : 'forms'];
+  values.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v;
+    o.textContent = key === 'layer' ? (LAYER_LABELS[v] || v)
+                 : key === 'family' ? (FAMILY_LABELS[v] || v)
+                 : (FORM_LABELS[v] || v);
+    sel.appendChild(o);
+  });
+});
+
+document.getElementById('search').addEventListener('input', render);
+['layer','family','form'].forEach(k => document.getElementById('filter-'+k).addEventListener('change', render));
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 Аптека Садовода</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+<style>
+.pest-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.pest-tab {
+  padding: 12px 20px; border: 2px solid var(--border); border-radius: 10px;
+  background: var(--card); cursor: pointer; font-weight: 700;
+  transition: .2s; font-family: inherit; color: var(--text); font-size: 1rem;
+}
+.pest-tab:hover { border-color: var(--accent); }
+.pest-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.pest-filters {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px;
+}
+.pest-filters select, .pest-filters input {
+  padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px;
+  background: var(--card); color: var(--text); font-size: 1rem;
+  flex: 1; min-width: 140px; font-family: inherit;
+}
+
+.pest-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.pest-card {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 12px; padding: 16px; cursor: pointer;
+  transition: .2s; border-left: 5px solid var(--danger);
+}
+.pest-card.disease { border-left-color: #7c3aed; }
+.pest-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.pest-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.pest-icon { font-size: 2.5rem; }
+.pest-name { font-weight: 800; font-size: 1.15rem; }
+.pest-category { font-size: .8rem; color: var(--muted); }
+.pest-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.pest-badge {
+  padding: 3px 10px; border-radius: 12px; font-size: .75rem; font-weight: 700;
+}
+.pest-badge.danger-critical { background: #7f1d1d; color: #fff; }
+.pest-badge.danger-high { background: #dc2626; color: #fff; }
+.pest-badge.danger-medium { background: #f59e0b; color: #fff; }
+.pest-badge.danger-low { background: #16a34a; color: #fff; }
+.pest-badge.type-pest { background: var(--danger); color: #fff; }
+.pest-badge.type-disease { background: #7c3aed; color: #fff; }
+
+/* Модалка */
+.pest-modal {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,.7);
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 20px; overflow-y: auto;
+}
+.pest-modal.open { display: flex; }
+.pest-modal-body {
+  background: var(--card); border-radius: 16px;
+  max-width: 720px; width: 100%; padding: 24px;
+  margin: 40px auto;
+}
+.pest-section { margin-bottom: 20px; }
+.pest-section h3 { color: var(--accent); font-size: 1.15rem; margin-bottom: 10px; }
+.pest-symptom {
+  display: flex; gap: 10px; padding: 10px 12px;
+  background: var(--bg-soft); border-radius: 8px; margin-bottom: 6px;
+}
+.pest-symptom .icon { font-size: 1.4rem; flex-shrink: 0; }
+.pest-remedy {
+  background: var(--bg-soft); border-radius: 10px; padding: 14px;
+  margin-bottom: 10px; border-left: 4px solid var(--accent);
+}
+.pest-remedy h4 { margin: 0 0 8px; font-size: 1rem; }
+.pest-remedy .ingredients {
+  font-size: .85rem; color: var(--muted); margin-bottom: 8px;
+}
+.pest-remedy ol { margin: 6px 0; padding-left: 20px; line-height: 1.7; font-size: .9rem; }
+.pest-remedy.chemical { border-left-color: var(--danger); }
+.pest-remedy .warning {
+  background: #fef3c7; color: #92400e; padding: 8px 10px;
+  border-radius: 6px; font-size: .85rem; margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🔬 Аптека Садовода</h2>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--danger);">
+    <p style="margin:0;line-height:1.6;">
+      🔍 <b>Что случилось с растением?</b> Выбери вкладку, найди вредителя или болезнь, получи рецепт.
+    </p>
+  </div>
+
+  <div class="pest-tabs">
+    <button class="pest-tab active" onclick="switchTab('all', this)">📚 Все</button>
+    <button class="pest-tab" onclick="switchTab('pest', this)">🐛 Вредители</button>
+    <button class="pest-tab" onclick="switchTab('disease', this)">🍄 Болезни</button>
+    <button class="pest-tab" onclick="switchTab('danger', this)">⚠️ Опасные</button>
+  </div>
+
+  <div class="pest-filters">
+    <input type="text" id="pest-search" placeholder="🔍 Поиск по названию или симптому...">
+    <select id="pest-category">
+      <option value="">Все категории</option>
+      <option value="insect">Насекомые</option>
+      <option value="fungus">Грибковые</option>
+      <option value="mollusk">Моллюски</option>
+    </select>
+    <select id="pest-plant">
+      <option value="">Все растения</option>
+    </select>
+  </div>
+
+  <p id="pest-count" style="color:var(--muted);font-size:.9rem;margin:0 0 12px;"></p>
+  <div id="pest-grid" class="pest-grid"></div>
+</div>
+
+<!-- Модалка -->
+<div class="pest-modal" id="pest-modal" onclick="closeModal(event)">
+  <div class="pest-modal-body" id="pest-modal-body" onclick="event.stopPropagation()"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/pestRegistry.js"></script>
+<script src="../../data/pests/aphid.js"></script>
+<script src="../../data/pests/colorado.js"></script>
+<script src="../../data/pests/whitefly.js"></script>
+<script src="../../data/pests/spider_mite.js"></script>
+<script src="../../data/pests/slugs.js"></script>
+<script src="../../data/pests/mole_cricket.js"></script>
+<script src="../../data/pests/wireworm.js"></script>
+<script src="../../data/pests/carrot_fly.js"></script>
+<script src="../../data/pests/cabbage_white.js"></script>
+<script src="../../data/pests/red_spider.js"></script>
+<script src="../../data/pests/late_blight.js"></script>
+<script src="../../data/pests/powdery_mildew.js"></script>
+<script src="../../data/pests/black_leg.js"></script>
+<script src="../../data/pests/fusarium.js"></script>
+<script src="../../data/pests/gray_rot.js"></script>
+<script src="../../data/pests/cladosporium.js"></script>
+<script src="../../data/pests/alternaria.js"></script>
+<script src="../../data/pests/anthracnose.js"></script>
+<script src="../../data/pests/scab.js"></script>
+<script src="../../data/pests/moniliosis.js"></script>
+<script src="../../data/pests/coccomycosis.js"></script>
+<script src="../../data/pests/leaf_curl.js"></script>
+
+<script>
+let currentTab = 'all';
+
+const CATEGORY_RU = {
+  insect: '🦗 Насекомое',
+  fungus: '🍄 Грибковая болезнь',
+  bacteria: '🦠 Бактерия',
+  virus: '🧬 Вирус',
+  mollusk: '🐌 Моллюск'
+};
+const DANGER_RU = {
+  critical: '💀 Критично',
+  high: '⚠️ Опасно',
+  medium: '⚡ Средне',
+  low: '🌿 Слабо'
+};
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.pest-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderGrid();
+}
+
+function renderGrid() {
+  const search = document.getElementById('pest-search').value.toLowerCase();
+  const category = document.getElementById('pest-category').value;
+  const plant = document.getElementById('pest-plant').value;
+
+  let list = window.PEST_GET_ALL();
+
+  if (currentTab === 'pest')    list = list.filter(p => p.meta.type === 'pest');
+  if (currentTab === 'disease') list = list.filter(p => p.meta.type === 'disease');
+  if (currentTab === 'danger')  list = list.filter(p => p.meta.danger_level === 'critical' || p.meta.danger_level === 'high');
+
+  if (category) list = list.filter(p => p.meta.category === category);
+  if (plant)    list = list.filter(p => (p.affected_plants || []).includes(plant));
+
+  if (search) {
+    list = list.filter(p => {
+      const hay = [p.meta.name, ...(p.symptoms || []).map(s => s.text)].join(' ').toLowerCase();
+      return hay.includes(search);
+    });
+  }
+
+  document.getElementById('pest-count').textContent = `Найдено: ${list.length}`;
+
+  const grid = document.getElementById('pest-grid');
+  if (!list.length) {
+    grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;">🤷 Ничего не найдено</p>';
+    return;
+  }
+
+  grid.innerHTML = list.map(p => `
+    <div class="pest-card ${p.meta.type === 'disease' ? 'disease' : ''}" onclick="openPest('${p.meta.id}')">
+      <div class="pest-card-head">
+        <div class="pest-icon">${p.meta.icon}</div>
+        <div>
+          <div class="pest-name">${p.meta.name}</div>
+          <div class="pest-category">${CATEGORY_RU[p.meta.category] || p.meta.category}</div>
+        </div>
+      </div>
+      <div class="pest-badges">
+        <span class="pest-badge type-${p.meta.type}">${p.meta.type === 'pest' ? '🐛 Вредитель' : '🍄 Болезнь'}</span>
+        <span class="pest-badge danger-${p.meta.danger_level}">${DANGER_RU[p.meta.danger_level] || p.meta.danger_level}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openPest(id) {
+  const pest = window.PEST_GET(id);
+  if (!pest) return;
+  const modal = document.getElementById('pest-modal');
+  const body = document.getElementById('pest-modal-body');
+
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div style="display:flex;gap:16px;align-items:center;">
+        <div style="font-size:3.5rem;">${pest.meta.icon}</div>
+        <div>
+          <h2 style="margin:0;">${pest.meta.name}</h2>
+          <div style="color:var(--muted);font-style:italic;">${pest.meta.name_en || ''}</div>
+        </div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text);">✕</button>
+    </div>
+
+    <div class="pest-section">
+      <span class="pest-badge type-${pest.meta.type}">${pest.meta.type === 'pest' ? '🐛 Вредитель' : '🍄 Болезнь'}</span>
+      <span class="pest-badge danger-${pest.meta.danger_level}">${DANGER_RU[pest.meta.danger_level]}</span>
+    </div>
+
+    <div class="pest-section">
+      <h3>🔍 Симптомы</h3>
+      ${(pest.symptoms || []).map(s => `
+        <div class="pest-symptom">
+          <div class="icon">${s.icon}</div>
+          <div>${s.text}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${pest.causes && pest.causes.length ? `
+      <div class="pest-section">
+        <h3>❓ Причины</h3>
+        <ul style="line-height:1.7;padding-left:20px;">
+          ${pest.causes.map(c => `<li>${c}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    ${pest.natural_remedies && pest.natural_remedies.length ? `
+      <div class="pest-section">
+        <h3>🌿 Народные средства</h3>
+        ${pest.natural_remedies.map(r => `
+          <div class="pest-remedy">
+            <h4>${r.title}</h4>
+            ${r.ingredients ? `<div class="ingredients"><b>Ингредиенты:</b> ${r.ingredients.join(' · ')}</div>` : ''}
+            <ol>${(r.steps || []).map(s => `<li>${s}</li>`).join('')}</ol>
+            ${r.safety ? `<div style="font-size:.85rem;color:var(--accent);margin-top:6px;">✅ ${r.safety}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    ${pest.chemical_remedies && pest.chemical_remedies.length ? `
+      <div class="pest-section">
+        <h3>🧪 Химические препараты</h3>
+        ${pest.chemical_remedies.map(r => `
+          <div class="pest-remedy chemical">
+            <h4>${r.title}</h4>
+            ${r.dosage ? `<div style="font-size:.9rem;margin-bottom:6px;"><b>Дозировка:</b> ${r.dosage}</div>` : ''}
+            ${r.waiting_period ? `<div style="font-size:.9rem;margin-bottom:6px;"><b>Срок ожидания:</b> ${r.waiting_period}</div>` : ''}
+            <ol>${(r.steps || []).map(s => `<li>${s}</li>`).join('')}</ol>
+            ${r.warnings ? `<div class="warning">⚠️ ${r.warnings.join('<br>⚠️ ')}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    ` : ''}
+
+    ${pest.biological_control && pest.biological_control.length ? `
+      <div class="pest-section">
+        <h3>🐞 Биологический контроль</h3>
+        <ul style="line-height:1.7;padding-left:20px;">
+          ${pest.biological_control.map(b => `<li>${b}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    ${pest.prevention && pest.prevention.length ? `
+      <div class="pest-section">
+        <h3>🛡️ Профилактика</h3>
+        <ul style="line-height:1.7;padding-left:20px;">
+          ${pest.prevention.map(p => `<li>${p}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    ${pest.companion_plants ? `
+      <div class="pest-section">
+        <h3>🤝 Растения-помощники</h3>
+        ${pest.companion_plants.repel && pest.companion_plants.repel.length ? `
+          <p><b>Отпугивают вредителя:</b> ${pest.companion_plants.repel.map(id => {
+            const p = window.GARDEN_GET_PLANT(id);
+            return p ? `${p.meta.icon} ${p.meta.name}` : id;
+          }).join(', ')}</p>
+        ` : ''}
+        ${pest.companion_plants.attract && pest.companion_plants.attract.length ? `
+          <p><b>Привлекают полезных:</b> ${pest.companion_plants.attract.map(id => {
+            const p = window.GARDEN_GET_PLANT(id);
+            return p ? `${p.meta.icon} ${p.meta.name}` : id;
+          }).join(', ')}</p>
+        ` : ''}
+      </div>
+    ` : ''}
+  `;
+
+  body.innerHTML = html;
+  modal.classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget && e.target.className !== 'pest-modal') return;
+  document.getElementById('pest-modal').classList.remove('open');
+}
+
+// Заполняем список растений
+function fillPlantFilter() {
+  const sel = document.getElementById('pest-plant');
+  const plants = window.GARDEN_GET_ALL ? window.GARDEN_GET_ALL() : [];
+  plants.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.meta.id;
+    o.textContent = `${p.meta.icon} ${p.meta.name}`;
+    sel.appendChild(o);
+  });
+}
+
+document.getElementById('pest-search').addEventListener('input', renderGrid);
+document.getElementById('pest-category').addEventListener('change', renderGrid);
+document.getElementById('pest-plant').addEventListener('change', renderGrid);
+
+document.addEventListener('DOMContentLoaded', () => {
+  fillPlantFilter();
+  renderGrid();
+});
+</script>
+</body>
+</html>

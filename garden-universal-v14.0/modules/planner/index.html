@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📐 Планировщик грядок</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+<style>
+.planner-toolbar {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 16px;
+}
+.planner-toolbar label { font-weight: 600; font-size: .9rem; }
+.planner-toolbar select, .planner-toolbar input {
+  padding: 8px 10px; border: 2px solid var(--border); border-radius: 8px;
+  background: var(--card); color: var(--text); font-size: .95rem; font-family: inherit;
+}
+.planner-toolbar button {
+  padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer;
+  border: none; font-family: inherit; font-size: .9rem;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: .9; }
+.btn-danger-soft { background: #fee2e2; color: #991b1b; }
+.btn-danger-soft:hover { background: #fecaca; }
+
+.planner-wrap { display: flex; gap: 20px; flex-wrap: wrap; }
+
+.planner-grid-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+  flex: 0 0 auto;
+}
+.planner-grid {
+  display: grid; gap: 6px;
+  background: var(--bg-soft); padding: 10px; border-radius: 10px;
+}
+.cell {
+  aspect-ratio: 1;
+  background: var(--card); border: 2px dashed var(--border);
+  border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; transition: .15s; position: relative;
+  min-width: 50px; min-height: 50px;
+}
+.cell:hover { border-color: var(--accent); transform: scale(1.05); }
+.cell.filled { border-style: solid; border-color: var(--accent); background: var(--bg-soft); }
+.cell.conflict { border-color: var(--danger) !important; animation: shake 0.4s; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+.cell .cell-name {
+  position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+  font-size: .7rem; color: var(--muted); white-space: nowrap;
+}
+
+.planner-side {
+  flex: 1; min-width: 250px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+}
+.plant-picker {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px;
+  max-height: 300px; overflow-y: auto; margin-top: 10px;
+}
+.pick-item {
+  background: var(--bg-soft); border: 2px solid var(--border); border-radius: 8px;
+  padding: 8px; cursor: pointer; text-align: center;
+  transition: .15s; font-size: .75rem;
+}
+.pick-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+.pick-item.selected { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 0 0 3px rgba(22,163,74,.2); }
+.pick-item .pick-icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.pick-item .pick-name { font-weight: 600; }
+
+.plan-stats {
+  display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px;
+  font-size: .85rem; color: var(--muted);
+}
+
+.plan-check {
+  margin-top: 16px; padding: 12px;
+  background: var(--bg-soft); border-radius: 8px;
+}
+.plan-check h4 { margin: 0 0 8px; }
+.plan-check .check-ok { color: #16a34a; font-weight: 700; }
+.plan-check .check-warn { color: #d97706; font-weight: 700; }
+.plan-check .check-bad { color: #dc2626; font-weight: 700; }
+.plan-check ul { margin: 6px 0; padding-left: 20px; line-height: 1.6; font-size: .9rem; }
+
+@media (max-width: 600px) {
+  .planner-grid-wrap { width: 100%; }
+  .cell { min-width: 40px; min-height: 40px; font-size: 1.2rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📐 Планировщик грядок</h2>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <p style="margin:0;line-height:1.6;">
+      🎨 <b>Собери свою грядку!</b> Выбери размер, выбери растение из списка — и кликни по клетке.
+      Приложение <b>автоматически проверит совместимость</b> соседей.
+    </p>
+  </div>
+
+  <!-- Тулбар -->
+  <div class="planner-toolbar">
+    <label>Размер грядки:</label>
+    <select id="grid-size" onchange="rebuildGrid()">
+      <option value="3x3">3 × 3 (9 клеток)</option>
+      <option value="4x3">4 × 3 (12 клеток)</option>
+      <option value="5x3" selected>5 × 3 (15 клеток)</option>
+      <option value="5x4">5 × 4 (20 клеток)</option>
+      <option value="6x4">6 × 4 (24 клетки)</option>
+    </select>
+    <button class="btn-primary" onclick="savePlan()">💾 Сохранить</button>
+    <button class="btn-danger-soft" onclick="clearPlan()">🗑 Очистить</button>
+  </div>
+
+  <div class="planner-wrap">
+    <!-- Сетка грядки -->
+    <div class="planner-grid-wrap">
+      <div class="planner-grid" id="planner-grid"></div>
+      <div class="plan-stats" id="plan-stats"></div>
+    </div>
+
+    <!-- Боковая панель: выбор растения -->
+    <div class="planner-side">
+      <h3 style="margin-top:0;">🌱 Выбери растение</h3>
+      <input type="text" id="plant-search" placeholder="🔍 Поиск..."
+             style="width:100%;padding:8px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);"
+             oninput="filterPlants()">
+      <div class="plant-picker" id="plant-picker"></div>
+
+      <div class="plan-check" id="plan-check">
+        <h4>🔬 Проверка совместимости</h4>
+        <p style="margin:0;color:var(--muted);font-size:.85rem;">Заполни клетки, чтобы увидеть анализ.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../core/seasonEngine.js"></script>
+<script src="../../core/gardenStore.js"></script>
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/phacelia.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/potato.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+<script src="../../data/plants/cabbage.js"></script>
+<script src="../../data/plants/beet.js"></script>
+<script src="../../data/plants/raspberry.js"></script>
+<script src="../../data/plants/currant.js"></script>
+<script src="../../data/plants/radish.js"></script>
+<script src="../../data/plants/pea.js"></script>
+<script src="../../data/plants/bean.js"></script>
+<script src="../../data/plants/pumpkin.js"></script>
+<script src="../../data/plants/zucchini.js"></script>
+<script src="../../data/plants/eggplant.js"></script>
+<script src="../../data/plants/lettuce.js"></script>
+<script src="../../data/plants/spinach.js"></script>
+<script src="../../data/plants/arugula.js"></script>
+<script src="../../data/plants/dill.js"></script>
+<script src="../../data/plants/parsley.js"></script>
+<script src="../../data/plants/basil.js"></script>
+<script src="../../data/plants/mint.js"></script>
+<script src="../../data/plants/rosemary.js"></script>
+<script src="../../data/plants/lavender.js"></script>
+<script src="../../data/plants/sunflower.js"></script>
+<script src="../../data/plants/rose.js"></script>
+<script src="../../data/plants/gooseberry.js"></script>
+<script src="../../data/plants/blueberry.js"></script>
+<script src="../../data/plants/bilberry.js"></script>
+<script src="../../data/plants/blackberry.js"></script>
+<script src="../../data/plants/honeysuckle.js"></script>
+<script src="../../data/plants/sansevieria.js"></script>
+<script src="../../data/plants/pothos.js"></script>
+<script src="../../data/plants/chlorophytum.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// СОСТОЯНИЕ
+// ═══════════════════════════════════════════════════════════
+const STORAGE_KEY = 'garden_planner_v11';
+let plan = {};           // { "0-0": "tomato", "0-1": "carrot", ... }
+let gridCols = 5, gridRows = 3;
+let selectedPlant = null;
+
+// ═══════════════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ
+// ═══════════════════════════════════════════════════════════
+function initFromStorage() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      plan = data.plan || {};
+      gridCols = data.cols || 5;
+      gridRows = data.rows || 3;
+      const sizeVal = `${gridCols}x${gridRows}`;
+      const sel = document.getElementById('grid-size');
+      // Восстанавливаем select
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === sizeVal) {
+          sel.selectedIndex = i;
+          break;
+        }
+      }
+    } catch(e) { console.warn('Planner: ошибка парсинга', e); }
+  }
+}
+
+function rebuildGrid() {
+  const [c, r] = document.getElementById('grid-size').value.split('x').map(Number);
+  gridCols = c; gridRows = r;
+
+  const grid = document.getElementById('planner-grid');
+  grid.style.gridTemplateColumns = `repeat(${gridCols}, minmax(50px, 1fr))`;
+  grid.innerHTML = '';
+
+  for (let y = 0; y < gridRows; y++) {
+    for (let x = 0; x < gridCols; x++) {
+      const key = `${x}-${y}`;
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (plan[key] ? ' filled' : '');
+      cell.dataset.key = key;
+      cell.onclick = () => cellClick(key);
+
+      if (plan[key]) {
+        const plant = window.GARDEN_GET_PLANT(plan[key]);
+        if (plant) {
+          cell.innerHTML = `<span>${plant.meta.icon}</span><div class="cell-name">${plant.meta.name.split(' ')[0]}</div>`;
+        }
+      }
+
+      grid.appendChild(cell);
+    }
+  }
+  renderStats();
+  checkCompatibility();
+}
+
+function cellClick(key) {
+  if (selectedPlant) {
+    if (plan[key] === selectedPlant) {
+      delete plan[key];
+    } else {
+      plan[key] = selectedPlant;
+    }
+  } else {
+    // Если растение не выбрано — удаляем клетку
+    if (plan[key]) delete plan[key];
+  }
+  rebuildGrid();
+}
+
+// ═══════════════════════════════════════════════════════════
+// ВЫБОР РАСТЕНИЯ
+// ═══════════════════════════════════════════════════════════
+function renderPlantPicker() {
+  const all = window.GARDEN_GET_ALL().filter(p => p.meta.layers && p.meta.layers.includes('food'));
+  const picker = document.getElementById('plant-picker');
+  picker.innerHTML = all.map(p => `
+    <div class="pick-item" data-id="${p.meta.id}" onclick="selectPlant('${p.meta.id}')">
+      <span class="pick-icon">${p.meta.icon}</span>
+      <span class="pick-name">${p.meta.name.split(' ')[0]}</span>
+    </div>
+  `).join('');
+}
+
+function selectPlant(id) {
+  if (selectedPlant === id) {
+    selectedPlant = null;
+  } else {
+    selectedPlant = id;
+  }
+  document.querySelectorAll('.pick-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.id === selectedPlant);
+  });
+}
+
+function filterPlants() {
+  const q = document.getElementById('plant-search').value.toLowerCase();
+  document.querySelectorAll('.pick-item').forEach(el => {
+    const name = el.textContent.toLowerCase();
+    el.style.display = name.includes(q) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// СТАТИСТИКА
+// ═══════════════════════════════════════════════════════════
+function renderStats() {
+  const filled = Object.keys(plan).length;
+  const total = gridCols * gridRows;
+  const stats = document.getElementById('plan-stats');
+  stats.innerHTML = `
+    <span>🌱 Заполнено: <b>${filled}</b> из ${total}</span>
+    <span>📐 ${gridCols}×${gridRows} = ${total} клеток</span>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+// ПРОВЕРКА СОВМЕСТИМОСТИ (киллер-фича)
+// ═══════════════════════════════════════════════════════════
+function checkCompatibility() {
+  const check = document.getElementById('plan-check');
+  const warnings = [];
+  const bonuses = [];
+  const conflictCells = new Set();
+
+  for (const [key, plantId] of Object.entries(plan)) {
+    const [x, y] = key.split('-').map(Number);
+    const plant = window.GARDEN_GET_PLANT(plantId);
+    if (!plant || !plant.companionship) continue;
+
+    // Проверяем 4 соседа (верх, низ, лево, право)
+    const neighbors = [
+      `${x-1}-${y}`, `${x+1}-${y}`,
+      `${x}-${y-1}`, `${x}-${y+1}`
+    ];
+
+    for (const nk of neighbors) {
+      if (!plan[nk]) continue;
+      const neighborId = plan[nk];
+      const neighbor = window.GARDEN_GET_PLANT(neighborId);
+      if (!neighbor) continue;
+
+      // Проверяем конфликты (избегаем дублей: A-B и B-A)
+      const pairKey = [plantId, neighborId].sort().join('|');
+      if (check.__seen && check.__seen.has(pairKey)) continue;
+      if (!check.__seen) check.__seen = new Set();
+      check.__seen.add(pairKey);
+
+      // Хорошие соседи
+      if ((plant.companionship.good_neighbors || []).includes(neighborId)) {
+        bonuses.push(`${plant.meta.icon} ${plant.meta.name} + ${neighbor.meta.icon} ${neighbor.meta.name} — отлично!`);
+      }
+      // Плохие соседи
+      if ((plant.companionship.bad_neighbors || []).includes(neighborId)) {
+        warnings.push(`${plant.meta.icon} ${plant.meta.name} ⚔️ ${neighbor.meta.icon} ${neighbor.meta.name} — угнетают друг друга!`);
+        conflictCells.add(key);
+        conflictCells.add(nk);
+      }
+    }
+  }
+
+  // Сбрасываем __seen для следующего запуска
+  check.__seen = new Set();
+
+  // Подсветка конфликтных клеток
+  document.querySelectorAll('.cell').forEach(cell => {
+    cell.classList.toggle('conflict', conflictCells.has(cell.dataset.key));
+  });
+
+  // Рендер результата
+  let html = '<h4>🔬 Проверка совместимости</h4>';
+  if (!Object.keys(plan).length) {
+    html += '<p style="margin:0;color:var(--muted);font-size:.85rem;">Заполни клетки, чтобы увидеть анализ.</p>';
+  } else if (!warnings.length && !bonuses.length) {
+    html += '<p class="check-ok">✅ Конфликтов не найдено. Продолжайте!</p>';
+  } else {
+    if (warnings.length) {
+      html += '<p class="check-bad">⚠️ Конфликты:</p><ul>';
+      warnings.forEach(w => { html += `<li>${w}</li>`; });
+      html += '</ul>';
+    }
+    if (bonuses.length) {
+      html += '<p class="check-ok">🌟 Хорошие соседи:</p><ul>';
+      bonuses.forEach(b => { html += `<li>${b}</li>`; });
+      html += '</ul>';
+    }
+  }
+
+  check.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// СОХРАНЕНИЕ / ОЧИСТКА
+// ═══════════════════════════════════════════════════════════
+function savePlan() {
+  const data = { plan, cols: gridCols, rows: gridRows, savedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  showToast('💾 План сохранён!');
+}
+
+function clearPlan() {
+  if (!confirm('Очистить всю грядку?')) return;
+  plan = {};
+  localStorage.removeItem(STORAGE_KEY);
+  rebuildGrid();
+  showToast('🗑 План очищен');
+}
+
+function showToast(msg, type) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// СТАРТ
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  if (!window.GARDEN_GET_ALL) {
+    console.error('[PLANNER] Ядро не загружено!');
+    return;
+  }
+  initFromStorage();
+  renderPlantPicker();
+  rebuildGrid();
+});
+</script>
+</body>
+</html>

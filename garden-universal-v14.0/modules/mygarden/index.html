@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌱 Мой сад</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<link rel="stylesheet" href="../../css/modules/mygarden.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🌱 Мой сад</h2>
+  </div>
+  <div class="stats-bar">
+    <div class="stat">⭐ <span id="stat-level">1</span> ур.</div>
+    <div class="stat">✨ <span id="stat-xp">0</span> XP</div>
+    <div class="stat">🔥 <span id="stat-streak">0</span> дн.</div>
+    <div class="stat">🌱 <span id="stat-plants">0</span> раст.</div>
+  </div>
+  <div id="garden-grid" class="garden-grid"></div>
+  <div id="empty" class="empty-state" style="display:none;">
+    <div class="empty-state-icon">🌱</div>
+    <h3>В вашем саду пока пусто</h3>
+    <p>Добавьте растения из Энциклопедии — и они появятся здесь с календарём задач.</p>
+    <a href="../encyclopedia/index.html" class="btn">📖 Открыть Энциклопедию</a>
+  </div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/seasonEngine.js"></script>
+<script src="../../core/gardenStore.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/phacelia.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/potato.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+<script src="../../data/plants/cabbage.js"></script>
+<script src="../../data/plants/beet.js"></script>
+<script src="../../data/plants/raspberry.js"></script>
+<script src="../../data/plants/currant.js"></script>
+<script src="../../data/plants/radish.js"></script>
+<script src="../../data/plants/pea.js"></script>
+<script src="../../data/plants/bean.js"></script>
+<script src="../../data/plants/pumpkin.js"></script>
+<script src="../../data/plants/zucchini.js"></script>
+<script src="../../data/plants/eggplant.js"></script>
+<script src="../../data/plants/lettuce.js"></script>
+<script src="../../data/plants/spinach.js"></script>
+<script src="../../data/plants/arugula.js"></script>
+<script src="../../data/plants/dill.js"></script>
+<script src="../../data/plants/parsley.js"></script>
+<script src="../../data/plants/basil.js"></script>
+<script src="../../data/plants/mint.js"></script>
+<script src="../../data/plants/rosemary.js"></script>
+<script src="../../data/plants/lavender.js"></script>
+<script src="../../data/plants/sunflower.js"></script>
+<script src="../../data/plants/rose.js"></script>
+<script src="../../data/plants/gooseberry.js"></script>
+<script src="../../data/plants/blueberry.js"></script>
+<script src="../../data/plants/bilberry.js"></script>
+<script src="../../data/plants/blackberry.js"></script>
+<script src="../../data/plants/honeysuckle.js"></script>
+<script src="../../data/plants/sansevieria.js"></script>
+<script src="../../data/plants/pothos.js"></script>
+<script src="../../data/plants/chlorophytum.js"></script>
+<script>
+function updateStatsUI() {
+  const s = window.GARDEN_STORE.getStats();
+  document.getElementById('stat-level').textContent = s.level;
+  document.getElementById('stat-xp').textContent = s.xp;
+  document.getElementById('stat-streak').textContent = s.streak;
+  document.getElementById('stat-plants').textContent = s.totalPlants;
+}
+function render() {
+  const garden = window.GARDEN_STORE.get();
+  const grid = document.getElementById('garden-grid');
+  const empty = document.getElementById('empty');
+  grid.innerHTML = '';
+  if (!garden.length) {
+    grid.style.display = 'none';
+    empty.style.display = 'block';
+    updateStatsUI();
+    return;
+  }
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+  garden.forEach(item => {
+    const plant = window.GARDEN_GET_PLANT(item.id);
+    if (!plant) return;
+    const info = window.SEASON_GET_STAGE(plant, item.date);
+    const card = document.createElement('div');
+    card.className = 'garden-card';
+    card.style.borderLeftColor = plant.meta.color || 'var(--accent)';
+    card.innerHTML = `
+      <div class="garden-card-head">
+        <div class="garden-card-icon">${plant.meta.icon}</div>
+        <div>
+          <div class="garden-card-title">${plant.meta.name}</div>
+          <div class="garden-card-stage">${info ? info.stage.name : '-'} - неделя ${info ? info.week : 0}</div>
+        </div>
+      </div>
+      <div class="progress-bar"><div style="width:${info ? info.progress : 0}%"></div></div>
+      <div style="font-size:.85rem;color:var(--muted);">Посажено: ${item.date}</div>
+      <div class="garden-card-actions">
+        <button class="btn btn-outline" onclick="removeFromGarden('${plant.meta.id}')">🗑 Удалить</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  updateStatsUI();
+}
+function removeFromGarden(id) {
+  if (!confirm('Удалить растение из сада?')) return;
+  window.GARDEN_STORE.remove(id);
+  render();
+}
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

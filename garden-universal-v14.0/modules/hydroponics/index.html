@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌱 Гидропоника</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+<style>
+.hydro-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.hydro-tab {
+  padding: 10px 18px; border: 2px solid var(--border); border-radius: 10px;
+  background: var(--card); cursor: pointer; font-weight: 600; font-size: .95rem;
+  transition: .2s; font-family: inherit; color: var(--text);
+}
+.hydro-tab:hover { border-color: var(--accent); }
+.hydro-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.system-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 5px solid var(--accent); border-radius: 12px;
+  padding: 18px; margin-bottom: 16px;
+}
+.system-card h3 { margin-top: 0; }
+.system-card .sys-meta { display: flex; gap: 12px; flex-wrap: wrap; margin: 8px 0; font-size: .85rem; color: var(--muted); }
+.system-card ul { padding-left: 20px; line-height: 1.7; }
+
+.plant-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; background: var(--bg-soft); border-radius: 20px;
+  font-weight: 600; font-size: .85rem; margin: 3px;
+}
+
+.calc-field { margin-bottom: 12px; }
+.calc-field label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.calc-field input {
+  width: 100%; padding: 10px 12px; border: 2px solid var(--border);
+  border-radius: 8px; background: var(--card); color: var(--text);
+  font-size: 1rem; font-family: inherit;
+}
+.calc-result {
+  padding: 14px; background: var(--bg-soft); border-radius: 10px;
+  margin-top: 16px; line-height: 1.8;
+}
+.calc-result b { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🌱 Гидропоника</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <h3 style="margin-top:0">💧 Что это?</h3>
+    <p style="margin:0;line-height:1.6;">
+      Гидропоника — это выращивание растений <b>без почвы</b>, в питательном растворе.
+      Идеально для городских квартир: подоконник, балкон, стеллаж с подсветкой.
+      Свежая зелень круглый год.
+    </p>
+  </div>
+
+  <div class="hydro-tabs">
+    <button class="hydro-tab active" onclick="showTab('systems', this)">⚙️ Системы</button>
+    <button class="hydro-tab" onclick="showTab('plants', this)">🌿 Растения</button>
+    <button class="hydro-tab" onclick="showTab('calc', this)">🧪 Калькулятор</button>
+    <button class="hydro-tab" onclick="showTab('assembly', this)">🔧 Сборка</button>
+  </div>
+
+  <div id="tab-content"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ДАННЫЕ
+// ═══════════════════════════════════════════════════════════
+const SYSTEMS = [
+  {
+    id: 'dwc',
+    name: '🌊 DWC — Глубокая вода',
+    difficulty: '★☆☆ Простая',
+    cost: '~3000 ₽',
+    description: 'Растения стоят в контейнере с раствором, корни постоянно в воде. Компрессор насыщает раствор кислородом.',
+    pros: ['Простая сборка', 'Дешёвая', 'Идеально для салата'],
+    cons: ['Нужен компрессор', 'Риск загнивания корней'],
+    plants: ['lettuce', 'basil', 'mint', 'spinach']
+  },
+  {
+    id: 'nft',
+    name: '🌊 NFT — Питательный слой',
+    difficulty: '★★☆ Средняя',
+    cost: '~7000 ₽',
+    description: 'Тонкий слой раствора постоянно течёт по наклонному жёлобу. Корни в жёлобе, получают питание и кислород.',
+    pros: ['Много растений на 1 м²', 'Экономия воды', 'Классика промышленной гидропоники'],
+    cons: ['Нужен насос', 'Зависит от электричества'],
+    plants: ['lettuce', 'arugula', 'basil', 'spinach']
+  },
+  {
+    id: 'aeroponics',
+    name: '💨 Аэропоника',
+    difficulty: '★★★ Сложная',
+    cost: '~12000 ₽',
+    description: 'Корни висят в воздухе, питание подаётся туманом. Самый быстрый рост, но требует точности.',
+    pros: ['Быстрейший рост', 'Экономия раствора', 'Максимум кислорода корням'],
+    cons: ['Дорого', 'Чувствительно к сбоям', 'Нужны форсунки'],
+    plants: ['tomato_cherry', 'cucumber', 'pepper']
+  },
+  {
+    id: 'wick',
+    name: '🧵 Фитильная система',
+    difficulty: '★☆☆ Простая',
+    cost: '~500 ₽',
+    description: 'Раствор поднимается по фитилю капиллярно. Без насосов, без электричества. Идеально для новичков.',
+    pros: ['Без электричества', 'Сверхдешёвая', 'Работает автономно'],
+    cons: ['Медленный рост', 'Только для мелких растений'],
+    plants: ['mint', 'basil', 'lettuce']
+  }
+];
+
+const HYDRO_PLANTS = [
+  { id: 'lettuce',  name: 'Салат',        icon: '🥬', ph: '5.5–6.5', ec: '0.8–1.2', cycle: '30 дней', note: 'Идеальный старт. Растёт быстро, не требует много света.' },
+  { id: 'basil',    name: 'Базилик',      icon: '🌿', ph: '5.5–6.5', ec: '1.0–1.6', cycle: '40 дней', note: 'Любит тепло +22°C. Аромат ярче, чем в грунте.' },
+  { id: 'mint',     name: 'Мята',         icon: '🌿', ph: '5.5–6.0', ec: '1.0–1.4', cycle: '45 дней', note: 'Растёт как сорняк — сразу ограничь горшком.' },
+  { id: 'arugula',  name: 'Руккола',      icon: '🌿', ph: '6.0–6.5', ec: '1.0–1.4', cycle: '25 дней', note: 'Острая, свежая. Растёт быстрее салата.' },
+  { id: 'spinach',  name: 'Шпинат',       icon: '🥬', ph: '6.0–6.8', ec: '1.2–1.8', cycle: '35 дней', note: 'Не любит жару выше +25°C.' },
+  { id: 'strawberry', name: 'Клубника',   icon: '🍓', ph: '5.5–6.2', ec: '1.0–1.4', cycle: '90 дней', note: 'Требует опыления. Идеально на балконе летом.' },
+  { id: 'tomato_cherry', name: 'Томат черри', icon: '🍅', ph: '5.8–6.5', ec: '2.0–3.5', cycle: '80 дней', note: 'Нужен свет 16 ч/день и опора.' },
+  { id: 'cucumber', name: 'Огурец',       icon: '🥒', ph: '5.8–6.2', ec: '1.8–2.5', cycle: '60 дней', note: 'Требует много света, лучше в теплице.' }
+];
+
+// ═══════════════════════════════════════════════════════════
+// РЕНДЕР
+// ═══════════════════════════════════════════════════════════
+function showTab(tab, btn) {
+  document.querySelectorAll('.hydro-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const el = document.getElementById('tab-content');
+
+  if (tab === 'systems') {
+    el.innerHTML = SYSTEMS.map(s => `
+      <div class="system-card">
+        <h3>${s.name}</h3>
+        <div class="sys-meta">
+          <span>Сложность: <b>${s.difficulty}</b></span>
+          <span>Стоимость: <b>${s.cost}</b></span>
+        </div>
+        <p style="line-height:1.6;">${s.description}</p>
+        <div style="margin-top:12px;">
+          <b style="color:var(--accent);">✅ Плюсы:</b>
+          <ul>${s.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+        <div>
+          <b style="color:var(--warning);">⚠️ Минусы:</b>
+          <ul>${s.cons.map(c => `<li>${c}</li>`).join('')}</ul>
+        </div>
+        <div style="margin-top:12px;">
+          <b>🌱 Подходит для:</b><br>
+          ${s.plants.map(pid => {
+            const p = HYDRO_PLANTS.find(x => x.id === pid);
+            return p ? `<span class="plant-pill">${p.icon} ${p.name}</span>` : '';
+          }).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  if (tab === 'plants') {
+    el.innerHTML = HYDRO_PLANTS.map(p => `
+      <div class="system-card" style="border-left-color: var(--accent-2);">
+        <h3 style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.8rem;">${p.icon}</span> ${p.name}
+        </h3>
+        <div class="sys-meta">
+          <span>pH: <b>${p.ph}</b></span>
+          <span>EC: <b>${p.ec}</b></span>
+          <span>Цикл: <b>${p.cycle}</b></span>
+        </div>
+        <p style="margin:8px 0 0;line-height:1.6;">${p.note}</p>
+      </div>
+    `).join('');
+  }
+
+  if (tab === 'calc') {
+    el.innerHTML = `
+      <div class="system-card">
+        <h3>🧪 Калькулятор питательного раствора</h3>
+        <p style="color:var(--muted);font-size:.9rem;">Введите объём воды — получите точные граммовки NPK.</p>
+
+        <div class="calc-field">
+          <label>Объём воды (литры)</label>
+          <input type="number" id="calc-volume" value="10" min="1" max="1000" oninput="calcSolution()">
+        </div>
+
+        <div class="calc-field">
+          <label>Культура</label>
+          <select id="calc-crop" onchange="calcSolution()" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;">
+            <option value="green">Листовые (салат, базилик) — EC 1.2</option>
+            <option value="fruit">Плодовые (томат, огурец) — EC 2.2</option>
+            <option value="berry">Ягодные (клубника) — EC 1.4</option>
+          </select>
+        </div>
+
+        <div class="calc-result" id="calc-result"></div>
+      </div>
+    `;
+    calcSolution();
+  }
+
+  if (tab === 'assembly') {
+    el.innerHTML = `
+      <div class="system-card">
+        <h3>🔧 Сборка DWC-установки за 5000 ₽</h3>
+        <p style="color:var(--muted);font-size:.9rem;">Классический стартовый набор для новичка.</p>
+
+        <h4 style="margin-top:16px;">🛒 Что купить:</h4>
+        <ul style="line-height:1.8;">
+          <li><b>Контейнер 20 л</b> с крышкой — 400 ₽</li>
+          <li><b>Компрессор для аквариума</b> — 900 ₽</li>
+          <li><b>Распылитель (камень)</b> — 200 ₽</li>
+          <li><b>Сетчатые горшки</b> (10 шт) — 300 ₽</li>
+          <li><b>Керамзит или минвата</b> — 400 ₽</li>
+          <li><b>LED-лампа полного спектра 30 Вт</b> — 1500 ₽</li>
+          <li><b>NPK-комплекс «Флора Сириес»</b> — 800 ₽</li>
+          <li><b>pH-метр + EC-метр</b> — 500 ₽</li>
+        </ul>
+        <p style="padding:12px;background:var(--bg-soft);border-radius:8px;">
+          <b>Итого: ~5000 ₽</b> — стартовый набор.
+        </p>
+
+        <h4 style="margin-top:20px;">📋 Пошагово:</h4>
+        <ol style="line-height:1.8;">
+          <li>Просверли дырки в крышке контейнера под сетчатые горшки (10 шт, Ø 5 см)</li>
+          <li>Вставь распылитель камня на дно, соедини с компрессором</li>
+          <li>Наполни контейнер раствором на 2/3 (по инструкции NPK)</li>
+          <li>Посади семена в минвату, поставь в сетчатый горшок</li>
+          <li>Включи компрессор — раствор должен пузыриться</li>
+          <li>Лампу — над растениями на 15–20 см, таймер 16 ч вкл / 8 ч выкл</li>
+          <li>Меняй раствор раз в 2 недели</li>
+          <li>Через 30 дней — свежий салат!</li>
+        </ol>
+
+        <div style="padding:12px;background:#fef3c7;border-radius:8px;margin-top:12px;font-size:.9rem;color:#92400e;">
+          ⚠️ <b>Важно:</b> pH раствора 5.5–6.5, EC 1.2–2.0 (зависит от культуры). Проверяй ежедневно первые 2 недели.
+        </div>
+      </div>
+    `;
+  }
+}
+
+function calcSolution() {
+  const vol = parseFloat(document.getElementById('calc-volume').value) || 10;
+  const crop = document.getElementById('calc-crop').value;
+
+  const ecMap = { green: 1.2, fruit: 2.2, berry: 1.4 };
+  const ec = ecMap[crop] || 1.2;
+
+  // Простая модель: для 10 л при EC 1.2 — 15 г NPK + 10 г кальция + 5 г магния
+  const npk = (vol / 10) * (ec * 12);
+  const cal = (vol / 10) * (ec * 8);
+  const mag = (vol / 10) * (ec * 4);
+
+  document.getElementById('calc-result').innerHTML = `
+    <b>Для ${vol} л воды:</b><br>
+    💊 NPK-комплекс: <b>${npk.toFixed(1)} г</b><br>
+    🦴 Кальций (Ca): <b>${cal.toFixed(1)} г</b><br>
+    ✨ Магний (Mg): <b>${mag.toFixed(1)} г</b><br>
+    <br>
+    <span style="color:var(--muted);font-size:.85rem;">
+      Итоговый EC ≈ ${ec} mS/cm.<br>
+      pH раствора — 5.5–6.5 (проверь pH-метром).
+    </span>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', () => showTab('systems'));
+</script>
+</body>
+</html>

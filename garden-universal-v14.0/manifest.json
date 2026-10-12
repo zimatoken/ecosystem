@@ -1,0 +1,28 @@
+{
+  "name": "Я в натуре Садовод",
+  "short_name": "Садовод",
+  "description": "Умный помощник для садоводов: 40 растений, планировщик грядок, SOS Доктор, гидропоника.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#16a34a",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["lifestyle", "productivity", "education"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Мой сад", "short_name": "Сад", "url": "./modules/mygarden/index.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "SOS Доктор", "short_name": "SOS", "url": "./modules/sos/index.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Планировщик", "short_name": "Грядка", "url": "./modules/planner/index.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

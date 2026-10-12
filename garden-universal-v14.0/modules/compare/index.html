@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔄 Сравнение растений</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+<style>
+.compare-select {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+}
+.compare-select select {
+  width: 100%; padding: 14px; border: 2px solid var(--border);
+  border-radius: 10px; background: var(--card); color: var(--text);
+  font-size: 1.15rem; font-family: inherit; font-weight: 600;
+}
+.compare-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.compare-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 16px; text-align: center;
+}
+.compare-card .c-icon { font-size: 4rem; }
+.compare-card .c-name { font-weight: 800; font-size: 1.4rem; margin: 10px 0 4px; }
+.compare-card .c-latin { font-size: 1rem; color: var(--muted); font-style: italic; }
+
+.compare-row {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  gap: 12px; padding: 16px;
+  background: var(--bg-soft); border-radius: 10px; margin-bottom: 10px;
+  align-items: center;
+}
+.compare-row .label {
+  grid-column: 1 / -1;
+  font-weight: 800; color: var(--accent); font-size: 1rem;
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 6px;
+}
+.compare-row .val-l, .compare-row .val-r { text-align: center; }
+.compare-row .val-l b, .compare-row .val-r b { color: var(--text); font-size: 1.15rem; font-weight: 700; }
+.compare-row .val-l { text-align: right; }
+.compare-row .val-r { text-align: left; }
+.compare-row .divider { color: var(--muted); font-weight: 800; font-size: 1.1rem; }
+
+.compat-big {
+  padding: 24px 20px; border-radius: 12px; text-align: center;
+  margin-top: 20px; font-size: 1.4rem; font-weight: 800;
+  line-height: 1.4;
+}
+.compat-big.high  { background: #dcfce7; color: #166534; }
+.compat-big.bad   { background: #fee2e2; color: #991b1b; }
+.compat-big.neutral { background: var(--bg-soft); color: var(--text); }
+[data-theme="dark"] .compat-big.high { background: #14532d; color: #bbf7d0; }
+[data-theme="dark"] .compat-big.bad { background: #7f1d1d; color: #fecaca; }
+
+/* Мобильная адаптация */
+@media (max-width: 480px) {
+  .compare-card .c-icon { font-size: 3rem; }
+  .compare-card .c-name { font-size: 1.15rem; }
+  .compare-row .label { font-size: .85rem; }
+  .compare-row .val-l b, .compare-row .val-r b { font-size: 1rem; }
+  .compat-big { font-size: 1.15rem; padding: 18px 14px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🔄 Сравнение растений</h2>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <p style="margin:0;">Выбери 2 растения — увидишь их параметры рядом и совместимость.</p>
+  </div>
+
+  <div class="compare-select">
+    <select id="plant-a" onchange="renderCompare()"><option value="">— Выбери растение —</option></select>
+    <select id="plant-b" onchange="renderCompare()"><option value="">— Выбери растение —</option></select>
+  </div>
+
+  <div id="compare-result"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../core/yieldEngine.js"></script>
+
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/phacelia.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/potato.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+<script src="../../data/plants/cabbage.js"></script>
+<script src="../../data/plants/beet.js"></script>
+<script src="../../data/plants/raspberry.js"></script>
+<script src="../../data/plants/currant.js"></script>
+<script src="../../data/plants/radish.js"></script>
+<script src="../../data/plants/pea.js"></script>
+<script src="../../data/plants/bean.js"></script>
+<script src="../../data/plants/pumpkin.js"></script>
+<script src="../../data/plants/zucchini.js"></script>
+<script src="../../data/plants/eggplant.js"></script>
+<script src="../../data/plants/lettuce.js"></script>
+<script src="../../data/plants/spinach.js"></script>
+<script src="../../data/plants/arugula.js"></script>
+<script src="../../data/plants/dill.js"></script>
+<script src="../../data/plants/parsley.js"></script>
+<script src="../../data/plants/basil.js"></script>
+<script src="../../data/plants/mint.js"></script>
+<script src="../../data/plants/rosemary.js"></script>
+<script src="../../data/plants/lavender.js"></script>
+<script src="../../data/plants/sunflower.js"></script>
+<script src="../../data/plants/rose.js"></script>
+<script src="../../data/plants/gooseberry.js"></script>
+<script src="../../data/plants/blueberry.js"></script>
+<script src="../../data/plants/bilberry.js"></script>
+<script src="../../data/plants/blackberry.js"></script>
+<script src="../../data/plants/honeysuckle.js"></script>
+
+<script>
+// ═══════════ РУССКИЕ СЛОВАРИ ═══════════
+const FAMILY_RU = {
+  solanaceae: 'Паслёновые', rosaceae: 'Розовые', apiaceae: 'Зонтичные',
+  cucurbitaceae: 'Тыквенные', asteraceae: 'Астровые', boraginaceae: 'Бурачниковые',
+  amaryllidaceae: 'Амариллисовые', brassicaceae: 'Капустные',
+  amaranthaceae: 'Маревые', grossulariaceae: 'Крыжовниковые',
+  fabaceae: 'Бобовые', lamiaceae: 'Яснотковые', ericaceae: 'Вересковые',
+  caprifoliaceae: 'Жимолостные', asparagaceae: 'Спаржевые', araceae: 'Ароидные'
+};
+const FORM_RU = {
+  tree: '🌳 Дерево', shrub: '🌿 Кустарник', subshrub: '🫐 Кустарничек',
+  herbaceous: '🌱 Травянистое', liana: '🌾 Лиана', root_crop: '🥕 Корнеплод',
+  half_shrub: '🌿 Полукустарник', groundcover: '🍀 Почвопокровное',
+  bulb: '🧅 Луковичное', vine: '🌿 Вьющееся'
+};
+const LIGHT_RU = {
+  full_sun: '☀️ Полное солнце', partial_shade: '⛅ Полутень',
+  shade: '🌑 Тень', any: '🌤️ Любой свет'
+};
+const WATER_RU = {
+  low: '🌵 Редкий', moderate: '💧 Умеренный', high: '🌊 Обильный'
+};
+const PH_RU = {
+  acidic: '🧪 Кислая', slightly_acidic: '🧪 Слабокислая',
+  neutral: '⚖️ Нейтральная', alkaline: '🧪 Щелочная', any: '🌈 Любая'
+};
+
+// ═══════════ ЛОГИКА ═══════════
+function renderOptions() {
+  const plants = window.GARDEN_GET_ALL();
+  const html = '<option value="">— Выбери растение —</option>' +
+    plants.map(p => `<option value="${p.meta.id}">${p.meta.icon} ${p.meta.name}</option>`).join('');
+  document.getElementById('plant-a').innerHTML = html;
+  document.getElementById('plant-b').innerHTML = html;
+}
+
+function renderCompare() {
+  const aId = document.getElementById('plant-a').value;
+  const bId = document.getElementById('plant-b').value;
+  const el = document.getElementById('compare-result');
+
+  if (!aId || !bId) {
+    el.innerHTML = '<p style="text-align:center;color:var(--muted);padding:30px;">Выбери два растения, чтобы сравнить.</p>';
+    return;
+  }
+
+  const a = window.GARDEN_GET_PLANT(aId);
+  const b = window.GARDEN_GET_PLANT(bId);
+  if (!a || !b) return;
+
+  const rows = [
+    { label: 'Семейство', a: FAMILY_RU[a.meta.bio_family] || a.meta.bio_family,
+                          b: FAMILY_RU[b.meta.bio_family] || b.meta.bio_family },
+    { label: 'Форма',     a: FORM_RU[a.meta.phys_form] || a.meta.phys_form,
+                          b: FORM_RU[b.meta.phys_form] || b.meta.phys_form },
+    { label: 'Свет',      a: LIGHT_RU[a.requirements?.light] || (a.requirements?.light || '—'),
+                          b: LIGHT_RU[b.requirements?.light] || (b.requirements?.light || '—') },
+    { label: 'Полив',     a: WATER_RU[a.requirements?.water] || (a.requirements?.water || '—'),
+                          b: WATER_RU[b.requirements?.water] || (b.requirements?.water || '—') },
+    { label: 'pH почвы',  a: PH_RU[a.requirements?.soil_ph] || (a.requirements?.soil_ph || '—'),
+                          b: PH_RU[b.requirements?.soil_ph] || (b.requirements?.soil_ph || '—') },
+    { label: 'Темп. мин', a: (a.requirements?.temp_min !== undefined ? a.requirements.temp_min + '°C' : '—'),
+                          b: (b.requirements?.temp_min !== undefined ? b.requirements.temp_min + '°C' : '—') }
+  ];
+
+  const forecastA = window.YIELD_ENGINE ? window.YIELD_ENGINE.getYieldForecast(a, 1) : null;
+  const forecastB = window.YIELD_ENGINE ? window.YIELD_ENGINE.getYieldForecast(b, 1) : null;
+  rows.push({
+    label: 'Урожай',
+    a: forecastA ? `${forecastA.min}–${forecastA.max} кг / ${forecastA.unit}` : '—',
+    b: forecastB ? `${forecastB.min}–${forecastB.max} кг / ${forecastB.unit}` : '—'
+  });
+
+  const isGood = (a.companionship?.good_neighbors || []).includes(b.meta.id) ||
+                 (b.companionship?.good_neighbors || []).includes(a.meta.id);
+  const isBad  = (a.companionship?.bad_neighbors || []).includes(b.meta.id) ||
+                 (b.companionship?.bad_neighbors || []).includes(a.meta.id);
+
+  let compatHTML = '';
+  if (isBad) {
+    compatHTML = `<div class="compat-big bad">⚠️ ПЛОХИЕ СОСЕДИ — не сажайте рядом!</div>`;
+  } else if (isGood) {
+    compatHTML = `<div class="compat-big high">✅ ОТЛИЧНЫЕ СОСЕДИ — сажайте вместе!</div>`;
+  } else {
+    compatHTML = `<div class="compat-big neutral">➖ Нейтральные — можно рядом.</div>`;
+  }
+
+  el.innerHTML = `
+    <div class="compare-grid">
+      <div class="compare-card">
+        <div class="c-icon">${a.meta.icon}</div>
+        <div class="c-name">${a.meta.name}</div>
+        <div class="c-latin">${a.meta.name_en || ''}</div>
+      </div>
+      <div class="compare-card">
+        <div class="c-icon">${b.meta.icon}</div>
+        <div class="c-name">${b.meta.name}</div>
+        <div class="c-latin">${b.meta.name_en || ''}</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;">
+      ${rows.map(r => `
+        <div class="compare-row">
+          <div class="label">${r.label}</div>
+          <div class="val-l"><b>${r.a}</b></div>
+          <div class="divider">vs</div>
+          <div class="val-r"><b>${r.b}</b></div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${compatHTML}
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderOptions();
+  renderCompare();
+});
+</script>
+</body>
+</html>

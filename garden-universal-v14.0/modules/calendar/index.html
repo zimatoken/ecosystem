@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 Календарь</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<link rel="stylesheet" href="../../css/modules/calendar.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📅 Календарь работ</h2>
+  </div>
+
+  <div class="card">
+    <p style="margin:0;font-weight:600;">Задачи сформированы автоматически на основе ваших растений в «Моём саду».</p>
+  </div>
+
+  <div id="calendar-groups"></div>
+  <div id="empty" class="empty-state" style="display:none;text-align:center;padding:40px;color:var(--muted);">
+    <div style="font-size:3rem;">📅</div>
+    <h3>Задач пока нет</h3>
+    <p>Добавьте растения в «Мой сад» — и здесь появится календарь работ.</p>
+  </div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/seasonEngine.js"></script>
+<script src="../../core/gardenStore.js"></script>
+
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/phacelia.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/potato.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+<script src="../../data/plants/cabbage.js"></script>
+<script src="../../data/plants/beet.js"></script>
+<script src="../../data/plants/raspberry.js"></script>
+<script src="../../data/plants/currant.js"></script>
+
+<script>
+const TYPE_LABELS = {
+  water:'💧 Полив', fertilize:'🌾 Подкормка', prune:'✂️ Обрезка',
+  light:'💡 Свет', harvest:'🧺 Сбор', mow:'🌾 Скашивание', plant:'🌱 Посадка'
+};
+
+function render() {
+  const tasks = window.GARDEN_STORE.getTodaysTasks();
+  const container = document.getElementById('calendar-groups');
+  const empty = document.getElementById('empty');
+  container.innerHTML = '';
+
+  if (!tasks.length) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  // Группируем по типу действия
+  const groups = {};
+  tasks.forEach(t => {
+    const key = t.type || 'other';
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  Object.entries(groups).forEach(([type, items]) => {
+    const div = document.createElement('div');
+    div.className = 'cal-day-group';
+    div.innerHTML = `<div class="cal-day-title">${TYPE_LABELS[type] || '📌 ' + type}</div>` +
+      items.map(t => `
+        <div class="cal-task">
+          <div class="cal-task-icon">${t.icon}</div>
+          <div class="cal-task-body">
+            <div class="cal-task-title">${t.plantName} <span style="color:var(--muted);font-weight:400;">- ${t.stage}</span></div>
+            <div class="cal-task-desc">${t.action}</div>
+          </div>
+        </div>
+      `).join('');
+    container.appendChild(div);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

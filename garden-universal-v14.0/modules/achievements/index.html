@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏆 Награды</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🏆 Награды</h2>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">⭐ <span id="stat-level">1</span> ур.</div>
+    <div class="stat">✨ <span id="stat-xp">0</span> XP</div>
+    <div class="stat">🔥 <span id="stat-streak">0</span> дн.</div>
+  </div>
+
+  <div id="ach-grid"></div>
+</div>
+
+<script src="../../core/gardenStore.js"></script>
+
+<script>
+function render() {
+  const stats = window.GARDEN_STORE.getStats();
+  document.getElementById('stat-level').textContent = stats.level;
+  document.getElementById('stat-xp').textContent = stats.xp;
+  document.getElementById('stat-streak').textContent = stats.streak;
+
+  const grid = document.getElementById('ach-grid');
+  grid.innerHTML = Object.values(window.GARDEN_STORE.ACHIEVEMENTS).map(a => {
+    const unlocked = stats.achievements.includes(a.id);
+    return `
+      <div class="card" style="opacity:${unlocked ? 1 : 0.4}; border-left: 5px solid ${unlocked ? 'var(--accent)' : 'var(--border)'};">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="font-size:2rem;">${a.title.split(' ')[0]}</div>
+          <div>
+            <div style="font-weight:700;">${a.title}</div>
+            <div style="font-size:.85rem;color:var(--muted);">${a.desc}</div>
+            ${a.xp ? `<div style="font-size:.8rem;color:var(--accent);font-weight:700;margin-top:4px;">+${a.xp} XP</div>` : ''}
+          </div>
+          <div style="margin-left:auto;font-size:1.5rem;">${unlocked ? '✅' : '🔒'}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

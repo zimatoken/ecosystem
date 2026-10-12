@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 Календарь на месяц</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+<style>
+.cal-wrap { max-width: 720px; margin: 0 auto; }
+.cal-month-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; gap: 12px;
+}
+.cal-month-title { font-size: 1.3rem; font-weight: 700; flex: 1; text-align: center; }
+.cal-month-btn {
+  background: var(--card); border: 2px solid var(--accent); color: var(--accent);
+  padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem;
+}
+.cal-month-btn:hover { background: var(--accent); color: #fff; }
+
+.cal-weekdays {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px; margin-bottom: 8px;
+}
+.cal-weekday {
+  text-align: center; font-weight: 700; font-size: .8rem;
+  color: var(--muted); padding: 8px 0;
+}
+.cal-days {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-day {
+  aspect-ratio: 1; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 4px; cursor: pointer;
+  transition: .15s; position: relative; font-size: .85rem;
+}
+.cal-day:hover { border-color: var(--accent); transform: scale(1.05); }
+.cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+.cal-day.today {
+  border: 2px solid var(--accent); box-shadow: 0 0 0 3px rgba(22,163,74,.15);
+}
+.cal-day-num { font-weight: 700; margin-bottom: 2px; }
+.cal-day-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin-top: auto;
+}
+.cal-day-dot.water { background: #3b82f6; }
+.cal-day-dot.fertilize { background: #f59e0b; }
+.cal-day-dot.harvest { background: #ef4444; }
+.cal-day-dots { display: flex; gap: 2px; margin-top: auto; }
+
+.cal-day-detail {
+  margin-top: 20px; padding: 16px;
+  background: var(--card); border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.cal-day-detail h3 { margin-top: 0; color: var(--accent); }
+.cal-day-tasks { list-style: none; padding: 0; margin: 0; }
+.cal-day-tasks li {
+  padding: 10px 12px; margin-bottom: 6px;
+  background: var(--bg-soft); border-radius: 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.cal-task-icon { font-size: 1.4rem; }
+</style>
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📅 Календарь на месяц</h2>
+  </div>
+
+  <div class="cal-wrap">
+    <div class="cal-month-nav">
+      <button class="cal-month-btn" onclick="prevMonth()">←</button>
+      <div class="cal-month-title" id="month-title">—</div>
+      <button class="cal-month-btn" onclick="nextMonth()">→</button>
+    </div>
+
+    <div class="cal-weekdays">
+      <div class="cal-weekday">Пн</div>
+      <div class="cal-weekday">Вт</div>
+      <div class="cal-weekday">Ср</div>
+      <div class="cal-weekday">Чт</div>
+      <div class="cal-weekday">Пт</div>
+      <div class="cal-weekday">Сб</div>
+      <div class="cal-weekday">Вс</div>
+    </div>
+
+    <div class="cal-days" id="cal-days"></div>
+
+    <div class="cal-day-detail" id="day-detail">
+      <p style="color:var(--muted);margin:0;">Кликните на день с зелёной точкой, чтобы увидеть задачи.</p>
+    </div>
+  </div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/seasonEngine.js"></script>
+<script src="../../core/gardenStore.js"></script>
+<script src="../../data/plants/tomato.js"></script>
+<script src="../../data/plants/apple.js"></script>
+<script src="../../data/plants/strawberry.js"></script>
+<script src="../../data/plants/carrot.js"></script>
+<script src="../../data/plants/cucumber.js"></script>
+<script src="../../data/plants/marigold.js"></script>
+<script src="../../data/plants/onion.js"></script>
+<script src="../../data/plants/garlic.js"></script>
+<script src="../../data/plants/pepper.js"></script>
+
+<script>
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+let viewYear  = new Date().getFullYear();
+let viewMonth = new Date().getMonth();
+
+function render() {
+  document.getElementById('month-title').textContent = `${MONTHS[viewMonth]} ${viewYear}`;
+
+  const first = new Date(viewYear, viewMonth, 1);
+  const lastDay = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const startWeekday = (first.getDay() + 6) % 7; // Пн = 0
+
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === viewYear && today.getMonth() === viewMonth;
+
+  const tasks = window.GARDEN_STORE.getTodaysTasks();
+
+  const grid = document.getElementById('cal-days');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < startWeekday; i++) {
+    const d = document.createElement('div');
+    d.className = 'cal-day empty';
+    grid.appendChild(d);
+  }
+
+  for (let day = 1; day <= lastDay; day++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    if (isCurrentMonth && day === today.getDate()) el.classList.add('today');
+    if (isCurrentMonth && day === today.getDate()) el.style.borderColor = 'var(--accent)';
+
+    // Ищем задачи на этот день (по типу)
+    let dayTasks = [];
+    if (isCurrentMonth && day === today.getDate()) {
+      dayTasks = tasks;
+    }
+
+    // Показываем точки по типам
+    const types = [...new Set(dayTasks.map(t => t.type))].slice(0, 3);
+    const dotsHTML = types.map(t =>
+      `<div class="cal-day-dot ${t}" style="width:6px;height:6px;border-radius:50%;"></div>`
+    ).join('');
+
+    el.innerHTML = `
+      <div class="cal-day-num">${day}</div>
+      <div class="cal-day-dots">${dotsHTML}</div>
+    `;
+
+    el.onclick = () => showDay(day, dayTasks);
+    grid.appendChild(el);
+  }
+}
+
+function showDay(day, tasks) {
+  const detail = document.getElementById('day-detail');
+  const dateStr = `${day} ${MONTHS[viewMonth].toLowerCase()} ${viewYear}`;
+
+  if (!tasks.length) {
+    detail.innerHTML = `
+      <h3>${dateStr}</h3>
+      <p style="color:var(--muted);margin:0;">Задач на этот день нет.</p>
+    `;
+    return;
+  }
+
+  detail.innerHTML = `
+    <h3>${dateStr}</h3>
+    <ul class="cal-day-tasks">
+      ${tasks.map(t => `
+        <li>
+          <span class="cal-task-icon">${t.icon}</span>
+          <div>
+            <b>${t.plantName}</b> · ${t.stage}<br>
+            <span style="color:var(--muted);font-size:.85rem;">${t.action}</span>
+          </div>
+        </li>
+      `).join('')}
+    </ul>
+  `;
+}
+
+function prevMonth() {
+  viewMonth--;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  render();
+}
+function nextMonth() {
+  viewMonth++;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  render();
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

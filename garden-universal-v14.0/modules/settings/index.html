@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙️ Настройки</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>
+// ─── Применяем сохранённую тему при загрузке ──────────────
+(function(){
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>⚙️ Настройки</h2>
+  </div>
+
+  <div class="card">
+    <h3>🎨 Тема</h3>
+    <button class="btn btn-block" onclick="toggleTheme()">🌓 Переключить светлая / тёмная</button>
+  </div>
+
+  <div class="card">
+    <h3>📤 Данные</h3>
+    <button class="btn btn-block" onclick="exportData()">💾 Экспорт (JSON)</button>
+    <label class="btn btn-outline btn-block" style="margin-top:8px;cursor:pointer;">
+      📥 Импорт (JSON)
+      <input type="file" id="import-file" accept=".json" style="display:none;">
+    </label>
+  </div>
+
+  <div class="card">
+    <h3>🗑 Опасная зона</h3>
+    <button class="btn btn-danger btn-block" onclick="resetAll()">Полный сброс</button>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:0;">Удалит все растения, XP и достижения.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="../../core/gardenStore.js"></script>
+
+<script>
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function exportData() {
+  window.GARDEN_STORE.exportData();
+  showToast('💾 Файл сохранён');
+}
+
+document.getElementById('import-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    if (window.GARDEN_STORE.importData(ev.target.result)) {
+      showToast('✅ Данные импортированы. Обнови страницу.');
+    } else {
+      showToast('❌ Ошибка импорта', 'error');
+    }
+  };
+  reader.readAsText(file);
+});
+
+function resetAll() {
+  if (!confirm('Точно удалить ВСЕ данные? Это необратимо.')) return;
+  localStorage.clear();
+  showToast('🗑 Всё удалено');
+  setTimeout(() => location.reload(), 800);
+}
+</script>
+</body>
+</html>
