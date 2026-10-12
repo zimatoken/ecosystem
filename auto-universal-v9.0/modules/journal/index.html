@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📔 Дневник водителя</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.tab { padding: 10px 18px; border: 2px solid var(--border); border-radius: 10px;
+  background: var(--card); cursor: pointer; font-weight: 700; font-size: .95rem;
+  transition: .2s; font-family: inherit; color: var(--text); }
+.tab:hover { border-color: var(--accent); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.add-form { background: var(--card); border: 2px solid var(--accent);
+  border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%; padding: 10px 12px; border: 2px solid var(--border);
+  border-radius: 8px; background: var(--card); color: var(--text);
+  font-size: 1rem; font-family: inherit; box-sizing: border-box; }
+.form-row textarea { resize: vertical; min-height: 60px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.type-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px; margin-bottom: 16px; }
+.type-btn { padding: 12px; border: 2px solid var(--border); border-radius: 10px;
+  background: var(--card); cursor: pointer; font-weight: 700; font-size: .95rem;
+  transition: .2s; font-family: inherit; color: var(--text); }
+.type-btn:hover { border-color: var(--accent); }
+.type-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 20px; }
+.stat-card { background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; text-align: center; }
+.stat-card .label { font-size: .75rem; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 6px; }
+.stat-card .value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+
+.journal-list { display: flex; flex-direction: column; gap: 10px; }
+.entry { background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; border-left: 5px solid var(--accent); }
+.entry.refuel { border-left-color: #f59e0b; }
+.entry.wash { border-left-color: #0891b2; }
+.entry.fine { border-left-color: #dc2626; }
+.entry.repair { border-left-color: #7c3aed; }
+.entry.to { border-left-color: #16a34a; }
+.entry-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.entry-icon { font-size: 1.8rem; }
+.entry-title { font-weight: 700; flex: 1; }
+.entry-date { font-size: .8rem; color: var(--muted); }
+.entry-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: .9rem; color: var(--muted); }
+.entry-cost { font-weight: 800; color: var(--accent); font-size: 1.1rem; }
+.entry-remove { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--muted); }
+
+.chart-container { background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-top: 16px; overflow-x: auto; }
+.chart-bars { display: flex; gap: 12px; align-items: flex-end;
+  min-height: 180px; min-width: 100%; padding: 10px 0; }
+.chart-col { flex: 1; min-width: 40px; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end; gap: 4px; }
+.chart-bar { width: 100%; max-width: 50px; background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  border-radius: 4px 4px 0 0; transition: height .5s; min-height: 4px; }
+.chart-bar.empty { background: var(--bg-soft); }
+.chart-label { font-size: .75rem; color: var(--muted); }
+.chart-value { font-size: .8rem; font-weight: 700; color: var(--accent); }
+
+.reminders { margin-top: 16px; }
+.reminder { padding: 12px 14px; border-radius: 10px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px; }
+.reminder.info { background: #dbeafe; color: #1e40af; }
+.reminder.warn { background: #fef3c7; color: #92400e; }
+.reminder.danger { background: #fee2e2; color: #991b1b; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📔 Дневник водителя</h2>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('add', this)">➕ Добавить</button>
+    <button class="tab" onclick="switchTab('stats', this)">📊 Статистика</button>
+    <button class="tab" onclick="switchTab('history', this)">📋 История</button>
+    <button class="tab" onclick="switchTab('reminders', this)">🔔 Напоминания</button>
+  </div>
+
+  <div id="tab-content"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+<script src="../../core/garageStore.js"></script>
+<script src="../../core/journalStore.js"></script>
+
+<script>
+let currentTab = 'add';
+let selectedType = 'refuel';
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTab();
+}
+
+function renderTab() {
+  const el = document.getElementById('tab-content');
+  if (currentTab === 'add')      el.innerHTML = renderAddTab();
+  if (currentTab === 'stats')    { el.innerHTML = renderStatsTab(); drawChart(); }
+  if (currentTab === 'history')  el.innerHTML = renderHistoryTab();
+  if (currentTab === 'reminders') el.innerHTML = renderRemindersTab();
+}
+
+function renderAddTab() {
+  const cars = window.GARAGE.get();
+  if (!cars.length) {
+    return '<div class="card" style="text-align:center;padding:40px;">' +
+      '<div style="font-size:4rem;">🚗</div>' +
+      '<h3>Сначала добавь машину в гараж</h3>' +
+      '<a href="../encyclopedia/index.html" class="btn">📖 Энциклопедия</a></div>';
+  }
+  const carOptions = cars.map(c => {
+    const car = window.AUTO_GET_CAR(c.id);
+    return car ? '<option value="' + c.id + '">' + car.meta.icon + ' ' + car.meta.brand + ' ' + car.meta.model + '</option>' : '';
+  }).join('');
+
+  return '<div class="add-form">' +
+    '<h3 style="margin-top:0;">Что случилось?</h3>' +
+    '<div class="type-buttons">' +
+      '<button class="type-btn active" data-type="refuel" onclick="pickType(\'refuel\', this)">⛽ Заправка</button>' +
+      '<button class="type-btn" data-type="wash" onclick="pickType(\'wash\', this)">🚿 Мойка</button>' +
+      '<button class="type-btn" data-type="fine" onclick="pickType(\'fine\', this)">📸 Штраф</button>' +
+      '<button class="type-btn" data-type="repair" onclick="pickType(\'repair\', this)">🔧 Ремонт</button>' +
+      '<button class="type-btn" data-type="to" onclick="pickType(\'to\', this)">📅 ТО</button>' +
+    '</div>' +
+
+    '<div class="form-row"><label>Машина</label>' +
+      '<select id="j-car">' + carOptions + '</select></div>' +
+
+    '<div class="form-grid">' +
+      '<div class="form-row"><label>Дата</label>' +
+        '<input type="date" id="j-date" value="' + new Date().toISOString().split("T")[0] + '"></div>' +
+      '<div class="form-row"><label>Пробег (км)</label>' +
+        '<input type="number" id="j-mileage" placeholder="15000"></div>' +
+    '</div>' +
+
+    '<div class="form-grid">' +
+      '<div class="form-row"><label id="j-liters-label">Литры</label>' +
+        '<input type="number" id="j-liters" step="0.1" placeholder="45"></div>' +
+      '<div class="form-row"><label>Стоимость (руб)</label>' +
+        '<input type="number" id="j-cost" placeholder="2700"></div>' +
+    '</div>' +
+
+    '<div class="form-row"><label>Заметка</label>' +
+      '<textarea id="j-note" placeholder="Лукойл, АИ-95"></textarea></div>' +
+
+    '<button class="btn btn-block" onclick="saveEntry()">💾 Сохранить (+XP)</button>' +
+  '</div>';
+}
+
+function pickType(type, btn) {
+  selectedType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const lbl = document.getElementById('j-liters-label');
+  const inp = document.getElementById('j-liters');
+  if (type === 'refuel') { lbl.textContent = 'Литры'; inp.disabled = false; }
+  else { lbl.textContent = 'Литры (не нужно)'; inp.disabled = true; inp.value = ''; }
+}
+
+function saveEntry() {
+  const carId = document.getElementById('j-car').value;
+  const date = document.getElementById('j-date').value;
+  const mileage = parseFloat(document.getElementById('j-mileage').value) || 0;
+  const liters = parseFloat(document.getElementById('j-liters').value) || 0;
+  const cost = parseFloat(document.getElementById('j-cost').value) || 0;
+  const note = document.getElementById('j-note').value;
+
+  if (!carId) { showToast('Выбери машину'); return; }
+  if (cost <= 0 && liters <= 0) { showToast('Введи стоимость или литры'); return; }
+
+  window.JOURNAL.add({
+    type: selectedType, carId, date, mileage,
+    liters: selectedType === 'refuel' ? liters : 0,
+    cost, note
+  });
+
+  if (mileage > 0 && window.GARAGE.updateMileage) {
+    window.GARAGE.updateMileage(carId, mileage);
+  }
+
+  const xpMap = { refuel: 5, wash: 10, fine: 5, repair: 30, to: 25 };
+  showToast('✅ Записано! +' + (xpMap[selectedType] || 5) + ' XP');
+  renderTab();
+}
+
+function renderStatsTab() {
+  const cars = window.GARAGE.get();
+  if (!cars.length) return '<div class="card"><p>Добавь машину в гараж</p></div>';
+
+  const carId = cars[0].id;
+  const stats = window.JOURNAL.getStats();
+
+  return '<div class="card">' +
+    '<h3 style="margin-top:0;">📊 Общая статистика</h3>' +
+    '<div class="stats-grid">' +
+      '<div class="stat-card"><div class="label">Всего потрачено</div>' +
+        '<div class="value">' + Math.round(stats.totalCost).toLocaleString() + ' ₽</div></div>' +
+      '<div class="stat-card"><div class="label">Заправок</div>' +
+        '<div class="value">' + stats.totalRefuels + '</div></div>' +
+      '<div class="stat-card"><div class="label">Литров</div>' +
+        '<div class="value">' + Math.round(stats.totalLiters) + ' л</div></div>' +
+      '<div class="stat-card"><div class="label">Средний расход</div>' +
+        '<div class="value">' + (stats.avgConsumption ? stats.avgConsumption.toFixed(1) + ' л/100' : '—') + '</div></div>' +
+      '<div class="stat-card"><div class="label">Средняя цена</div>' +
+        '<div class="value">' + (stats.avgFuelPrice ? stats.avgFuelPrice.toFixed(1) + ' ₽/л' : '—') + '</div></div>' +
+      '<div class="stat-card"><div class="label">Записей всего</div>' +
+        '<div class="value">' + window.JOURNAL.get().length + '</div></div>' +
+    '</div>' +
+    '<h3 style="margin-top:20px;">📈 Расходы по месяцам</h3>' +
+    '<div class="chart-container"><div class="chart-bars" id="chart-bars"></div></div>' +
+  '</div>';
+}
+
+function drawChart() {
+  const chart = document.getElementById('chart-bars');
+  if (!chart) return;
+  const data = window.JOURNAL.getMonthlyData(null, 6);
+  const max = Math.max(...data.map(d => d.cost), 1);
+
+  chart.innerHTML = data.map(d => {
+    const h = max > 0 ? Math.max(4, Math.round((d.cost / max) * 160)) : 4;
+    const isZero = d.cost === 0;
+    return '<div class="chart-col">' +
+      '<div class="chart-value">' + (d.cost > 0 ? Math.round(d.cost).toLocaleString() + ' ₽' : '') + '</div>' +
+      '<div class="chart-bar ' + (isZero ? 'empty' : '') + '" style="height:' + h + 'px;"></div>' +
+      '<div class="chart-label">' + d.monthName + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderHistoryTab() {
+  const list = window.JOURNAL.get().slice().reverse();
+  if (!list.length) {
+    return '<div class="card" style="text-align:center;padding:40px;">' +
+      '<div style="font-size:4rem;">📋</div>' +
+      '<h3>История пустая</h3>' +
+      '<p style="color:var(--muted);">Добавь первую запись во вкладке "Добавить"</p></div>';
+  }
+
+  const icons = { refuel: '⛽', wash: '🚿', fine: '📸', repair: '🔧', to: '📅' };
+  const labels = { refuel: 'Заправка', wash: 'Мойка', fine: 'Штраф', repair: 'Ремонт', to: 'ТО' };
+
+  return '<div class="journal-list">' + list.map(e => {
+    const car = window.AUTO_GET_CAR(e.carId);
+    const carName = car ? car.meta.brand + ' ' + car.meta.model : 'Авто';
+    let meta = '';
+    if (e.type === 'refuel' && e.liters > 0) meta += '<span>⛽ ' + e.liters + ' л</span>';
+    if (e.mileage > 0) meta += '<span>🛣️ ' + e.mileage.toLocaleString() + ' км</span>';
+    if (e.note) meta += '<span>📝 ' + e.note + '</span>';
+
+    return '<div class="entry ' + e.type + '">' +
+      '<div class="entry-head">' +
+        '<div class="entry-icon">' + (icons[e.type] || '📌') + '</div>' +
+        '<div class="entry-title">' + (labels[e.type] || e.type) + ' — ' + carName + '</div>' +
+        '<div class="entry-date">' + e.date + '</div>' +
+        '<button class="entry-remove" onclick="removeEntry(\'' + e.id + '\')">🗑</button>' +
+      '</div>' +
+      '<div class="entry-meta">' + meta + '</div>' +
+      '<div class="entry-cost">' + Math.round(e.cost).toLocaleString() + ' ₽</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function removeEntry(id) {
+  if (!confirm('Удалить запись?')) return;
+  window.JOURNAL.remove(id);
+  renderTab();
+  showToast('Запись удалена');
+}
+
+function renderRemindersTab() {
+  const cars = window.GARAGE.get();
+  if (!cars.length) {
+    return '<div class="card"><p>Добавь машину в гараж</p></div>';
+  }
+
+  const reminders = [];
+
+  // ТО-напоминания
+  cars.forEach(item => {
+    const car = window.AUTO_GET_CAR(item.id);
+    if (!car) return;
+    const mileage = item.mileage || 0;
+    const oilNext = car.maintenance.oil_change_km;
+    const oilLeft = oilNext - (mileage % oilNext);
+
+    if (oilLeft < 500) {
+      reminders.push({ icon: '🛢️', text: 'Масло в ' + car.meta.brand + ' ' + car.meta.model + ': до замены ' + oilLeft + ' км', level: 'danger' });
+    } else if (oilLeft < 2000) {
+      reminders.push({ icon: '🛢️', text: 'Скоро масло в ' + car.meta.brand + ' ' + car.meta.model + ': ' + oilLeft + ' км', level: 'warn' });
+    } else {
+      reminders.push({ icon: '🛢️', text: 'Масло: ' + oilLeft + ' км осталось', level: 'info' });
+    }
+  });
+
+  // Напоминания по датам (страховка, ТО)
+  const monthlyCost = window.JOURNAL.getMonthlyData(null, 3);
+  const avgMonthly = monthlyCost.reduce((s, m) => s + m.cost, 0) / 3;
+
+  if (avgMonthly > 0) {
+    reminders.push({ icon: '💰', text: 'Средние расходы: ' + Math.round(avgMonthly).toLocaleString() + ' ₽ / месяц', level: 'info' });
+  }
+
+  if (!reminders.length) {
+    reminders.push({ icon: '✅', text: 'Пока всё в норме. Езди спокойно!', level: 'info' });
+  }
+
+  return '<div class="reminders">' +
+    reminders.map(r => '<div class="reminder ' + r.level + '">' +
+      '<div style="font-size:1.5rem;">' + r.icon + '</div>' +
+      '<div style="flex:1;font-weight:600;">' + r.text + '</div>' +
+    '</div>').join('') +
+    '<div class="card" style="margin-top:20px;">' +
+      '<h4 style="margin-top:0;">🔔 Push-уведомления</h4>' +
+      '<p style="color:var(--muted);font-size:.9rem;">' +
+        'Включить push-уведомления о ТО и страховке?' +
+      '</p>' +
+      '<button class="btn" onclick="requestPush()">Включить уведомления</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function requestPush() {
+  if (!('Notification' in window)) {
+    showToast('Браузер не поддерживает уведомления');
+    return;
+  }
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      showToast('✅ Уведомления включены!');
+      new Notification('🚗 Автомобилист', {
+        body: 'Уведомления активированы. Будем напоминать про ТО!',
+        icon: '../../assets/icons/icon-192.svg'
+      });
+    } else {
+      showToast('Уведомления не разрешены');
+    }
+  });
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.className = 'toast show';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', renderTab);
+</script>
+</body>
+</html>

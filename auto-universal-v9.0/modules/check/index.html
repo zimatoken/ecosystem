@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 Проверка перед покупкой</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.tab { padding: 12px 18px; border: 2px solid var(--border); border-radius: 10px;
+  background: var(--card); cursor: pointer; font-weight: 700; font-size: .95rem;
+  transition: .2s; font-family: inherit; color: var(--text); }
+.tab:hover { border-color: var(--accent); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.price-card { background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 20px; }
+.price-card .amount { font-size: 2.5rem; font-weight: 900; margin: 8px 0; }
+.price-card .label { opacity: .9; font-size: .95rem; }
+.price-card .row { display: flex; justify-content: space-around; margin-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.2); padding-top: 16px; }
+.price-card .row div { text-align: center; }
+.price-card .row .v { font-size: 1.4rem; font-weight: 800; }
+.price-card .row .l { font-size: .8rem; opacity: .9; }
+
+.form-section { background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.form-section h3 { margin-top: 0; color: var(--accent); }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select { width: 100%; padding: 12px;
+  border: 2px solid var(--border); border-radius: 8px; background: var(--card);
+  color: var(--text); font-size: 1rem; font-family: inherit; box-sizing: border-box; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.checklist-block { background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+.checklist-block h3 { margin-top: 0; color: var(--accent); }
+.checklist-item { display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; background: var(--bg-soft); border-radius: 8px;
+  margin-bottom: 6px; cursor: pointer; transition: .15s; }
+.checklist-item:hover { background: var(--accent-soft); }
+.checklist-item input { margin-top: 2px; width: 20px; height: 20px;
+  cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
+.checklist-item label { cursor: pointer; font-size: .95rem; line-height: 1.4; }
+
+.progress-bar { height: 12px; background: var(--accent-soft);
+  border-radius: 6px; overflow: hidden; margin: 12px 0; }
+.progress-bar > div { height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width .5s; }
+
+.red-flags-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px; }
+.red-flag { background: var(--card); border: 2px solid var(--border);
+  border-left: 5px solid var(--danger); border-radius: 12px;
+  padding: 14px; }
+.red-flag .rf-title { font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; }
+.red-flag .rf-hint { font-size: .85rem; color: var(--muted); line-height: 1.4; }
+
+.vin-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px; margin-top: 16px; }
+.vin-link { background: var(--card); border: 2px solid var(--border);
+  border-radius: 12px; padding: 16px; text-align: center;
+  text-decoration: none; color: var(--text); transition: .2s; display: block; }
+.vin-link:hover { border-color: var(--accent); transform: translateY(-2px); }
+.vin-link .vl-icon { font-size: 2rem; }
+.vin-link .vl-title { font-weight: 700; margin: 8px 0 4px; }
+.vin-link .vl-hint { font-size: .8rem; color: var(--muted); }
+
+.test-drive-step { background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; margin-bottom: 10px;
+  border-left: 4px solid var(--accent); }
+.test-drive-step h4 { margin: 0 0 6px; }
+.test-drive-step p { margin: 0; font-size: .9rem; color: var(--muted); line-height: 1.5; }
+
+.btn-print { background: var(--card); border: 2px solid var(--accent);
+  color: var(--accent); padding: 12px 20px; border-radius: 10px;
+  font-weight: 700; cursor: pointer; font-family: inherit; font-size: 1rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🎯 Проверка перед покупкой</h2>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <p style="margin:0;line-height:1.6;">
+      💰 <b>Здесь можно сэкономить 50 000-100 000 ₽.</b> 
+      Введи данные авто — получи реальную цену, что скинуть и что проверить.
+    </p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('price', this)">💰 Калькулятор торга</button>
+    <button class="tab" onclick="switchTab('checklist', this)">📋 Чек-лист</button>
+    <button class="tab" onclick="switchTab('flags', this)">🚩 Красные флаги</button>
+    <button class="tab" onclick="switchTab('vin', this)">🔍 VIN-чек</button>
+    <button class="tab" onclick="switchTab('test', this)">🚗 Тест-драйв</button>
+  </div>
+
+  <div id="tab-content"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../core/inspectionData.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_niva.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/renault_logan.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+
+<script>
+let currentTab = 'price';
+let checklistState = {};
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTab();
+}
+
+function renderTab() {
+  const el = document.getElementById('tab-content');
+  if (currentTab === 'price')     el.innerHTML = renderPriceTab();
+  if (currentTab === 'checklist') { el.innerHTML = renderChecklistTab(); restoreChecklist(); }
+  if (currentTab === 'flags')     el.innerHTML = renderFlagsTab();
+  if (currentTab === 'vin')       el.innerHTML = renderVinTab();
+  if (currentTab === 'test')      el.innerHTML = renderTestTab();
+}
+
+function renderPriceTab() {
+  // Собираем все машины
+  const cars = window.AUTO_GET_ALL ? window.AUTO_GET_ALL() : [];
+  cars.sort((a, b) => (a.meta.brand + a.meta.model).localeCompare(b.meta.brand + b.meta.model));
+  const options = cars.map(c =>
+    '<option value="' + c.meta.id + '">' + c.meta.icon + ' ' + c.meta.brand + ' ' + c.meta.model + '</option>'
+  ).join('');
+
+  return '<div class="form-section">' +
+    '<h3>🚗 Данные авто</h3>' +
+    '<div class="form-row"><label>Марка и модель</label>' +
+      '<select id="p-car" onchange="calcPrice()"><option value="">— Выбери —</option>' + options + '</select>' +
+    '</div>' +
+    '<div class="form-grid">' +
+      '<div class="form-row"><label>Год выпуска</label>' +
+        '<input type="number" id="p-year" value="2018" oninput="calcPrice()"></div>' +
+      '<div class="form-row"><label>Пробег (км)</label>' +
+        '<input type="number" id="p-mileage" value="100000" oninput="calcPrice()"></div>' +
+    '</div>' +
+    '<button class="btn btn-block" onclick="calcPrice()">💰 Рассчитать</button>' +
+  '</div>' +
+  '<div id="price-result"></div>';
+}
+
+function calcPrice() {
+  const carId = document.getElementById('p-car').value;
+  const year = parseInt(document.getElementById('p-year').value) || 2018;
+  const mileage = parseInt(document.getElementById('p-mileage').value) || 100000;
+
+  if (!carId) {
+    document.getElementById('price-result').innerHTML = '';
+    return;
+  }
+
+  const car = window.AUTO_GET_CAR(carId);
+  if (!car) return;
+
+  const result = window.INSPECTION.calculatePrice(car, year, mileage);
+
+  let html = '<div class="price-card">' +
+    '<div class="label">Реальная рыночная цена</div>' +
+    '<div class="amount">' + result.marketPrice.toLocaleString('ru-RU') + ' ₽</div>' +
+    '<div class="row">' +
+      '<div><div class="v">' + Math.round(result.marketPrice * 0.95).toLocaleString('ru-RU') + '</div><div class="l">мин. цена</div></div>' +
+      '<div><div class="v">' + Math.round(result.marketPrice * 1.05).toLocaleString('ru-RU') + '</div><div class="l">макс. цена</div></div>' +
+    '</div>' +
+  '</div>';
+
+  html += '<div class="form-section" style="background:#fef3c7;border-left:5px solid var(--warning);">' +
+    '<h3 style="color:#92400e;">💡 Рекомендуемая стартовая цена</h3>' +
+    '<p style="font-size:2rem;font-weight:900;color:#92400e;margin:8px 0;">' +
+      result.suggestedOffer.toLocaleString('ru-RU') + ' ₽</p>' +
+    '<p style="margin:0;color:#92400e;">Можно сэкономить: <b>' +
+      (result.marketPrice - result.suggestedOffer).toLocaleString('ru-RU') + ' ₽</b></p>' +
+  '</div>';
+
+  html += '<div class="form-section"><h3>📉 Из чего складывается торг</h3>';
+  result.discounts.forEach(d => {
+    html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">' +
+      '<span>' + d.reason + '</span>' +
+      '<b style="color:var(--danger);">−' + Math.round(d.amount).toLocaleString('ru-RU') + ' ₽</b>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="form-section"><h3>🛣️ Проверка пробега</h3>' +
+    '<p style="margin:6px 0;">Норма для этого возраста: <b>' +
+      result.mileage.normal.toLocaleString('ru-RU') + ' км</b></p>' +
+    '<p style="margin:6px 0;">Указанный: <b>' + result.mileage.actual.toLocaleString('ru-RU') + ' км</b></p>' +
+    '<p style="margin:6px 0;color:' + (result.mileage.ratio > 1.2 ? 'var(--danger)' : 'var(--accent)') + ';">' +
+      'Отношение: <b>' + result.mileage.ratio + '×</b> ' +
+      (result.mileage.ratio > 1.2 ? '⚠️ Подозрительно много' : 
+       result.mileage.ratio < 0.7 ? '🤔 Подозрительно мало' : '✅ В норме') +
+    '</p>' +
+  '</div>';
+
+  document.getElementById('price-result').innerHTML = html;
+}
+
+function renderChecklistTab() {
+  const blocks = Object.entries(window.INSPECTION.CHECKLIST).map(([key, block]) => {
+    const items = block.items.map((item, i) => {
+      const id = key + '_' + i;
+      return '<div class="checklist-item">' +
+        '<input type="checkbox" id="' + id + '" onchange="toggleCheck(\'' + id + '\')">' +
+        '<label for="' + id + '">' + item + '</label>' +
+      '</div>';
+    }).join('');
+    return '<div class="checklist-block">' +
+      '<h3>' + block.icon + ' ' + block.title + '</h3>' + items +
+    '</div>';
+  }).join('');
+
+  return '<div class="form-section">' +
+    '<h3>Прогресс проверки</h3>' +
+    '<div class="progress-bar"><div id="check-progress" style="width:0%;"></div></div>' +
+    '<p id="check-progress-text" style="margin:6px 0;font-weight:700;">0 из ' +
+      Object.values(window.INSPECTION.CHECKLIST).reduce((s, b) => s + b.items.length, 0) + ' пунктов</p>' +
+    '<button class="btn btn-print" onclick="printChecklist()">🖨️ Распечатать чек-лист</button>' +
+  '</div>' + blocks;
+}
+
+function toggleCheck(id) {
+  const cb = document.getElementById(id);
+  checklistState[id] = cb.checked;
+  localStorage.setItem('auto_checklist_v7', JSON.stringify(checklistState));
+  updateProgress();
+}
+
+function restoreChecklist() {
+  const saved = JSON.parse(localStorage.getItem('auto_checklist_v7') || '{}');
+  checklistState = saved;
+  Object.keys(saved).forEach(id => {
+    const cb = document.getElementById(id);
+    if (cb) cb.checked = saved[id];
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const all = Object.values(window.INSPECTION.CHECKLIST).reduce((s, b) => s + b.items.length, 0);
+  const done = Object.values(checklistState).filter(x => x).length;
+  const percent = Math.round((done / all) * 100);
+  const bar = document.getElementById('check-progress');
+  const txt = document.getElementById('check-progress-text');
+  if (bar) bar.style.width = percent + '%';
+  if (txt) txt.textContent = done + ' из ' + all + ' пунктов (' + percent + '%)';
+}
+
+function printChecklist() {
+  window.print();
+}
+
+function renderFlagsTab() {
+  return '<div class="card" style="border-left:5px solid var(--danger);">' +
+    '<h3 style="margin-top:0;">🚩 Красные флаги</h3>' +
+    '<p style="margin:0;">15 признаков, что машину брать НЕ стоит</p>' +
+  '</div>' +
+  '<div class="red-flags-grid">' +
+    window.INSPECTION.RED_FLAGS.map(f =>
+      '<div class="red-flag">' +
+        '<div class="rf-title">' + f.icon + ' ' + f.title + '</div>' +
+        '<div class="rf-hint">' + f.hint + '</div>' +
+      '</div>'
+    ).join('') +
+  '</div>';
+}
+
+function renderVinTab() {
+  const links = [
+    { icon: '🚔', title: 'ГИБДД', hint: 'Проверка на ДТП и угон', url: 'https://гибдд.рф/check/auto' },
+    { icon: '⚖️', title: 'ФНП', hint: 'Реестр залогов', url: 'https://www.reestr-zalogov.ru/search/index' },
+    { icon: '📋', title: 'ФССП', hint: 'Долги и ограничения', url: 'https://fssp.gov.ru/iss/ip' },
+    { icon: '🔍', title: 'Автотека', hint: 'Полный отчёт по VIN', url: 'https://autoteka.ru/' },
+    { icon: '🚗', title: 'Авто.ру', hint: 'История и пробег', url: 'https://auto.ru/' },
+    { icon: '🔎', title: 'Автокод', hint: 'Проверка авто', url: 'https://avtokod.mos.ru/' },
+    { icon: '💰', title: 'Налог.ру', hint: 'Проверка налогов', url: 'https://service.nalog.ru/' },
+    { icon: '🛡️', title: 'РСА', hint: 'История ОСАГО', url: 'https://dkbm-web.autoins.ru/dkbm-web-1.0/policy.htm' }
+  ];
+
+  return '<div class="card" style="border-left:5px solid var(--accent);">' +
+    '<h3 style="margin-top:0;">🔍 Проверка по VIN</h3>' +
+    '<p style="margin:0;">Мы не имеем доступа к платным базам, но даём <b>прямые ссылки</b> на официальные сервисы.</p>' +
+  '</div>' +
+  '<div class="vin-links">' +
+    links.map(l =>
+      '<a href="' + l.url + '" target="_blank" rel="noopener noreferrer" class="vin-link">' +
+        '<div class="vl-icon">' + l.icon + '</div>' +
+        '<div class="vl-title">' + l.title + '</div>' +
+        '<div class="vl-hint">' + l.hint + '</div>' +
+      '</a>'
+    ).join('') +
+  '</div>' +
+  '<div class="card" style="margin-top:16px;border-left:5px solid var(--warning);">' +
+    '<h3 style="margin-top:0;">⚠️ Что смотреть в отчёте</h3>' +
+    '<ul style="line-height:1.7;">' +
+      '<li>Количество ДТП и их серьёзность</li>' +
+      '<li>Количество владельцев (норма 1-2)</li>' +
+      '<li>Пробег и его рост (нет ли скручивания)</li>' +
+      '<li>Работа в такси/каршеринге</li>' +
+      '<li>Залоги и ограничения</li>' +
+      '<li>Страховые случаи</li>' +
+      '<li>Техосмотр (частота прохождения)</li>' +
+    '</ul>' +
+  '</div>';
+}
+
+function renderTestTab() {
+  const steps = [
+    { title: '🚗 Холодный запуск', desc: 'Продавец не должен предварительно прогревать. Слушай звук стартера, работу двигателя. Нет стуков, дыма?' },
+    { title: '⚙️ Прогрев и XX', desc: 'Дай поработать 3-5 минут. Слушай обороты на холостом ходу. Нет плавающих оборотов?' },
+    { title: '🛣️ Трасса 5 км', desc: 'Разгонись до 90-110 км/ч. Проверь разгон, переключения АКПП, вибрации руля. Нет рывков?' },
+    { title: '🛑 Торможение', desc: 'Проверь ABS: резкое торможение на пустой дороге. Нет скрипов и увода в сторону?' },
+    { title: '🔄 Разворот', desc: 'Круги на малой скорости. Нет хруста ШРУСа? Руль крутится плавно?' },
+    { title: '🕳️ Ямки', desc: 'Проедь по неровностям. Нет стуков подвески? Кузов не гремит?' },
+    { title: '📱 Электрика', desc: 'Проверь печку, кондиционер, стеклоподъёмники, магнитолу, свет. Всё работает?' },
+    { title: '🔧 Диагностика', desc: 'Загони на подъёмник в сервис. Проверь днище, подвеску, утечки. Ошибки ЭБУ через OBD-II?' }
+  ];
+
+  return '<div class="card" style="border-left:5px solid var(--accent);">' +
+    '<h3 style="margin-top:0;">🚗 Тест-драйв: 8 шагов</h3>' +
+    '<p style="margin:0;">Пройди <b>все шаги</b> — это 30-40 минут. Если продавец против — красный флаг.</p>' +
+  '</div>' +
+  steps.map((s, i) =>
+    '<div class="test-drive-step">' +
+      '<h4>' + (i+1) + '. ' + s.title + '</h4>' +
+      '<p>' + s.desc + '</p>' +
+    '</div>'
+  ).join('') +
+  '<div class="card" style="background:#dcfce7;border-left:5px solid #16a34a;margin-top:16px;">' +
+    '<h3 style="margin-top:0;color:#166534;">✅ После тест-драйва</h3>' +
+    '<p style="margin:0;color:#166534;">Если всё прошло хорошо — переходи к <b>торговле</b>. ' +
+    'Помни: <b>реальная цена обычно на 5-10% ниже</b> того, что просит продавец.</p>' +
+  '</div>';
+}
+
+document.addEventListener('DOMContentLoaded', renderTab);
+</script>
+</body>
+</html>

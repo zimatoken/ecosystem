@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔄 Сравнение машин</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.compare-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: 200px repeat(auto-fit, minmax(180px, 1fr));
+}
+.compare-cell {
+  padding: 12px; background: var(--card); border-radius: 8px;
+  border: 1px solid var(--border); font-size: .9rem;
+  text-align: center; display: flex; align-items: center; justify-content: center;
+}
+.compare-cell.label {
+  font-weight: 700; text-align: left; justify-content: flex-start;
+  background: var(--bg-soft); color: var(--accent);
+  text-transform: uppercase; font-size: .8rem; letter-spacing: .5px;
+}
+.compare-cell.head {
+  flex-direction: column; gap: 6px;
+  border: 2px solid var(--accent); padding: 16px 12px;
+}
+.compare-cell.head .c-icon { font-size: 3rem; }
+.compare-cell.head .c-name { font-weight: 800; font-size: 1rem; }
+.compare-cell.best { background: #dcfce7; border-color: #16a34a; font-weight: 700; }
+[data-theme="dark"] .compare-cell.best { background: #14532d; color: #bbf7d0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🔄 Сравнение машин</h2>
+  </div>
+
+  <div class="card">
+    <p style="margin:0;">Выбрано машин: <b id="count">0</b>. 
+      Хочешь добавить ещё? <a href="../encyclopedia/index.html" style="color:var(--accent);">Открой Энциклопедию</a>.</p>
+  </div>
+
+  <div id="compare-content"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_niva.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/renault_logan.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+
+<script>
+function getIdsFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const ids = params.get('ids');
+  return ids ? ids.split(',').filter(x => x) : [];
+}
+
+function render() {
+  const ids = getIdsFromUrl();
+  document.getElementById('count').textContent = ids.length;
+
+  const el = document.getElementById('compare-content');
+  if (ids.length < 2) {
+    el.innerHTML = '<div class="card" style="text-align:center;padding:40px;">' +
+      '<div style="font-size:4rem;">🔄</div>' +
+      '<h3>Выбери минимум 2 машины</h3>' +
+      '<p style="color:var(--muted);">Открой <a href="../encyclopedia/index.html" style="color:var(--accent);">Энциклопедию</a> и поставь галочки у машин.</p>' +
+    '</div>';
+    return;
+  }
+
+  const cars = ids.map(id => window.AUTO_GET_CAR(id)).filter(c => c);
+
+  // Находим лучшие значения
+  const best = {
+    power_hp: Math.max(...cars.map(c => c.specs.power_hp)),
+    acceleration_0_100: Math.min(...cars.map(c => c.specs.acceleration_0_100)),
+    fuel_consumption_city: Math.min(...cars.map(c => c.specs.fuel_consumption_city)),
+    fuel_consumption_highway: Math.min(...cars.map(c => c.specs.fuel_consumption_highway)),
+    max_speed: Math.max(...cars.map(c => c.specs.max_speed)),
+    trunk_volume: Math.max(...cars.map(c => c.specs.trunk_volume))
+  };
+
+  const rows = [
+    { label: 'Регион',       values: cars.map(c => c.meta.country) },
+    { label: 'Годы',         values: cars.map(c => c.meta.year_from + '–' + c.meta.year_to) },
+    { label: 'Тип',          values: cars.map(c => window.LABELS.type(c.meta.type)) },
+    { label: 'Класс',        values: cars.map(c => window.LABELS.segment(c.meta.segment)) },
+    { label: 'Привод',       values: cars.map(c => window.LABELS.drive(c.meta.drive)) },
+    { label: 'Двигатель',    values: cars.map(c => c.specs.engine_volume + ' л') },
+    { label: 'Мощность',     values: cars.map(c => c.specs.power_hp + ' л.с.'), bestKey: 'power_hp', field: 'power_hp' },
+    { label: 'Разгон 0–100', values: cars.map(c => c.specs.acceleration_0_100 + ' с'), bestKey: 'acceleration_0_100', field: 'acceleration_0_100' },
+    { label: 'Макс. скорость', values: cars.map(c => c.specs.max_speed + ' км/ч'), bestKey: 'max_speed', field: 'max_speed' },
+    { label: 'Расход город', values: cars.map(c => c.specs.fuel_consumption_city + ' л'), bestKey: 'fuel_consumption_city', field: 'fuel_consumption_city' },
+    { label: 'Расход трасса', values: cars.map(c => c.specs.fuel_consumption_highway + ' л'), bestKey: 'fuel_consumption_highway', field: 'fuel_consumption_highway' },
+    { label: 'Бак',          values: cars.map(c => c.specs.fuel_tank + ' л') },
+    { label: 'Багажник',     values: cars.map(c => c.specs.trunk_volume + ' л'), bestKey: 'trunk_volume', field: 'trunk_volume' },
+    { label: 'Мест',         values: cars.map(c => c.specs.seats) }
+  ];
+
+  let html = '<div class="compare-grid">';
+
+  // Заголовки
+  html += '<div class="compare-cell label">Параметр</div>';
+  cars.forEach(c => {
+    html += '<div class="compare-cell head">' +
+      '<div class="c-icon">' + c.meta.icon + '</div>' +
+      '<div class="c-name">' + c.meta.brand + ' ' + c.meta.model + '</div>' +
+    '</div>';
+  });
+
+  // Строки
+  rows.forEach(row => {
+    html += '<div class="compare-cell label">' + row.label + '</div>';
+    cars.forEach((c, i) => {
+      let isBest = false;
+      if (row.bestKey && c.specs[row.bestKey] === best[row.bestKey]) isBest = true;
+      html += '<div class="compare-cell ' + (isBest ? 'best' : '') + '">' + row.values[i] + '</div>';
+    });
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

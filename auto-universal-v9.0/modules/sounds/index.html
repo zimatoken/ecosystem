@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔊 Диагностика по звуку</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.sounds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.sound-card { background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+  padding: 16px; cursor: pointer; transition: .2s; }
+.sound-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.sound-card.critical { border-left: 5px solid var(--danger); }
+.sound-card.high { border-left: 5px solid var(--warning); }
+.sound-card.medium { border-left: 5px solid var(--accent); }
+.sound-card.low { border-left: 5px solid #16a34a; }
+.sound-icon { font-size: 2rem; }
+.sound-name { font-weight: 800; font-size: 1.05rem; margin: 6px 0; }
+.sound-cat { font-size: .8rem; color: var(--muted); }
+.modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.7);
+  display: none; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
+.modal.open { display: flex; }
+.modal-body { background: var(--card); border-radius: 16px; max-width: 640px; width: 100%;
+  padding: 24px; margin: 40px auto; }
+.section { margin-bottom: 18px; }
+.section h3 { color: var(--accent); font-size: 1.1rem; margin-bottom: 8px; }
+.section ul { line-height: 1.7; padding-left: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🔊 Диагностика по звуку</h2>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <p style="margin:0;">Слышишь странный звук? Кликни на похожий — узнаешь причину и решение.</p>
+  </div>
+
+  <div id="sounds-grid" class="sounds-grid"></div>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="modal-body" id="modal-body" onclick="event.stopPropagation()"></div>
+</div>
+
+<script src="../../core/soundsData.js"></script>
+<script src="../../data/sounds/knock_suspension.js"></script>
+<script src="../../data/sounds/brake_squeal.js"></script>
+<script src="../../data/sounds/engine_tick.js"></script>
+<script src="../../data/sounds/belt_squeal.js"></script>
+<script src="../../data/sounds/valve_knock.js"></script>
+<script src="../../data/sounds/gearbox_noise.js"></script>
+<script src="../../data/sounds/cv_joint_crack.js"></script>
+<script src="../../data/sounds/vibration.js"></script>
+<script src="../../data/sounds/turbo_whistle.js"></script>
+<script src="../../data/sounds/wheel_hub.js"></script>
+<script src="../../data/sounds/door_squeak.js"></script>
+<script src="../../data/sounds/starter_click.js"></script>
+<script src="../../data/sounds/alternator_belt.js"></script>
+<script src="../../data/sounds/steering_knock.js"></script>
+<script src="../../data/sounds/suspension_creak.js"></script>
+<script src="../../data/sounds/brake_pad_squeal.js"></script>
+<script src="../../data/sounds/muffler_knock.js"></script>
+<script src="../../data/sounds/battery_whistle.js"></script>
+<script src="../../data/sounds/gearbox_crunch.js"></script>
+<script src="../../data/sounds/power_steering_whistle.js"></script>
+
+<script>
+function render() {
+  const list = window.SOUND_GET_ALL();
+  document.getElementById('sounds-grid').innerHTML = list.map(s =>
+    '<div class="sound-card ' + s.meta.severity + '" onclick="openSound(\'' + s.meta.id + '\')">' +
+      '<div class="sound-icon">' + s.meta.icon + '</div>' +
+      '<div class="sound-name">' + s.meta.name + '</div>' +
+      '<div class="sound-cat">' + s.meta.category + '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function openSound(id) {
+  const s = window.SOUND_GET(id);
+  if (!s) return;
+  const b = document.getElementById('modal-body');
+
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+    '<h2 style="margin:0;">' + s.meta.icon + ' ' + s.meta.name + '</h2>' +
+    '<button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">X</button></div>';
+
+  html += '<div class="section"><h3>🔍 Симптомы</h3><ul>' +
+    s.symptoms.map(x => '<li>' + x + '</li>').join('') + '</ul></div>';
+
+  html += '<div class="section"><h3>❓ Возможные причины</h3><ul>' +
+    s.causes.map(x => '<li>' + x + '</li>').join('') + '</ul></div>';
+
+  html += '<div class="section" style="padding:14px;background:var(--bg-soft);border-radius:8px;">' +
+    '<h3 style="margin-top:0;">💡 Что делать</h3>' +
+    '<p style="margin:0;">' + s.solution + '</p></div>';
+
+  html += '<button class="btn btn-block" onclick="markLearned(\'' + id + '\')">✅ Запомнил (+10 XP)</button>';
+
+  b.innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function markLearned(id) {
+  window.GARAGE.addXP(10);
+  window.GARAGE.checkStreak();
+  window.GARAGE.markActivity();
+  window.GARAGE.updateQuestProgress('sound_learn');
+  const s = window.GARAGE.getStats();
+  if (s.achievements.indexOf('sound_master') === -1 && Object.keys(window.GARAGE.ACHIEVEMENTS).length > 0) {
+    // простой счётчик
+  }
+  showToast('✅ Запомнил! +10 XP');
+  closeModal();
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modal').classList.remove('open');
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.className = 'toast show';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

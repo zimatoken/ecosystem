@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💰 Стоимость владения</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.form-section { background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.form-section h3 { margin-top: 0; color: var(--accent); }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select {
+  width: 100%; padding: 12px; border: 2px solid var(--border);
+  border-radius: 8px; background: var(--card); color: var(--text);
+  font-size: 1rem; font-family: inherit; box-sizing: border-box; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.total-card { background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 20px; }
+.total-card .amount { font-size: 3rem; font-weight: 900; margin: 8px 0; }
+.total-card .sub { opacity: .9; font-size: .95rem; }
+
+.breakdown { background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.breakdown-row { display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border); }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-label { flex: 1; font-weight: 600; }
+.breakdown-value { font-weight: 800; color: var(--accent); font-size: 1.05rem; }
+.breakdown-bar { height: 6px; background: var(--bg-soft); border-radius: 3px;
+  overflow: hidden; margin-top: 4px; }
+.breakdown-bar-fill { height: 100%; background: var(--accent); }
+
+.insights { background: #fef3c7; border-left: 5px solid var(--warning);
+  border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; color: #92400e; }
+.insights h4 { margin: 0 0 6px; }
+.insights p { margin: 4px 0; font-size: .95rem; }
+
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.compare-card { background: var(--card); border: 2px solid var(--border);
+  border-radius: 12px; padding: 16px; text-align: center; }
+.compare-card.best { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+.compare-card .cc-name { font-weight: 700; margin: 8px 0; }
+.compare-card .cc-price { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>💰 Стоимость владения</h2>
+  </div>
+
+  <div class="form-section">
+    <h3>🚗 Машина</h3>
+    <div class="form-row">
+      <label>Выбери машину</label>
+      <select id="car-sel" onchange="onCarSelect()"><option value="">— Выбери —</option></select>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Год выпуска</label>
+        <input type="number" id="year" value="2015" oninput="update()">
+      </div>
+      <div class="form-row">
+        <label>Стоимость (руб)</label>
+        <input type="number" id="price" value="1000000" oninput="update()">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>📍 Регион и пробег</h3>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Регион</label>
+        <select id="region" onchange="update()">
+          <option value="moscow">Москва</option>
+          <option value="spb">Санкт-Петербург</option>
+          <option value="novosibirsk">Новосибирск</option>
+          <option value="ekaterinburg">Екатеринбург</option>
+          <option value="vladivostok">Владивосток</option>
+          <option value="krasnoyarsk">Красноярск</option>
+          <option value="kazan">Казань</option>
+          <option value="rostov">Ростов-на-Дону</option>
+          <option value="sochi">Сочи</option>
+          <option value="other">Другой регион</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Пробег в год (км)</label>
+        <input type="number" id="annual-km" value="15000" oninput="update()">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>🛡️ Страховка и водитель</h3>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Возраст водителя</label>
+        <input type="number" id="driver-age" value="35" oninput="update()">
+      </div>
+      <div class="form-row">
+        <label>Стаж (лет)</label>
+        <input type="number" id="driver-exp" value="10" oninput="update()">
+      </div>
+    </div>
+    <div class="form-row">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+        <input type="checkbox" id="has-kasko" oninput="update()" style="width:auto;">
+        Есть КАСКО
+      </label>
+    </div>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+<script src="../../core/costCalculator.js"></script>
+
+<script>
+const sel = document.getElementById('car-sel');
+const allCars = window.AUTO_GET_ALL ? window.AUTO_GET_ALL() : [];
+// Сортируем: сначала популярные бренды
+const priority = ['Lada','Haval','Belgee','Geely','Changan','Honda','Toyota','Suzuki','Subaru','Nissan','Mitsubishi'];
+allCars.sort((a, b) => {
+  const ai = priority.indexOf(a.meta.brand);
+  const bi = priority.indexOf(b.meta.brand);
+  if (ai !== bi) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  return a.meta.brand.localeCompare(b.meta.brand);
+});
+allCars.forEach(c => {
+  const o = document.createElement('option');
+  o.value = c.meta.id;
+  o.textContent = c.meta.icon + ' ' + c.meta.brand + ' ' + c.meta.model;
+  sel.appendChild(o);
+});
+
+function onCarSelect() {
+  const id = sel.value;
+  if (!id) return;
+  const car = window.AUTO_GET_CAR(id);
+  if (!car) return;
+  document.getElementById('year').value = car.meta.year_to;
+  const basePrice = car.meta.segment === 'budget' ? 1200000 :
+                    car.meta.segment === 'comfort' ? 2200000 :
+                    car.meta.segment === 'business' ? 3500000 : 1500000;
+  document.getElementById('price').value = basePrice;
+  update();
+}
+
+function update() {
+  const carId = sel.value;
+  const config = {
+    regionKey: document.getElementById('region').value,
+    annualKm: parseInt(document.getElementById('annual-km').value) || 15000,
+    carPrice: parseInt(document.getElementById('price').value) || 1000000,
+    carYear: parseInt(document.getElementById('year').value) || 2015,
+    fuelConsumptionCity: 9,
+    fuelConsumptionHighway: 6.5,
+    cityPercent: 70,
+    hasKasko: document.getElementById('has-kasko').checked,
+    driverAge: parseInt(document.getElementById('driver-age').value) || 35,
+    driverExp: parseInt(document.getElementById('driver-exp').value) || 10
+  };
+
+  if (carId) {
+    const car = window.AUTO_GET_CAR(carId);
+    if (car) {
+      config.fuelConsumptionCity = car.specs.fuel_consumption_city;
+      config.fuelConsumptionHighway = car.specs.fuel_consumption_highway;
+    }
+  }
+
+  const result = window.COST_CALCULATOR.calculate(config);
+  renderResult(result);
+}
+
+function renderResult(r) {
+  const el = document.getElementById('result');
+  const car = sel.value ? window.AUTO_GET_CAR(sel.value) : null;
+
+  // Находим самую дорогую статью
+  const sorted = Object.entries(r.breakdown)
+    .filter(([k, v]) => v.value > 0)
+    .sort((a, b) => b[1].value - a[1].value);
+  const topExpense = sorted[0];
+
+  let html = '<div class="total-card">' +
+    (car ? '<div style="font-size:1.1rem;opacity:.9;">' + car.meta.icon + ' ' + car.meta.brand + ' ' + car.meta.model + '</div>' : '') +
+    '<div style="font-size:1rem;opacity:.9;margin-top:6px;">Полная стоимость в год</div>' +
+    '<div class="amount">' + r.total.toLocaleString('ru-RU') + ' ₽</div>' +
+    '<div class="sub">' + r.perMonth.toLocaleString('ru-RU') + ' ₽ / месяц · ' + r.perKm + ' ₽ / км</div>' +
+  '</div>';
+
+  if (topExpense) {
+    html += '<div class="insights">' +
+      '<h4>💡 Главная статья расходов</h4>' +
+      '<p><b>' + topExpense[1].label + '</b> — ' + topExpense[1].value.toLocaleString('ru-RU') + ' ₽ (' +
+        Math.round((topExpense[1].value / r.total) * 100) + '%)</p>' +
+    '</div>';
+  }
+
+  html += '<div class="breakdown">';
+  html += '<h3 style="margin-top:0;">📊 Из чего складывается</h3>';
+  sorted.forEach(([k, v]) => {
+    const percent = (v.value / r.total) * 100;
+    html += '<div class="breakdown-row">' +
+      '<div style="flex:1;">' +
+        '<div class="breakdown-label">' + v.label + '</div>' +
+        '<div class="breakdown-bar"><div class="breakdown-bar-fill" style="width:' + percent + '%;"></div></div>' +
+      '</div>' +
+      '<div class="breakdown-value">' + v.value.toLocaleString('ru-RU') + ' ₽</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="form-section">' +
+    '<h3>📌 Детали</h3>' +
+    '<p style="margin:6px 0;">Регион: <b>' + r.inputs.region + '</b> · Цена топлива: <b>' + r.inputs.fuelPrice + ' ₽/л</b></p>' +
+    '<p style="margin:6px 0;">Пробег: <b>' + r.inputs.annualKm.toLocaleString('ru-RU') + ' км/год</b></p>' +
+    '<p style="margin:6px 0;">Средний расход: <b>' + r.inputs.avgConsumption + ' л/100 км</b></p>' +
+    '<p style="margin:6px 0;">Возраст машины: <b>' + r.inputs.carAge + ' лет</b></p>' +
+  '</div>';
+
+  html += '<button class="btn btn-block" onclick="saveToJournal()">💾 Записать в дневник (+10 XP)</button>';
+
+  el.innerHTML = html;
+}
+
+function saveToJournal() {
+  if (window.GARAGE) {
+    window.GARAGE.addXP(10);
+    window.GARAGE.checkStreak();
+  }
+  alert('✅ Расчёт сохранён (+10 XP)');
+}
+
+document.addEventListener('DOMContentLoaded', update);
+</script>
+</body>
+</html>

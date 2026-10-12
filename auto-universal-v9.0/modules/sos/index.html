@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOS Авто</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.triggers { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.trigger { background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+  padding: 18px; cursor: pointer; transition: .2s; font-weight: 700; font-size: 1.1rem; }
+.trigger:hover { border-color: var(--accent); transform: translateY(-2px); }
+.q-block { margin-bottom: 20px; }
+.q-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
+.q-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.q-opt { background: var(--card); border: 2px solid var(--border); padding: 12px 18px;
+  border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem;
+  color: var(--text); font-family: inherit; transition: .15s; }
+.q-opt:hover { border-color: var(--accent); }
+.q-opt.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.solution { background: var(--card); border: 2px solid var(--accent); border-radius: 12px; padding: 24px; margin-top: 20px; }
+.solution.critical { border-color: var(--danger); }
+.solution h3 { color: var(--accent); margin-top: 0; font-size: 1.3rem; }
+.solution.critical h3 { color: var(--danger); }
+.solution ol { line-height: 1.9; padding-left: 22px; font-size: 1.05rem; }
+.solution .warnings { background: #fef3c7; color: #92400e; border-radius: 8px; padding: 12px 14px; margin-top: 14px; font-weight: 600; }
+.solution .info { display: flex; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+.solution .info span { padding: 8px 14px; background: var(--bg-soft); border-radius: 8px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2 style="color:var(--danger);">SOS Авто</h2>
+  </div>
+  <div class="card" style="border-left:5px solid var(--danger);">
+    <p style="margin:0;font-weight:600;">Что случилось с машиной?</p>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/sosEngine.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+
+<script>
+let currentTrigger = null;
+let answers = {};
+
+function renderTriggers() {
+  const list = window.SOS_ENGINE.getAllTriggers();
+  document.getElementById('content').innerHTML =
+    '<div class="triggers">' +
+    list.map(t => '<div class="trigger" onclick="startTrigger(\'' + t.id + '\')">' + t.label + '</div>').join('') +
+    '</div>';
+}
+
+function startTrigger(id) {
+  currentTrigger = window.SOS_ENGINE.getTrigger(id);
+  if (!currentTrigger) return;
+  answers = {};
+  renderQuestions();
+}
+
+function renderQuestions() {
+  let html = '<button class="btn btn-outline" onclick="renderTriggers()">← Назад</button>' +
+    '<h3 style="margin-top:16px;">' + currentTrigger.label + '</h3>';
+  currentTrigger.questions.forEach((q, i) => {
+    html += '<div class="q-block"><div class="q-title">' + (i+1) + '. ' + q.text + '</div><div class="q-options">';
+    q.options.forEach(o => {
+      html += '<button class="q-opt" onclick="pick(\'' + q.id + '\',\'' + o.id + '\',this)">' + o.label + '</button>';
+    });
+    html += '</div></div>';
+  });
+  html += '<button class="btn btn-block" style="margin-top:20px;" onclick="showSolution()" id="show-btn" disabled>Показать решение</button>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function pick(qid, optid, btn) {
+  answers[qid] = optid;
+  btn.parentElement.querySelectorAll('.q-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const allQ = currentTrigger.questions.length;
+  const ansQ = Object.keys(answers).length;
+  document.getElementById('show-btn').disabled = (ansQ < allQ);
+}
+
+function showSolution() {
+  const sol = window.SOS_ENGINE.findSolution(currentTrigger.id, answers);
+  const isCritical = sol.urgency === 'critical';
+  let html = '<button class="btn btn-outline" onclick="renderTriggers()">← К списку</button>' +
+    '<div class="solution ' + (isCritical ? 'critical' : '') + '" style="margin-top:16px;">' +
+    '<div style="font-size:.9rem;font-weight:700;color:var(--muted);margin-bottom:8px;">' + window.LABELS.urgency(sol.urgency) + '</div>' +
+    '<h3>' + sol.title + '</h3><ol>';
+  sol.steps.forEach(s => { html += '<li>' + s + '</li>'; });
+  html += '</ol>';
+  if (sol.warnings) { html += '<div class="warnings">' + sol.warnings.join(' | ') + '</div>'; }
+  html += '<div class="info">';
+  if (sol.time_estimate) html += '<span>' + sol.time_estimate + '</span>';
+  if (sol.cost_estimate) html += '<span>' + sol.cost_estimate + '</span>';
+  html += '</div></div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', renderTriggers);
+</script>
+</body>
+</html>

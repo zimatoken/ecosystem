@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 AI-Диагност</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.ai-form { background: var(--card); border: 2px solid var(--accent);
+  border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.ai-form textarea {
+  width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px;
+  background: var(--card); color: var(--text); font-size: 1.05rem;
+  font-family: inherit; box-sizing: border-box; resize: vertical;
+  min-height: 80px; }
+.ai-form textarea:focus { outline: none; border-color: var(--accent); }
+.hints { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.hint { padding: 6px 12px; background: var(--bg-soft); border-radius: 20px;
+  font-size: .85rem; cursor: pointer; transition: .15s; border: 1px solid transparent; }
+.hint:hover { border-color: var(--accent); }
+
+.result-card { background: var(--card); border: 2px solid var(--accent);
+  border-radius: 12px; padding: 20px; margin-bottom: 16px; cursor: pointer;
+  transition: .2s; }
+.result-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.result-card.critical { border-color: var(--danger); }
+.result-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.result-icon { font-size: 2.5rem; }
+.result-name { font-weight: 800; font-size: 1.2rem; }
+.result-severity { display: inline-block; padding: 4px 12px; border-radius: 12px;
+  font-size: .75rem; font-weight: 700; margin-left: 8px; }
+.result-severity.critical { background: var(--danger); color: #fff; }
+.result-severity.high { background: var(--warning); color: #fff; }
+.result-severity.medium { background: var(--accent); color: #fff; }
+.result-severity.low { background: #16a34a; color: #fff; }
+.result-solution { color: var(--muted); line-height: 1.5; margin-top: 8px; }
+
+.services { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px; margin-top: 20px; }
+.service-btn { background: var(--card); border: 2px solid var(--border);
+  border-radius: 12px; padding: 14px; text-align: center; cursor: pointer;
+  transition: .2s; }
+.service-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+.service-btn .s-icon { font-size: 2rem; }
+.service-btn .s-title { font-weight: 700; margin-top: 6px; }
+.service-btn .s-hint { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+
+.modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.7);
+  display: none; align-items: flex-start; justify-content: center;
+  padding: 20px; overflow-y: auto; }
+.modal.open { display: flex; }
+.modal-body { background: var(--card); border-radius: 16px; max-width: 640px;
+  width: 100%; padding: 24px; margin: 40px auto; }
+
+.no-result { background: var(--card); border: 2px dashed var(--border);
+  border-radius: 12px; padding: 30px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🧠 AI-Диагност</h2>
+  </div>
+
+  <div class="ai-form">
+    <h3 style="margin-top:0;">Опиши проблему своими словами</h3>
+    <textarea id="ai-input" placeholder="Например: стучит в подвеске при повороте на холодную..."></textarea>
+
+    <div class="hints">
+      <div class="hint" onclick="setHint('стучит в подвеске')">стучит в подвеске</div>
+      <div class="hint" onclick="setHint('скрипят тормоза')">скрипят тормоза</div>
+      <div class="hint" onclick="setHint('не заводится, щёлкает')">не заводится</div>
+      <div class="hint" onclick="setHint('гул на скорости')">гул на скорости</div>
+      <div class="hint" onclick="setHint('свист ремня при запуске')">свист ремня</div>
+      <div class="hint" onclick="setHint('хруст при повороте')">хруст при повороте</div>
+    </div>
+
+    <button class="btn btn-block" style="margin-top:16px;" onclick="runDiagnosis()">🔍 Диагностировать</button>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="modal-body" id="modal-body" onclick="event.stopPropagation()"></div>
+</div>
+
+<script src="../../core/soundsData.js"></script>
+<script src="../../core/aiDiagnost.js"></script>
+<script src="../../core/garageStore.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+<script src="../../data/sounds/knock_suspension.js"></script>
+<script src="../../data/sounds/brake_squeal.js"></script>
+<script src="../../data/sounds/engine_tick.js"></script>
+<script src="../../data/sounds/belt_squeal.js"></script>
+<script src="../../data/sounds/valve_knock.js"></script>
+<script src="../../data/sounds/gearbox_noise.js"></script>
+<script src="../../data/sounds/cv_joint_crack.js"></script>
+<script src="../../data/sounds/vibration.js"></script>
+<script src="../../data/sounds/turbo_whistle.js"></script>
+<script src="../../data/sounds/wheel_hub.js"></script>
+<script src="../../data/sounds/door_squeak.js"></script>
+<script src="../../data/sounds/starter_click.js"></script>
+<script src="../../data/sounds/alternator_belt.js"></script>
+<script src="../../data/sounds/steering_knock.js"></script>
+<script src="../../data/sounds/suspension_creak.js"></script>
+<script src="../../data/sounds/brake_pad_squeal.js"></script>
+<script src="../../data/sounds/muffler_knock.js"></script>
+<script src="../../data/sounds/battery_whistle.js"></script>
+<script src="../../data/sounds/gearbox_crunch.js"></script>
+<script src="../../data/sounds/power_steering_whistle.js"></script>
+
+<script>
+function setHint(text) { document.getElementById('ai-input').value = text; }
+
+function runDiagnosis() {
+  const text = document.getElementById('ai-input').value.trim();
+  if (!text) { alert('Введи описание проблемы'); return; }
+
+  const result = window.AI_DIAGNOST.diagnose(text);
+  const el = document.getElementById('results');
+
+  if (!result.results.length) {
+    el.innerHTML = '<div class="no-result">' +
+      '<div style="font-size:3rem;margin-bottom:10px;">🤔</div>' +
+      '<h3>Не удалось распознать проблему</h3>' +
+      '<p>Попробуй описать иначе. Или открой <a href="../sounds/index.html" style="color:var(--accent);">Звуки поломок</a>.</p>' +
+    '</div>' +
+    renderServices();
+    return;
+  }
+
+  let html = '<h3>🔍 Найдено проблем: ' + result.results.length + '</h3>';
+  if (result.context) html += '<p style="color:var(--muted);">Контекст: <b>' + result.context + '</b></p>';
+
+  result.results.forEach(r => {
+    const s = r.data;
+    html += '<div class="result-card ' + s.meta.severity + '" onclick="openSound(\'' + s.meta.id + '\')">' +
+      '<div class="result-head">' +
+        '<div class="result-icon">' + s.meta.icon + '</div>' +
+        '<div style="flex:1;">' +
+          '<div class="result-name">' + s.meta.name +
+            '<span class="result-severity ' + s.meta.severity + '">' + s.meta.severity.toUpperCase() + '</span>' +
+          '</div>' +
+          '<div style="font-size:.85rem;color:var(--muted);">Совпадение: ' + r.score + ' из 5</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="result-solution"><b>Решение:</b> ' + s.solution + '</div>' +
+    '</div>';
+  });
+
+  html += renderServices();
+  el.innerHTML = html;
+
+  if (window.GARAGE) {
+    window.GARAGE.addXP(20);
+    window.GARAGE.checkStreak();
+    window.GARAGE.markActivity();
+    window.GARAGE.updateQuestProgress('sos_solve');
+  }
+}
+
+function renderServices() {
+  const services = window.AI_DIAGNOST.SERVICES || [];
+  let html = '<h3 style="margin-top:30px;">🚗 Куда обратиться</h3>' +
+    '<div class="services">';
+  services.forEach(s => {
+    html += '<div class="service-btn" onclick="openService(\'' + s.id + '\')">' +
+      '<div class="s-icon">' + s.icon + '</div>' +
+      '<div class="s-title">' + s.title + '</div>' +
+      '<div class="s-hint">' + s.hint + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function openService(id) {
+  const names = { evac:'Эвакуатор', tow:'Помощь на дороге', tyre:'Шиномонтаж', service:'Автосервис', parts:'Запчасти' };
+  alert('🚗 ' + (names[id] || id) + '\n\nВ следующей версии здесь будет:\n- Список сервисов в вашем городе\n- Рейтинги и отзывы\n- Кнопка «Позвонить»\n- Расчёт стоимости');
+}
+
+function openSound(id) {
+  const s = window.SOUND_GET(id);
+  if (!s) return;
+  const b = document.getElementById('modal-body');
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+    '<h2 style="margin:0;">' + s.meta.icon + ' ' + s.meta.name + '</h2>' +
+    '<button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">X</button></div>';
+  html += '<h3 style="color:var(--accent);">Симптомы</h3><ul style="line-height:1.7;">' +
+    s.symptoms.map(x => '<li>' + x + '</li>').join('') + '</ul>';
+  html += '<h3 style="color:var(--accent);">Причины</h3><ul style="line-height:1.7;">' +
+    s.causes.map(x => '<li>' + x + '</li>').join('') + '</ul>';
+  html += '<div style="padding:14px;background:var(--bg-soft);border-radius:8px;margin-top:16px;">' +
+    '<h3 style="margin-top:0;color:var(--accent);">Что делать</h3>' +
+    '<p style="margin:0;">' + s.solution + '</p></div>';
+  b.innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modal').classList.remove('open');
+}
+</script>
+</body>
+</html>

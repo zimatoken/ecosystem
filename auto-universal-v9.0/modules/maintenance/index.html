@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 ТО-календарь</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.to-item { background: var(--card); border-left: 5px solid var(--accent);
+  border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.to-item.soon { border-left-color: var(--warning); }
+.to-item.over { border-left-color: var(--danger); }
+.to-item h3 { margin-top: 0; display: flex; justify-content: space-between; }
+.to-km { font-size: 1.3rem; color: var(--accent); font-weight: 800; }
+.to-km.soon { color: var(--warning); }
+.to-km.over { color: var(--danger); }
+.car-select { padding: 12px; border: 2px solid var(--border); border-radius: 8px;
+  background: var(--card); color: var(--text); font-size: 1rem; margin-bottom: 16px; font-family: inherit; width: 100%; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📅 ТО-календарь</h2>
+  </div>
+
+  <select id="car-sel" class="car-select"><option value="">— Все машины —</option></select>
+  <div id="content"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+<script src="../../core/garageStore.js"></script>
+
+<script>
+function render() {
+  const g = window.GARAGE.get();
+  const carFilter = document.getElementById('car-sel').value;
+  const content = document.getElementById('content');
+
+  if (!g.length) {
+    content.innerHTML = '<div class="card" style="text-align:center;padding:40px;">' +
+      '<div style="font-size:4rem;">📅</div>' +
+      '<h3>Сначала добавь машину</h3>' +
+      '<a href="../encyclopedia/index.html" class="btn">📖 Энциклопедия</a></div>';
+    return;
+  }
+
+  const items = [];
+  g.forEach(item => {
+    if (carFilter && item.id !== carFilter) return;
+    const car = window.AUTO_GET_CAR(item.id);
+    if (!car) return;
+    const mileage = item.mileage || 0;
+
+    car.maintenance && Object.entries(car.maintenance).forEach(([k, v]) => {
+      if (k.endsWith('_km') && typeof v === 'number') {
+        const type = k.replace('_km', '');
+        const interval = v;
+        const sinceLast = mileage % interval;
+        const left = interval - sinceLast;
+        const status = sinceLast > interval * 0.9 ? 'over' : (sinceLast > interval * 0.7 ? 'soon' : '');
+        const labels = {
+          oil_change: '🛢️ Замена масла',
+          tire_change: '🛞 Замена шин',
+          brake_pads_front: '🛑 Колодки передние',
+          brake_pads_rear: '🛑 Колодки задние',
+          timing_belt: '⚙️ Ремень ГРМ',
+          air_filter: '💨 Воздушный фильтр',
+          cabin_filter: '❄️ Салонный фильтр',
+          spark_plugs: '⚡ Свечи зажигания',
+          coolant: '💧 Антифриз'
+        };
+        items.push({
+          car: car.meta.brand + ' ' + car.meta.model,
+          icon: car.meta.icon,
+          label: labels[type] || type,
+          interval, mileage, left, status
+        });
+      }
+    });
+  });
+
+  if (!items.length) {
+    content.innerHTML = '<div class="card"><p>Нет данных ТО</p></div>';
+    return;
+  }
+
+  items.sort((a, b) => a.left - b.left);
+  content.innerHTML = items.map(it =>
+    '<div class="to-item ' + it.status + '">' +
+    '<h3>' + it.label + ' <span class="to-km ' + it.status + '">' + it.left.toLocaleString() + ' км</span></h3>' +
+    '<p style="margin:6px 0;color:var(--muted);font-size:.9rem;">' + it.icon + ' ' + it.car + '</p>' +
+    '<p style="margin:6px 0;">Интервал: ' + it.interval.toLocaleString() + ' км · Пробег: ' + it.mileage.toLocaleString() + ' км</p>' +
+    '</div>'
+  ).join('');
+}
+
+const sel = document.getElementById('car-sel');
+window.GARAGE.get().forEach(item => {
+  const car = window.AUTO_GET_CAR(item.id);
+  if (!car) return;
+  const o = document.createElement('option');
+  o.value = item.id;
+  o.textContent = car.meta.icon + ' ' + car.meta.brand + ' ' + car.meta.model;
+  sel.appendChild(o);
+});
+sel.addEventListener('change', render);
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

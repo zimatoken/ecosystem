@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 Мой гараж</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){
+  var t = localStorage.getItem('ecosystem_theme_universal_v2') || localStorage.getItem('theme') || localStorage.getItem('auto_theme');
+  if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+})();</script>
+<style>
+.garage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.garage-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px; border-left: 5px solid var(--accent); }
+.garage-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.garage-icon { font-size: 2.5rem; }
+.garage-name { font-weight: 800; font-size: 1.15rem; }
+.mileage-block { padding: 12px; background: var(--bg-soft); border-radius: 8px; margin-bottom: 10px; }
+.mileage-input { display: flex; gap: 8px; margin-top: 6px; }
+.mileage-input input { flex: 1; padding: 8px 12px; border: 2px solid var(--border); border-radius: 8px;
+  background: var(--card); color: var(--text); font-size: 1rem; font-family: inherit; }
+.mileage-input button { padding: 8px 14px; }
+.progress-bar { height: 8px; background: var(--accent-soft); border-radius: 4px; overflow: hidden; margin: 6px 0; }
+.progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.to-warning { padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; font-size: .9rem; }
+.to-ok { background: #dcfce7; color: #166534; }
+.to-soon { background: #fef3c7; color: #92400e; }
+.to-over { background: #fee2e2; color: #991b1b; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🏠 Мой гараж</h2>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">⭐ <span id="s-level">1</span></div>
+    <div class="stat">✨ <span id="s-xp">0</span> XP</div>
+    <div class="stat">🔥 <span id="s-streak">0</span> дн.</div>
+    <div class="stat">🚗 <span id="s-cars">0</span> машин</div>
+  </div>
+
+  <div id="empty" class="card" style="text-align:center;padding:40px;display:none;">
+    <div style="font-size:4rem;">🏠</div>
+    <h3>Гараж пустой</h3>
+    <p style="color:var(--muted);">Добавь машину из Энциклопедии</p>
+    <a href="../encyclopedia/index.html" class="btn">📖 Открыть Энциклопедию</a>
+  </div>
+
+  <div id="garage" class="garage-grid"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/labels.js"></script>
+<script src="../../data/cars/lada_granta.js"></script>
+<script src="../../data/cars/lada_vesta.js"></script>
+<script src="../../data/cars/lada_niva_legend.js"></script>
+<script src="../../data/cars/lada_niva_travel.js"></script>
+<script src="../../data/cars/lada_largus.js"></script>
+<script src="../../data/cars/lada_xray.js"></script>
+<script src="../../data/cars/uaz_patriot.js"></script>
+<script src="../../data/cars/uaz_profi.js"></script>
+<script src="../../data/cars/gazelle_next.js"></script>
+<script src="../../data/cars/moskvich_3.js"></script>
+<script src="../../data/cars/moskvich_3e.js"></script>
+<script src="../../data/cars/evolute_i_pro.js"></script>
+<script src="../../data/cars/moskvich_6.js"></script>
+<script src="../../data/cars/gaz_volga_sayber.js"></script>
+<script src="../../data/cars/lada_kalina.js"></script>
+<script src="../../data/cars/lada_priora.js"></script>
+<script src="../../data/cars/lada_2114.js"></script>
+<script src="../../data/cars/lada_2107.js"></script>
+<script src="../../data/cars/gaz_21_volga.js"></script>
+<script src="../../data/cars/lada_2101.js"></script>
+<script src="../../data/cars/toyota_corolla.js"></script>
+<script src="../../data/cars/toyota_camry.js"></script>
+<script src="../../data/cars/toyota_corolla_fielder.js"></script>
+<script src="../../data/cars/toyota_rav4.js"></script>
+<script src="../../data/cars/toyota_mark_ii.js"></script>
+<script src="../../data/cars/toyota_chaser.js"></script>
+<script src="../../data/cars/toyota_cresta.js"></script>
+<script src="../../data/cars/toyota_land_cruiser.js"></script>
+<script src="../../data/cars/toyota_land_cruiser_prado_90.js"></script>
+<script src="../../data/cars/toyota_prius.js"></script>
+<script src="../../data/cars/toyota_yaris.js"></script>
+<script src="../../data/cars/toyota_caldina.js"></script>
+<script src="../../data/cars/toyota_wish.js"></script>
+<script src="../../data/cars/toyota_raize.js"></script>
+<script src="../../data/cars/toyota_roomy.js"></script>
+<script src="../../data/cars/toyota_vitz.js"></script>
+<script src="../../data/cars/honda_freed.js"></script>
+<script src="../../data/cars/honda_stepwgn.js"></script>
+<script src="../../data/cars/honda_fit.js"></script>
+<script src="../../data/cars/honda_vezel.js"></script>
+<script src="../../data/cars/honda_cr_v.js"></script>
+<script src="../../data/cars/nissan_note.js"></script>
+<script src="../../data/cars/nissan_x_trail.js"></script>
+<script src="../../data/cars/nissan_skyline_r34.js"></script>
+<script src="../../data/cars/subaru_lancaster.js"></script>
+<script src="../../data/cars/kia_rio.js"></script>
+<script src="../../data/cars/hyundai_solaris.js"></script>
+<script src="../../data/cars/hyundai_creta.js"></script>
+<script src="../../data/cars/kia_sportage.js"></script>
+<script src="../../data/cars/hyundai_tucson.js"></script>
+<script src="../../data/cars/kia_k5.js"></script>
+<script src="../../data/cars/hyundai_sonata.js"></script>
+<script src="../../data/cars/hyundai_santa_fe.js"></script>
+<script src="../../data/cars/kia_sorento.js"></script>
+<script src="../../data/cars/kia_cerato.js"></script>
+<script src="../../data/cars/vw_polo.js"></script>
+<script src="../../data/cars/vw_golf.js"></script>
+<script src="../../data/cars/vw_tiguan.js"></script>
+<script src="../../data/cars/vw_passat.js"></script>
+<script src="../../data/cars/bmw_3.js"></script>
+<script src="../../data/cars/bmw_5.js"></script>
+<script src="../../data/cars/bmw_x3.js"></script>
+<script src="../../data/cars/bmw_x5.js"></script>
+<script src="../../data/cars/mercedes_c_class.js"></script>
+<script src="../../data/cars/mercedes_e_class.js"></script>
+<script src="../../data/cars/mercedes_glc.js"></script>
+<script src="../../data/cars/audi_a4.js"></script>
+<script src="../../data/cars/audi_a6.js"></script>
+<script src="../../data/cars/audi_q5.js"></script>
+<script src="../../data/cars/audi_q7.js"></script>
+<script src="../../data/cars/haval_jolion.js"></script>
+<script src="../../data/cars/haval_m6.js"></script>
+<script src="../../data/cars/haval_h5.js"></script>
+<script src="../../data/cars/belgee_x50.js"></script>
+<script src="../../data/cars/geely_monjaro.js"></script>
+<script src="../../data/cars/geely_coolray.js"></script>
+<script src="../../data/cars/geely_atlas_pro.js"></script>
+<script src="../../data/cars/changan_uni_s.js"></script>
+<script src="../../data/cars/changan_uni_k.js"></script>
+<script src="../../data/cars/chery_tiggo_7_pro.js"></script>
+<script src="../../data/cars/ford_focus.js"></script>
+<script src="../../data/cars/ford_kuga.js"></script>
+<script src="../../data/cars/chevrolet_cruze.js"></script>
+<script src="../../data/cars/chevrolet_niva.js"></script>
+<script src="../../data/cars/jeep_wrangler.js"></script>
+<script src="../../data/cars/subaru_forester.js"></script>
+<script src="../../data/cars/subaru_impreza.js"></script>
+<script src="../../data/cars/subaru_outback.js"></script>
+<script src="../../data/cars/subaru_legacy.js"></script>
+<script src="../../data/cars/nissan_safari.js"></script>
+<script src="../../data/cars/nissan_patrol.js"></script>
+<script src="../../data/cars/mitsubishi_pajero.js"></script>
+<script src="../../data/cars/mitsubishi_delica.js"></script>
+<script src="../../data/cars/mitsubishi_lancer.js"></script>
+<script src="../../data/cars/mazda_6.js"></script>
+<script src="../../data/cars/mazda_cx5.js"></script>
+<script src="../../data/cars/mazda_3.js"></script>
+<script src="../../core/garageStore.js"></script>
+<script src="../../core/photoStore.js"></script>
+
+<script>
+function render() {
+  const g = window.GARAGE.get();
+  const el = document.getElementById('garage');
+  const empty = document.getElementById('empty');
+  const s = window.GARAGE.getStats();
+
+  document.getElementById('s-level').textContent = s.level;
+  document.getElementById('s-xp').textContent = s.xp;
+  document.getElementById('s-streak').textContent = s.streak;
+  document.getElementById('s-cars').textContent = g.length;
+
+  if (!g.length) {
+    el.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  el.style.display = 'grid';
+  empty.style.display = 'none';
+
+  el.innerHTML = g.map(item => {
+    const car = window.AUTO_GET_CAR(item.id);
+    if (!car) return '';
+    const mileage = item.mileage || 0;
+
+    // Прогноз ТО
+    const oilNext = car.maintenance.oil_change_km;
+    const oilLeft = oilNext - (mileage % oilNext);
+    const oilStatus = mileage % oilNext > oilNext * 0.9 ? 'to-soon' : 'to-ok';
+
+    const tireNext = car.maintenance.tire_change_km || 50000;
+    const tireLeft = tireNext - (mileage % tireNext);
+
+    return (function() { var p = window.AUTO_PHOTOS.getFor(item.id); return '<div class="garage-card">' + (p ? '<img src="' + p + '" class="car-photo-thumb has-photo" alt="" onclick="uploadPhoto(\\'' + item.id + '\\')" style="cursor:pointer;">' : '<div class="photo-placeholder" onclick="uploadPhoto(\\'' + item.id + '\\')" style="cursor:pointer;">' + car.meta.icon + '</div>'); })() +
+      '<div class="garage-head">' +
+        '<div class="garage-icon">' + car.meta.icon + '</div>' +
+        '<div><div class="garage-name">' + car.meta.brand + ' ' + car.meta.model + '</div>' +
+        '<div style="font-size:.85rem;color:var(--muted);">' + window.LABELS.type(car.meta.type) + '</div></div>' +
+      '</div>' +
+
+      '<div class="mileage-block">' +
+        '<div style="font-size:.85rem;color:var(--muted);">Текущий пробег</div>' +
+        '<div style="font-size:1.4rem;font-weight:800;">' + mileage.toLocaleString() + ' км</div>' +
+        '<div class="mileage-input">' +
+          '<input type="number" id="mil-' + item.id + '" placeholder="Обновить км" value="' + mileage + '">' +
+          '<button class="btn" onclick="updateMileage(\'' + item.id + '\')">OK</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="to-warning ' + oilStatus + '">' +
+        '🛢️ Масло: до замены ~' + Math.max(0, oilLeft) + ' км' +
+      '</div>' +
+      '<div class="to-warning to-ok">' +
+        '🛞 Шины: до замены ~' + Math.max(0, tireLeft) + ' км' +
+      '</div>' +
+
+      '<div style="display:flex;gap:8px;margin-top:12px;">' +
+        '<button class="btn" style="flex:1;" onclick="addMaintenance(\'' + item.id + '\')">🔧 + ТО</button>' +
+        '<button class="btn btn-outline" onclick="removeCar(\'' + item.id + '\')">🗑</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function updateMileage(id) {
+  const inp = document.getElementById('mil-' + id);
+  const val = parseInt(inp.value) || 0;
+  window.GARAGE.updateMileage(id, val);
+  showToast('Пробег обновлён: ' + val.toLocaleString() + ' км');
+  render();
+}
+
+function addMaintenance(id) {
+  const types = [
+    { id: 'oil_change', label: 'Замена масла', xp: 50 },
+    { id: 'tire_change', label: 'Замена шин', xp: 30 },
+    { id: 'filter_change', label: 'Замена фильтра', xp: 20 },
+    { id: 'brake_change', label: 'Замена колодок', xp: 40 },
+    { id: 'to_visit', label: 'Плановое ТО', xp: 25 }
+  ];
+  const choice = prompt('Выбери ТО:\n1. Замена масла\n2. Замена шин\n3. Замена фильтра\n4. Замена колодок\n5. Плановое ТО');
+  const idx = parseInt(choice) - 1;
+  if (idx < 0 || idx >= types.length) return;
+  const t = types[idx];
+  window.GARAGE.addMaintenance(id, { type: t.id, label: t.label });
+  showToast('✅ ' + t.label + ' — +' + t.xp + ' XP');
+  render();
+}
+
+function removeCar(id) {
+  if (!confirm('Удалить машину из гаража?')) return;
+  window.GARAGE.remove(id);
+  render();
+}
+
+function uploadPhoto(carId) {
+  window.AUTO_PHOTOS.pickAndSave(carId, function () {
+    showToast('📷 Фото загружено');
+    if (typeof render === 'function') render();
+  });
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.className = 'toast show';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>
