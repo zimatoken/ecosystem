@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📖 Рецепты МАКСИМУМ</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.filters{display:flex;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px}
+.filters input,.filters select{padding:10px 12px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;flex:1;min-width:130px;font-family:inherit}
+.recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.recipe-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s}
+.recipe-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:var(--accent)}
+.recipe-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.recipe-icon{font-size:2.5rem}
+.recipe-name{font-weight:800;font-size:1.1rem}
+.recipe-meta{font-size:.85rem;color:var(--muted);line-height:1.5}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-body{background:var(--card);border-radius:16px;max-width:720px;width:100%;padding:28px;margin:40px auto}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:16px 0}
+.meta-item{padding:10px;background:var(--bg-soft);border-radius:8px;text-align:center}
+.meta-item .v{font-weight:800;color:var(--accent);font-size:1.1rem}
+.meta-item .l{font-size:.75rem;color:var(--muted);text-transform:uppercase}
+.history{background:linear-gradient(135deg,#fef3c7,#fed7aa);padding:14px;border-radius:10px;margin-bottom:16px;font-style:italic;line-height:1.6;color:#78350f}
+[data-theme="dark"] .history{background:linear-gradient(135deg,#78350f,#92400e);color:#fef3c7}
+.chef-tip{background:var(--accent-soft);padding:14px;border-radius:10px;border-left:4px solid var(--accent);margin-bottom:16px}
+.step{display:flex;gap:12px;padding:12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px}
+.step-n{flex-shrink:0;width:32px;height:32px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800}
+.step-txt{flex:1}
+.step-tip{font-size:.85rem;color:var(--muted);font-style:italic;margin-top:4px}
+.timer-badge{display:inline-block;padding:3px 10px;background:var(--warning);color:#fff;border-radius:12px;font-size:.75rem;font-weight:700;margin-left:8px}
+.variation{padding:12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px;border-left:4px solid var(--accent)}
+.mistake{padding:10px;background:#fee2e2;color:#991b1b;border-radius:8px;margin-bottom:6px;font-size:.9rem}
+[data-theme="dark"] .mistake{background:#7f1d1d;color:#fecaca}
+.ingredient-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.95rem}
+.ingredient-row:last-child{border-bottom:none}
+.ingredient-sub{font-size:.8rem;color:var(--muted);font-style:italic}
+.section-h{font-size:1.15rem;font-weight:800;color:var(--accent);margin:20px 0 10px;border-bottom:2px solid var(--accent);padding-bottom:4px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📖 Рецепты МАКСИМУМ</h2>
+  </div>
+  <div class="filters">
+    <input type="text" id="search" placeholder="🔍 Поиск...">
+    <select id="filter-cat"><option value="">Все категории</option>
+      <option value="breakfast">🥞 Завтрак</option>
+      <option value="lunch">🍲 Обед</option>
+      <option value="dinner">🍽️ Ужин</option>
+      <option value="dessert">🍰 Десерт</option>
+    </select>
+    <select id="filter-diff"><option value="">Любая сложность</option>
+      <option value="easy">😊 Легко</option>
+      <option value="medium">🤔 Средне</option>
+      <option value="hard">💪 Сложно</option>
+    </select>
+  </div>
+  <div id="grid" class="recipes-grid"></div>
+</div>
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="modal-body" id="modal-body" onclick="event.stopPropagation()"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/recipes/apple_pie.js"></script>
+<script src="../../data/recipes/bbq_ribs.js"></script>
+<script src="../../data/recipes/berry_tarts.js"></script>
+<script src="../../data/recipes/blini.js"></script>
+<script src="../../data/recipes/borsch.js"></script>
+<script src="../../data/recipes/brownie.js"></script>
+<script src="../../data/recipes/cabbage_pie.js"></script>
+<script src="../../data/recipes/carbonara.js"></script>
+<script src="../../data/recipes/cheese_soup.js"></script>
+<script src="../../data/recipes/cheesecake.js"></script>
+<script src="../../data/recipes/chicken_kiev.js"></script>
+<script src="../../data/recipes/chicken_mushroom_pie.js"></script>
+<script src="../../data/recipes/chicken_soup.js"></script>
+<script src="../../data/recipes/chicken_thighs.js"></script>
+<script src="../../data/recipes/french_onion.js"></script>
+<script src="../../data/recipes/gazpacho.js"></script>
+<script src="../../data/recipes/golubtsy.js"></script>
+<script src="../../data/recipes/goulash.js"></script>
+<script src="../../data/recipes/homemade_bread.js"></script>
+<script src="../../data/recipes/honey_cake.js"></script>
+<script src="../../data/recipes/kharcho.js"></script>
+<script src="../../data/recipes/lasagna.js"></script>
+<script src="../../data/recipes/lemon_pie.js"></script>
+<script src="../../data/recipes/lentil_soup.js"></script>
+<script src="../../data/recipes/lula_kebab.js"></script>
+<script src="../../data/recipes/meatballs.js"></script>
+<script src="../../data/recipes/meringue.js"></script>
+<script src="../../data/recipes/minestrone.js"></script>
+<script src="../../data/recipes/muffins.js"></script>
+<script src="../../data/recipes/mug_cake.js"></script>
+<script src="../../data/recipes/mushroom_soup.js"></script>
+<script src="../../data/recipes/oatmeal_cookies.js"></script>
+<script src="../../data/recipes/okroshka.js"></script>
+<script src="../../data/recipes/okroshka_meat.js"></script>
+<script src="../../data/recipes/olivier.js"></script>
+<script src="../../data/recipes/pelmeni.js"></script>
+<script src="../../data/recipes/pizza.js"></script>
+<script src="../../data/recipes/plov.js"></script>
+<script src="../../data/recipes/pork_roast.js"></script>
+<script src="../../data/recipes/pound_cake.js"></script>
+<script src="../../data/recipes/profiteroles.js"></script>
+<script src="../../data/recipes/pumpkin_soup.js"></script>
+<script src="../../data/recipes/rassolnik.js"></script>
+<script src="../../data/recipes/risotto.js"></script>
+<script src="../../data/recipes/roast_chicken.js"></script>
+<script src="../../data/recipes/sharlotka.js"></script>
+<script src="../../data/recipes/shashlik.js"></script>
+<script src="../../data/recipes/shchi.js"></script>
+<script src="../../data/recipes/solyanka.js"></script>
+<script src="../../data/recipes/steak.js"></script>
+<script src="../../data/recipes/syrniki.js"></script>
+<script src="../../data/recipes/tom_yum.js"></script>
+<script src="../../data/recipes/ukha.js"></script>
+<script src="../../data/recipes/village_potato.js"></script>
+<script>
+const CAT = {breakfast:'🥞 Завтрак',lunch:'🍲 Обед',dinner:'🍽️ Ужин',dessert:'🍰 Десерт'};
+const DIFF = {easy:'😊 Легко',medium:'🤔 Средне',hard:'💪 Сложно'};
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const cat=document.getElementById('filter-cat').value;
+  const diff=document.getElementById('filter-diff').value;
+  let list=window.COOK_FILTER({category:cat||undefined,difficulty:diff||undefined});
+  if(q) list=list.filter(r=>r.meta.name.toLowerCase().includes(q));
+  document.getElementById('grid').innerHTML = list.length ? list.map(r=>
+    '<div class="recipe-card" onclick="openRecipe(\''+r.meta.id+'\')">'+
+      '<div class="recipe-head"><div class="recipe-icon">'+r.meta.icon+'</div>'+
+      '<div><div class="recipe-name">'+r.meta.name+'</div>'+
+      '<div class="recipe-meta">⏱️ '+r.meta.time+' мин · '+DIFF[r.meta.difficulty]+'<br>🍽️ '+r.meta.servings+' порц. · 🔥 '+r.meta.calories+' ккал</div></div></div>'+
+      '<div style="margin-top:8px;"><span class="badge badge-accent">'+CAT[r.meta.category]+'</span></div>'+
+    '</div>'
+  ).join('') : '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;">Ничего не найдено</p>';
+}
+function openRecipe(id){
+  const r=window.COOK_GET(id); if(!r) return;
+  let html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
+    '<h2 style="margin:0;">'+r.meta.icon+' '+r.meta.name+'</h2>'+
+    '<button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">✕</button></div>';
+
+  html+='<div class="meta-grid">'+
+    '<div class="meta-item"><div class="v">'+r.meta.time+' мин</div><div class="l">Время</div></div>'+
+    '<div class="meta-item"><div class="v">'+DIFF[r.meta.difficulty]+'</div><div class="l">Сложность</div></div>'+
+    '<div class="meta-item"><div class="v">'+r.meta.servings+'</div><div class="l">Порций</div></div>'+
+    '<div class="meta-item"><div class="v">'+r.meta.calories+'</div><div class="l">Ккал/100г</div></div>'+
+    '<div class="meta-item"><div class="v">'+r.meta.proteins+'г</div><div class="l">Белки</div></div>'+
+    '<div class="meta-item"><div class="v">'+r.meta.fats+'г</div><div class="l">Жиры</div></div>'+
+    '<div class="meta-item"><div class="v">'+r.meta.carbs+'г</div><div class="l">Углеводы</div></div>'+
+  '</div>';
+
+  if(r.meta.history) html+='<div class="history">📖 '+r.meta.history+'</div>';
+  if(r.meta.chef_tip) html+='<div class="chef-tip">👨‍🍳 <b>Совет шефа:</b> '+r.meta.chef_tip+'</div>';
+
+  html+='<div class="section-h">🥕 Ингредиенты</div>';
+  r.ingredients.forEach(ing=>{
+    html+='<div class="ingredient-row"><div><b>'+ing.name+'</b>'+
+      (ing.substitutes && ing.substitutes!=='—' ? '<br><span class="ingredient-sub">Замена: '+ing.substitutes+'</span>' : '')+
+      '</div><div>'+ing.qty+'</div></div>';
+  });
+
+  html+='<div class="section-h">🔧 Инвентарь</div><div style="display:flex;flex-wrap:wrap;gap:6px;">'+
+    r.equipment.map(e=>'<span class="badge">'+e+'</span>').join('')+'</div>';
+
+  html+='<div class="section-h">📋 Шаги ('+r.steps.length+')</div>';
+  r.steps.forEach(s=>{
+    html+='<div class="step"><div class="step-n">'+s.n+'</div><div class="step-txt">'+s.action+
+      (s.timer > 0 ? '<span class="timer-badge">⏱️ '+s.timer+' мин</span>' : '')+
+      (s.tip ? '<div class="step-tip">💡 '+s.tip+'</div>' : '')+
+    '</div></div>';
+  });
+
+  if(r.variations && r.variations.length){
+    html+='<div class="section-h">🔀 Вариации</div>';
+    r.variations.forEach(v=>{ html+='<div class="variation"><b>'+v.name+'</b><br>'+v.change+'</div>'; });
+  }
+
+  if(r.mistakes && r.mistakes.length){
+    html+='<div class="section-h">⚠️ Ошибки новичков</div>';
+    r.mistakes.forEach(m=>{ html+='<div class="mistake">'+m+'</div>'; });
+  }
+
+  if(r.storage) html+='<div class="section-h">📦 Хранение</div><div style="padding:12px;background:var(--bg-soft);border-radius:8px;">'+r.storage+'</div>';
+  if(r.serving) html+='<div class="section-h">🍽️ Подача</div><div style="padding:12px;background:var(--bg-soft);border-radius:8px;">'+r.serving+'</div>';
+
+  html+='<button class="btn btn-block" style="margin-top:20px;" onclick="markCooked(\''+id+'\')">✅ Приготовил (+50 XP)</button>';
+
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal').classList.add('open');
+}
+function markCooked(id){
+  window.COOK_STORE.addDish({recipeId:id});
+  alert('✅ Приготовил! +50 XP');
+  closeModal();
+}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('modal').classList.remove('open');}
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('filter-cat').addEventListener('change',render);
+document.getElementById('filter-diff').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>

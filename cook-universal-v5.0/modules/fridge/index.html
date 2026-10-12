@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🥕 Что в холодильнике?</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.ing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.ing-btn{padding:12px;border:2px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer;font-weight:600;text-align:center;transition:.2s;font-family:inherit;color:var(--text)}
+.ing-btn:hover{border-color:var(--accent)}
+.ing-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.match-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:.2s}
+.match-card:hover{border-color:var(--accent)}
+.match-bar{height:8px;background:var(--accent-soft);border-radius:4px;overflow:hidden;margin:8px 0}
+.match-bar > div{height:100%;background:var(--accent);transition:.5s}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🥕 Что в холодильнике?</h2>
+  </div>
+  <div class="card"><p style="margin:0;">Выбери продукты, которые у тебя есть — получи рецепты!</p></div>
+  <h3>Выбери продукты:</h3>
+  <div class="ing-grid" id="ing-grid"></div>
+  <h3>Подходящие рецепты:</h3>
+  <div id="results"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/recipes/omelette.js"></script>
+<script src="../../data/recipes/pasta.js"></script>
+<script src="../../data/recipes/soup.js"></script>
+<script src="../../data/recipes/pancakes.js"></script>
+<script src="../../data/recipes/salad.js"></script>
+<script src="../../data/recipes/borsch.js"></script>
+<script src="../../data/recipes/pizza.js"></script>
+<script src="../../data/recipes/syrniki.js"></script>
+<script src="../../data/recipes/cheesecake.js"></script>
+<script src="../../data/recipes/chicken_kiev.js"></script>
+<script src="../../data/recipes/caesar.js"></script>
+<script src="../../data/recipes/shakshuka.js"></script>
+<script src="../../data/recipes/greek_yogurt.js"></script>
+<script src="../../data/recipes/chicken_wings.js"></script>
+<script src="../../data/recipes/mashed_potato.js"></script>
+<script src="../../data/recipes/buckwheat.js"></script>
+<script src="../../data/recipes/pelmeni.js"></script>
+<script src="../../data/recipes/blini.js"></script>
+<script src="../../data/recipes/tvorog_zapekanka.js"></script>
+<script src="../../data/recipes/sharlotka.js"></script>
+<script src="../../data/recipes/olivier.js"></script>
+<script src="../../data/recipes/vinegret.js"></script>
+<script src="../../data/recipes/goulash.js"></script>
+<script src="../../data/recipes/plov.js"></script>
+<script src="../../data/recipes/ratatouille.js"></script>
+<script src="../../data/recipes/lasagna.js"></script>
+<script src="../../data/recipes/tacos.js"></script>
+<script src="../../data/recipes/carbonara.js"></script>
+<script src="../../data/recipes/risotto.js"></script>
+<script src="../../data/recipes/tikka.js"></script>
+<script>
+const INGREDIENTS = [
+  {key:'eggs', name:'🥚 Яйца'}, {key:'milk', name:'🥛 Молоко'},
+  {key:'cheese', name:'🧀 Сыр'}, {key:'butter', name:'🧈 Масло'},
+  {key:'flour', name:'🌾 Мука'}, {key:'sugar', name:'🍬 Сахар'},
+  {key:'pasta', name:'🍝 Макароны'}, {key:'tomatoes', name:'🍅 Томаты'},
+  {key:'garlic', name:'🧄 Чеснок'}, {key:'chicken', name:'🍗 Курица'},
+  {key:'potato', name:'🥔 Картофель'}, {key:'carrot', name:'🥕 Морковь'},
+  {key:'onion', name:'🧅 Лук'}, {key:'cucumber', name:'🥒 Огурцы'},
+  {key:'feta', name:'🧀 Фета'}, {key:'olives', name:'🫒 Маслины'},
+  {key:'beet', name:'🟣 Свёкла'}, {key:'cabbage', name:'🥬 Капуста'},
+  {key:'meat', name:'🥩 Мясо'}, {key:'yeast', name:'🫧 Дрожжи'},
+  {key:'mozzarella', name:'🧀 Моцарелла'}, {key:'cottage', name:'🥛 Творог'},
+  {key:'breadcrumbs', name:'🍞 Панировка'}, {key:'cookies', name:'🍪 Печенье'},
+  {key:'cream_cheese', name:'🧀 Крем-сыр'}, {key:'olive_oil', name:'🫒 Масло оливк.'}
+];
+let selected = new Set();
+function renderIngredients() {
+  document.getElementById('ing-grid').innerHTML = INGREDIENTS.map(i =>
+    '<div class="ing-btn ' + (selected.has(i.key)?'active':'') + '" onclick="toggleIng(\'' + i.key + '\')">' + i.name + '</div>'
+  ).join('');
+}
+function toggleIng(key) {
+  if (selected.has(key)) selected.delete(key);
+  else selected.add(key);
+  renderIngredients();
+  renderResults();
+}
+function renderResults() {
+  const el = document.getElementById('results');
+  if (!selected.size) {
+    el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:30px;">Выбери продукты выше 👆</p>';
+    return;
+  }
+  const matches = window.COOK_BY_INGREDIENTS([...selected]);
+  if (!matches.length) {
+    el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:30px;">Ничего не подходит.</p>';
+    return;
+  }
+  el.innerHTML = matches.map(m =>
+    '<div class="match-card">' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<div style="font-size:2rem;">' + m.recipe.meta.icon + '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-weight:800;">' + m.recipe.meta.name + '</div>' +
+          '<div style="font-size:.85rem;color:var(--muted);">' + m.have + ' из ' + m.total + ' ингредиентов есть</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="match-bar"><div style="width:' + Math.round(m.match*100) + '%"></div></div>' +
+    '</div>'
+  ).join('');
+}
+renderIngredients();
+renderResults();
+</script>
+</body>
+</html>

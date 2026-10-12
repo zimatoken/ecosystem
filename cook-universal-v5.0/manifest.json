@@ -1,0 +1,14 @@
+{
+  "name": "Я в натуре Повар",
+  "short_name": "Повар",
+  "description": "Умный помощник на кухне: 30 рецептов, SOS-помощь, план меню",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1c1917",
+  "theme_color": "#ea580c",
+  "lang": "ru",
+  "icons": [
+    { "src": "assets/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "assets/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ea580c">
+<title>🍳 Я в натуре Повар</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🍳 Я в натуре Повар</h1>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="toggleTheme()">🌓</button>
+      <a href="../life-hub-v2.0/index.html" class="btn btn-outline" style="font-weight:700;">🏠 Моя Жизнь</a>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">⭐ Уровень <span id="s-level">1</span></div>
+    <div class="stat">✨ <span id="s-xp">0</span> XP</div>
+    <div class="stat">🍳 <span id="s-cooked">0</span> блюд</div>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <h2 style="margin-top:0;">Привет, повар! 🍳</h2>
+    <p>Готовим вместе: 30 рецептов, SOS-помощь, план меню.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
+    <a href="modules/recipes/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">📖</span>Рецепты</a>
+    <a href="modules/fridge/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#16a34a,#22c55e);"><span style="font-size:1.8rem">🥕</span>Что в холодильнике?</a>
+    <a href="modules/sos/index.html" class="btn btn-danger btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">🆘</span>SOS Повара</a>
+    <a href="modules/mealplan/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#7c3aed,#a855f7);"><span style="font-size:1.8rem">📅</span>Меню недели</a>
+    <a href="modules/favorites/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">❤️</span>Избранное</a>
+    <a href="modules/settings/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">⚙️</span>Настройки</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="core/registry.js"></script>
+<script src="core/sos.js"></script>
+<script src="core/store.js"></script>
+<script src="data/recipes/omelette.js"></script>
+<script src="data/recipes/pasta.js"></script>
+<script src="data/recipes/soup.js"></script>
+<script src="data/recipes/pancakes.js"></script>
+<script src="data/recipes/salad.js"></script>
+<script src="data/recipes/borsch.js"></script>
+<script src="data/recipes/pizza.js"></script>
+<script src="data/recipes/syrniki.js"></script>
+<script src="data/recipes/cheesecake.js"></script>
+<script src="data/recipes/chicken_kiev.js"></script>
+<script src="data/recipes/caesar.js"></script>
+<script src="data/recipes/shakshuka.js"></script>
+<script src="data/recipes/greek_yogurt.js"></script>
+<script src="data/recipes/chicken_wings.js"></script>
+<script src="data/recipes/mashed_potato.js"></script>
+<script src="data/recipes/buckwheat.js"></script>
+<script src="data/recipes/pelmeni.js"></script>
+<script src="data/recipes/blini.js"></script>
+<script src="data/recipes/tvorog_zapekanka.js"></script>
+<script src="data/recipes/sharlotka.js"></script>
+<script src="data/recipes/olivier.js"></script>
+<script src="data/recipes/vinegret.js"></script>
+<script src="data/recipes/goulash.js"></script>
+<script src="data/recipes/plov.js"></script>
+<script src="data/recipes/ratatouille.js"></script>
+<script src="data/recipes/lasagna.js"></script>
+<script src="data/recipes/tacos.js"></script>
+<script src="data/recipes/carbonara.js"></script>
+<script src="data/recipes/risotto.js"></script>
+<script src="data/recipes/tikka.js"></script>
+
+<script>
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('ecosystem_theme_universal_v2',next);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const s=window.COOK_STORE.getStats();
+  document.getElementById('s-level').textContent=s.level||1;
+  document.getElementById('s-xp').textContent=s.xp||0;
+  document.getElementById('s-cooked').textContent=s.cooked||0;
+});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

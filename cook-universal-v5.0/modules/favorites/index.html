@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>❤️ Избранное</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.card-r{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>❤️ Избранное</h2>
+  </div>
+  <div id="list" class="grid"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/recipes/omelette.js"></script>
+<script src="../../data/recipes/pasta.js"></script>
+<script src="../../data/recipes/soup.js"></script>
+<script src="../../data/recipes/pancakes.js"></script>
+<script src="../../data/recipes/salad.js"></script>
+<script src="../../data/recipes/borsch.js"></script>
+<script src="../../data/recipes/pizza.js"></script>
+<script src="../../data/recipes/syrniki.js"></script>
+<script src="../../data/recipes/cheesecake.js"></script>
+<script src="../../data/recipes/chicken_kiev.js"></script>
+<script src="../../data/recipes/caesar.js"></script>
+<script src="../../data/recipes/shakshuka.js"></script>
+<script src="../../data/recipes/greek_yogurt.js"></script>
+<script src="../../data/recipes/chicken_wings.js"></script>
+<script src="../../data/recipes/mashed_potato.js"></script>
+<script src="../../data/recipes/buckwheat.js"></script>
+<script src="../../data/recipes/pelmeni.js"></script>
+<script src="../../data/recipes/blini.js"></script>
+<script src="../../data/recipes/tvorog_zapekanka.js"></script>
+<script src="../../data/recipes/sharlotka.js"></script>
+<script src="../../data/recipes/olivier.js"></script>
+<script src="../../data/recipes/vinegret.js"></script>
+<script src="../../data/recipes/goulash.js"></script>
+<script src="../../data/recipes/plov.js"></script>
+<script src="../../data/recipes/ratatouille.js"></script>
+<script src="../../data/recipes/lasagna.js"></script>
+<script src="../../data/recipes/tacos.js"></script>
+<script src="../../data/recipes/carbonara.js"></script>
+<script src="../../data/recipes/risotto.js"></script>
+<script src="../../data/recipes/tikka.js"></script>
+<script>
+function render(){
+  const fav = window.COOK_STORE.getFavorites();
+  const el = document.getElementById('list');
+  if (!fav.length) {
+    el.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;">❤️ Пока пусто. Добавь рецепты в избранное.</p>';
+    return;
+  }
+  el.innerHTML = fav.map(id => {
+    const r = window.COOK_GET(id);
+    if (!r) return '';
+    return '<div class="card-r">' +
+      '<div style="font-size:2rem;">' + r.meta.icon + '</div>' +
+      '<div style="font-weight:800;margin-top:6px;">' + r.meta.name + '</div>' +
+      '<div style="font-size:.85rem;color:var(--muted);">⏱️ ' + r.meta.time + ' мин</div>' +
+    '</div>';
+  }).join('');
+}
+render();
+</script>
+</body>
+</html>

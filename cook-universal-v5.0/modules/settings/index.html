@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙️ Настройки</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>⚙️ Настройки</h2>
+  </div>
+  <div class="card">
+    <h3>🎨 Тема</h3>
+    <button class="btn btn-block" onclick="toggleTheme()">🌓 Переключить тему</button>
+  </div>
+  <div class="card">
+    <h3>📤 Данные</h3>
+    <button class="btn btn-block" onclick="exportData()">💾 Экспорт JSON</button>
+  </div>
+  <div class="card">
+    <h3>🗑 Опасная зона</h3>
+    <button class="btn btn-danger btn-block" onclick="resetAll()">Полный сброс</button>
+  </div>
+</div>
+<script src="../../core/store.js"></script>
+<script>
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('ecosystem_theme_universal_v2',next);
+}
+function exportData(){
+  const data = {
+    stats: window.COOK_STORE.getStats(),
+    dishes: window.COOK_STORE.get(),
+    favorites: window.COOK_STORE.getFavorites()
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cook_backup_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+function resetAll(){
+  if(!confirm('Удалить все данные?')) return;
+  localStorage.removeItem('cook_my_dishes_v1');
+  localStorage.removeItem('cook_stats_v1');
+  localStorage.removeItem('cook_favorites_v1');
+  localStorage.removeItem('cook_meal_plan_v1');
+  location.reload();
+}
+</script>
+</body>
+</html>
