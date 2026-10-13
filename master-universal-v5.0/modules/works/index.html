@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔧 Работы МАКСИМУМ</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.filters{display:flex;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px}
+.filters input,.filters select{padding:10px 12px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;flex:1;min-width:130px;font-family:inherit}
+.works-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.work-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s}
+.work-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:var(--accent)}
+.work-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.work-icon{font-size:2.5rem}
+.work-name{font-weight:800;font-size:1.1rem}
+.work-meta{font-size:.85rem;color:var(--muted);line-height:1.5}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-body{background:var(--card);border-radius:16px;max-width:720px;width:100%;padding:28px;margin:40px auto}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:16px 0}
+.meta-item{padding:10px;background:var(--bg-soft);border-radius:8px;text-align:center}
+.meta-item .v{font-weight:800;color:var(--accent);font-size:1.05rem}
+.meta-item .l{font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.history{background:linear-gradient(135deg,#dcfce7,#bbf7d0);padding:14px;border-radius:10px;margin-bottom:16px;font-style:italic;line-height:1.6;color:#14532d}
+[data-theme="dark"] .history{background:linear-gradient(135deg,#14532d,#166534);color:#dcfce7}
+.chef-tip{background:var(--accent-soft);padding:14px;border-radius:10px;border-left:4px solid var(--accent);margin-bottom:16px}
+.tool-row,.material-row{display:flex;justify-content:space-between;padding:10px 12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px;font-size:.95rem;align-items:center}
+.price-tag{font-weight:800;color:var(--accent);white-space:nowrap}
+.safety-item{padding:10px 12px;background:#fee2e2;color:#991b1b;border-radius:8px;margin-bottom:6px;font-weight:600}
+[data-theme="dark"] .safety-item{background:#7f1d1d;color:#fecaca}
+.step{display:flex;gap:12px;padding:12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px}
+.step-n{flex-shrink:0;width:32px;height:32px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800}
+.step-txt{flex:1}
+.step-tip{font-size:.85rem;color:var(--muted);font-style:italic;margin-top:4px}
+.timer-badge{display:inline-block;padding:3px 10px;background:var(--warning);color:#fff;border-radius:12px;font-size:.75rem;font-weight:700;margin-left:8px}
+.variation{padding:12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px;border-left:4px solid var(--accent)}
+.mistake{padding:10px;background:#fee2e2;color:#991b1b;border-radius:8px;margin-bottom:6px;font-size:.9rem}
+[data-theme="dark"] .mistake{background:#7f1d1d;color:#fecaca}
+.trouble{padding:12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px;font-size:.9rem;border-left:4px solid var(--warning)}
+.trouble b{color:var(--accent)}
+.estimate{background:linear-gradient(135deg,#dbeafe,#bfdbfe);padding:16px;border-radius:10px;margin:16px 0}
+[data-theme="dark"] .estimate{background:linear-gradient(135deg,#1e3a8a,#1e40af);color:#dbeafe}
+.estimate-row{display:flex;justify-content:space-between;padding:6px 0;font-size:1rem}
+.estimate-row.bold{font-weight:800;font-size:1.15rem;border-top:2px solid var(--accent);padding-top:10px;margin-top:6px;color:var(--accent)}
+.section-h{font-size:1.15rem;font-weight:800;color:var(--accent);margin:20px 0 10px;border-bottom:2px solid var(--accent);padding-bottom:4px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🔧 Работы МАКСИМУМ</h2>
+  </div>
+  <div class="filters">
+    <input type="text" id="search" placeholder="🔍 Поиск работы...">
+    <select id="filter-cat"><option value="">Все категории</option>
+      <option value="electric">⚡ Электрика</option>
+      <option value="plumbing">💧 Сантехника</option>
+      <option value="walls">🎨 Стены</option>
+      <option value="floor">🪵 Полы</option>
+      <option value="doors">🚪 Двери</option>
+      <option value="windows">🪟 Окна</option>
+      <option value="furniture">🛋️ Мебель</option>
+    </select>
+    <select id="filter-diff"><option value="">Любая сложность</option>
+      <option value="easy">😊 Легко</option>
+      <option value="medium">🤔 Средне</option>
+      <option value="hard">💪 Сложно</option>
+    </select>
+  </div>
+  <div id="grid" class="works-grid"></div>
+</div>
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="modal-body" id="modal-body" onclick="event.stopPropagation()"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/works/ceiling_paint.js"></script>
+<script src="../../data/works/decorative_plaster.js"></script>
+<script src="../../data/works/fix_hinges.js"></script>
+<script src="../../data/works/fix_leak.js"></script>
+<script src="../../data/works/fix_toilet.js"></script>
+<script src="../../data/works/hidden_tv_socket.js"></script>
+<script src="../../data/works/install_boiler.js"></script>
+<script src="../../data/works/install_breaker.js"></script>
+<script src="../../data/works/install_chandelier.js"></script>
+<script src="../../data/works/install_doors.js"></script>
+<script src="../../data/works/install_faucet_new.js"></script>
+<script src="../../data/works/install_lock.js"></script>
+<script src="../../data/works/install_rcd.js"></script>
+<script src="../../data/works/install_sink.js"></script>
+<script src="../../data/works/install_toilet.js"></script>
+<script src="../../data/works/install_washer.js"></script>
+<script src="../../data/works/laminate.js"></script>
+<script src="../../data/works/parquet.js"></script>
+<script src="../../data/works/plaster_walls.js"></script>
+<script src="../../data/works/putty_walls.js"></script>
+<script src="../../data/works/replace_faucet.js"></script>
+<script src="../../data/works/replace_pipe.js"></script>
+<script src="../../data/works/replace_socket.js"></script>
+<script src="../../data/works/replace_switch.js"></script>
+<script src="../../data/works/self_leveling_floor.js"></script>
+<script src="../../data/works/tile_bathroom.js"></script>
+<script src="../../data/works/tile_floor.js"></script>
+<script src="../../data/works/wall_paint.js"></script>
+<script src="../../data/works/wallpaper.js"></script>
+<script src="../../data/works/warm_floor.js"></script>
+<script>
+const CAT = {electric:'⚡ Электрика',plumbing:'💧 Сантехника',walls:'🎨 Стены',floor:'🪵 Полы',doors:'🚪 Двери',windows:'🪟 Окна',furniture:'🛋️ Мебель'};
+const DIFF = {easy:'😊 Легко',medium:'🤔 Средне',hard:'💪 Сложно'};
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const cat=document.getElementById('filter-cat').value;
+  const diff=document.getElementById('filter-diff').value;
+  let list=window.MASTER_FILTER({category:cat||undefined,difficulty:diff||undefined});
+  if(q) list=list.filter(w=>w.meta.name.toLowerCase().includes(q));
+  document.getElementById('grid').innerHTML = list.length ? list.map(w=>
+    '<div class="work-card" onclick="openWork(\''+w.meta.id+'\')">'+
+      '<div class="work-head"><div class="work-icon">'+w.meta.icon+'</div>'+
+      '<div><div class="work-name">'+w.meta.name+'</div>'+
+      '<div class="work-meta">⏱️ '+w.meta.time+' мин · '+DIFF[w.meta.difficulty]+'<br>💰 от '+w.meta.avg_price.toLocaleString('ru-RU')+' ₽</div></div></div>'+
+      '<div style="margin-top:8px;"><span class="badge badge-accent">'+CAT[w.meta.category]+'</span></div>'+
+    '</div>'
+  ).join('') : '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;">Ничего не найдено</p>';
+}
+function openWork(id){
+  const w=window.MASTER_GET(id); if(!w) return;
+  const savings = w.meta.avg_price - w.meta.diy_price;
+  let html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
+    '<h2 style="margin:0;">'+w.meta.icon+' '+w.meta.name+'</h2>'+
+    '<button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">✕</button></div>';
+
+  html+='<div class="meta-grid">'+
+    '<div class="meta-item"><div class="v">'+w.meta.time+' мин</div><div class="l">Время</div></div>'+
+    '<div class="meta-item"><div class="v">'+DIFF[w.meta.difficulty]+'</div><div class="l">Сложность</div></div>'+
+    '<div class="meta-item"><div class="v">'+w.meta.diy_price+' ₽</div><div class="l">Своими руками</div></div>'+
+    '<div class="meta-item"><div class="v">'+w.meta.avg_price+' ₽</div><div class="l">Мастер</div></div>'+
+  '</div>';
+
+  if(w.meta.history) html+='<div class="history">📖 '+w.meta.history+'</div>';
+  if(w.meta.chef_tip) html+='<div class="chef-tip">👨‍🔧 <b>Совет мастера:</b> '+w.meta.chef_tip+'</div>';
+
+  if(w.safety && w.safety.length){
+    html+='<div class="section-h">⚠️ Техника безопасности</div>';
+    w.safety.forEach(s=>{ html+='<div class="safety-item">'+s+'</div>'; });
+  }
+
+  if(w.tools && w.tools.length){
+    html+='<div class="section-h">🛠️ Инструменты</div>';
+    w.tools.forEach(t=>{
+      html+='<div class="tool-row"><div><b>'+t.name+'</b>'+(t.note?' <span style="font-size:.8rem;color:var(--muted);">('+t.note+')</span>':'')+'</div><div class="price-tag">'+(t.price > 0 ? t.price+' ₽' : 'аренда')+'</div></div>';
+    });
+  }
+
+  if(w.materials && w.materials.length){
+    html+='<div class="section-h">🧰 Материалы</div>';
+    let total=0;
+    w.materials.forEach(m=>{
+      const sum = m.price * (m.qty||1);
+      total += sum;
+      html+='<div class="material-row"><div><b>'+m.name+'</b> × '+(m.qty||1)+(m.note?' <span style="font-size:.8rem;color:var(--muted);">('+m.note+')</span>':'')+'</div><div class="price-tag">'+sum+' ₽</div></div>';
+    });
+    html+='<div class="material-row" style="font-weight:800;background:var(--accent-soft);"><div>Итого материалы:</div><div class="price-tag">'+total+' ₽</div></div>';
+  }
+
+  html+='<div class="estimate">'+
+    '<div class="estimate-row"><span>Своими руками:</span><b>'+w.meta.diy_price+' ₽</b></div>'+
+    '<div class="estimate-row"><span>Нанять мастера:</span><b>'+w.meta.avg_price+' ₽</b></div>'+
+    '<div class="estimate-row bold"><span>Экономия:</span><span>'+savings.toLocaleString('ru-RU')+' ₽</span></div>'+
+  '</div>';
+
+  html+='<div class="section-h">📋 Шаги ('+w.steps.length+')</div>';
+  w.steps.forEach(s=>{
+    html+='<div class="step"><div class="step-n">'+s.n+'</div><div class="step-txt">'+s.action+
+      (s.timer > 0 ? '<span class="timer-badge">⏱️ '+s.timer+' мин</span>' : '')+
+      (s.tip ? '<div class="step-tip">💡 '+s.tip+'</div>' : '')+
+    '</div></div>';
+  });
+
+  if(w.variations && w.variations.length){
+    html+='<div class="section-h">🔀 Вариации</div>';
+    w.variations.forEach(v=>{ html+='<div class="variation"><b>'+v.name+'</b><br>'+v.change+'</div>'; });
+  }
+
+  if(w.mistakes && w.mistakes.length){
+    html+='<div class="section-h">⚠️ Ошибки новичков</div>';
+    w.mistakes.forEach(m=>{ html+='<div class="mistake">'+m+'</div>'; });
+  }
+
+  if(w.troubleshooting && w.troubleshooting.length){
+    html+='<div class="section-h">🔧 Если что-то не так</div>';
+    w.troubleshooting.forEach(t=>{
+      html+='<div class="trouble"><b>Проблема:</b> '+t.problem+'<br><b>Причина:</b> '+t.cause+'<br><b>Решение:</b> '+t.fix+'</div>';
+    });
+  }
+
+  if(w.storage) html+='<div class="section-h">📦 Срок службы</div><div style="padding:12px;background:var(--bg-soft);border-radius:8px;">'+w.storage+'</div>';
+  if(w.serving) html+='<div class="section-h">💡 Рекомендация</div><div style="padding:12px;background:var(--bg-soft);border-radius:8px;">'+w.serving+'</div>';
+
+  html+='<button class="btn btn-block" style="margin-top:20px;" onclick="markDone(\''+id+'\')">✅ Сделал (+50 XP)</button>';
+
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal').classList.add('open');
+}
+function markDone(id){
+  window.MASTER_STORE.addWork({workId:id});
+  alert('✅ Отлично! +50 XP');
+  closeModal();
+}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('modal').classList.remove('open');}
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('filter-cat').addEventListener('change',render);
+document.getElementById('filter-diff').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>

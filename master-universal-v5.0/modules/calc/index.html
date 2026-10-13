@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧮 Калькулятор материалов</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-weight:700;font-size:.9rem;margin-bottom:4px}
+.form-row input,.form-row select{width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;font-family:inherit;box-sizing:border-box}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.result-card{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;border-radius:14px;padding:24px;text-align:center;margin-top:20px}
+.result-card .amount{font-size:2.5rem;font-weight:900;margin:8px 0}
+.calc-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🧮 Калькулятор материалов</h2>
+  </div>
+
+  <div class="calc-card">
+    <h3 style="margin-top:0;">📐 Размеры помещения</h3>
+    <div class="form-grid">
+      <div class="form-row"><label>Длина (м)</label><input type="number" id="length" value="4" step="0.1" oninput="updateArea()"></div>
+      <div class="form-row"><label>Ширина (м)</label><input type="number" id="width" value="3" step="0.1" oninput="updateArea()"></div>
+    </div>
+    <div class="form-row"><label>Высота (м)</label><input type="number" id="height" value="2.7" step="0.1" oninput="updateArea()"></div>
+    <div id="area-info" style="padding:12px;background:var(--bg-soft);border-radius:8px;margin-top:12px;"></div>
+  </div>
+
+  <div class="calc-card">
+    <h3 style="margin-top:0;">🎨 Что считаем?</h3>
+    <div class="form-row"><label>Материал</label>
+      <select id="material" onchange="calc()">
+        <option value="">— Выбери —</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Площадь (м²)</label>
+      <input type="number" id="area" value="12" step="0.1" oninput="calc()">
+    </div>
+    <div id="calc-result"></div>
+  </div>
+</div>
+
+<script src="../../core/calc.js"></script>
+<script>
+const matSel = document.getElementById('material');
+Object.entries(window.MASTER_CALC.getMaterials()).forEach(([k, m]) => {
+  const o = document.createElement('option');
+  o.value = k;
+  o.textContent = m.name;
+  matSel.appendChild(o);
+});
+
+function updateArea() {
+  const l = parseFloat(document.getElementById('length').value) || 0;
+  const w = parseFloat(document.getElementById('width').value) || 0;
+  const h = parseFloat(document.getElementById('height').value) || 0;
+  const info = window.MASTER_CALC.calculateRoom(l, w, h);
+  document.getElementById('area-info').innerHTML =
+    '<b>📏 Пол:</b> ' + info.floor.toFixed(1) + ' м² · ' +
+    '<b>Стены:</b> ' + info.walls.toFixed(1) + ' м² · ' +
+    '<b>Потолок:</b> ' + info.ceiling.toFixed(1) + ' м²<br>' +
+    '<b>Общая площадь:</b> ' + info.total.toFixed(1) + ' м²';
+  document.getElementById('area').value = info.walls.toFixed(1);
+  calc();
+}
+
+function calc() {
+  const mat = document.getElementById('material').value;
+  const area = parseFloat(document.getElementById('area').value) || 0;
+  const el = document.getElementById('calc-result');
+  if (!mat || !area) { el.innerHTML = ''; return; }
+  const r = window.MASTER_CALC.calculate(mat, area);
+  if (!r) return;
+  el.innerHTML = '<div class="result-card">' +
+    '<div style="font-size:1rem;opacity:.9;">Итого по материалу</div>' +
+    '<div class="amount">' + r.quantity + ' ' + r.unit + '</div>' +
+    '<div style="font-size:1.1rem;">💰 ' + r.total.toLocaleString('ru-RU') + ' ₽</div>' +
+    '<div style="font-size:.9rem;opacity:.9;margin-top:12px;">' + r.notes + '</div>' +
+  '</div>';
+}
+
+updateArea();
+</script>
+</body>
+</html>

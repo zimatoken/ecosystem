@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<title>🏠 Я в натуре Мастер</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🏠 Я в натуре Мастер</h1>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="toggleTheme()">🌓</button>
+      <a href="../life-hub-v2.0/index.html" class="btn btn-outline" style="font-weight:700;">🏠 Моя Жизнь</a>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">⭐ Уровень <span id="s-level">1</span></div>
+    <div class="stat">✨ <span id="s-xp">0</span> XP</div>
+    <div class="stat">🔧 <span id="s-works">0</span> работ</div>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <h2 style="margin-top:0;">Привет, мастер! 🔧</h2>
+    <p>30 работ, SOS-помощь, калькулятор материалов.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
+    <a href="modules/works/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">🔧</span>Работы</a>
+    <a href="modules/sos/index.html" class="btn btn-danger btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">🆘</span>SOS Мастера</a>
+    <a href="modules/calc/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#7c3aed,#a855f7);"><span style="font-size:1.8rem">🧮</span>Калькулятор</a>
+    <a href="modules/journal/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#0891b2,#06b6d4);"><span style="font-size:1.8rem">📔</span>Дневник</a>
+    <a href="modules/achievements/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">🏆</span>Награды</a>
+    <a href="modules/settings/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">⚙️</span>Настройки</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="core/registry.js"></script>
+<script src="core/sos.js"></script>
+<script src="core/store.js"></script>
+<script src="core/calc.js"></script>
+<script src="data/works/fix_socket.js"></script>
+<script src="data/works/fix_switch.js"></script>
+<script src="data/works/install_light.js"></script>
+<script src="data/works/wire_laying.js"></script>
+<script src="data/works/install_breaker.js"></script>
+<script src="data/works/electric_boiler.js"></script>
+<script src="data/works/fix_pipe.js"></script>
+<script src="data/works/install_faucet.js"></script>
+<script src="data/works/fix_toilet.js"></script>
+<script src="data/works/install_toilet.js"></script>
+<script src="data/works/install_sink.js"></script>
+<script src="data/works/leak_seal.js"></script>
+<script src="data/works/wall_paint.js"></script>
+<script src="data/works/wallpaper.js"></script>
+<script src="data/works/tile_bathroom.js"></script>
+<script src="data/works/plaster_walls.js"></script>
+<script src="data/works/putty_walls.js"></script>
+<script src="data/works/ceiling_paint.js"></script>
+<script src="data/works/laminate.js"></script>
+<script src="data/works/tile_floor.js"></script>
+<script src="data/works/parquet.js"></script>
+<script src="data/works/install_doors.js"></script>
+<script src="data/works/fix_hinges.js"></script>
+<script src="data/works/install_lock.js"></script>
+<script src="data/works/install_window.js"></script>
+<script src="data/works/window_seal.js"></script>
+<script src="data/works/assemble_furniture.js"></script>
+<script src="data/works/hang_shelf.js"></script>
+<script src="data/works/install_kitchen.js"></script>
+<script src="data/works/install_blinds.js"></script>
+
+<script>
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('ecosystem_theme_universal_v2',next);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const s=window.MASTER_STORE.getStats();
+  document.getElementById('s-level').textContent=s.level||1;
+  document.getElementById('s-xp').textContent=s.xp||0;
+  document.getElementById('s-works').textContent=s.works||0;
+});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

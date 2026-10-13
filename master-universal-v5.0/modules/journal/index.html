@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📔 Дневник ремонта</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📔 Дневник ремонта</h2>
+  </div>
+  <div id="list"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/works/fix_socket.js"></script>
+<script src="../../data/works/fix_switch.js"></script>
+<script src="../../data/works/install_light.js"></script>
+<script src="../../data/works/wire_laying.js"></script>
+<script src="../../data/works/install_breaker.js"></script>
+<script src="../../data/works/electric_boiler.js"></script>
+<script src="../../data/works/fix_pipe.js"></script>
+<script src="../../data/works/install_faucet.js"></script>
+<script src="../../data/works/fix_toilet.js"></script>
+<script src="../../data/works/install_toilet.js"></script>
+<script src="../../data/works/install_sink.js"></script>
+<script src="../../data/works/leak_seal.js"></script>
+<script src="../../data/works/wall_paint.js"></script>
+<script src="../../data/works/wallpaper.js"></script>
+<script src="../../data/works/tile_bathroom.js"></script>
+<script src="../../data/works/plaster_walls.js"></script>
+<script src="../../data/works/putty_walls.js"></script>
+<script src="../../data/works/ceiling_paint.js"></script>
+<script src="../../data/works/laminate.js"></script>
+<script src="../../data/works/tile_floor.js"></script>
+<script src="../../data/works/parquet.js"></script>
+<script src="../../data/works/install_doors.js"></script>
+<script src="../../data/works/fix_hinges.js"></script>
+<script src="../../data/works/install_lock.js"></script>
+<script src="../../data/works/install_window.js"></script>
+<script src="../../data/works/window_seal.js"></script>
+<script src="../../data/works/assemble_furniture.js"></script>
+<script src="../../data/works/hang_shelf.js"></script>
+<script src="../../data/works/install_kitchen.js"></script>
+<script src="../../data/works/install_blinds.js"></script>
+<script>
+function render() {
+  const list = window.MASTER_STORE.get().slice().reverse();
+  if (!list.length) {
+    document.getElementById('list').innerHTML = '<div class="card" style="text-align:center;padding:40px;">' +
+      '<div style="font-size:4rem;">📔</div>' +
+      '<h3>Дневник пуст</h3>' +
+      '<p style="color:var(--muted);">Открой Работы и отметь, что сделал.</p>' +
+      '<a href="../works/index.html" class="btn">🔧 Работы</a></div>';
+    return;
+  }
+  document.getElementById('list').innerHTML = list.map(w => {
+    const work = window.MASTER_GET(w.workId);
+    if (!work) return '';
+    return '<div class="card" style="border-left:5px solid var(--accent);">' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<div style="font-size:2rem;">' + work.meta.icon + '</div>' +
+        '<div style="flex:1;">' +
+          '<div style="font-weight:800;">' + work.meta.name + '</div>' +
+          '<div style="font-size:.85rem;color:var(--muted);">' + new Date(w.date).toLocaleDateString('ru-RU') + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+render();
+</script>
+</body>
+</html>
