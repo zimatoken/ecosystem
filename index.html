@@ -42,6 +42,7 @@
     color: #f1f5f9;
     transition: 0.2s;
     text-align: center;
+    position: relative;
   }
   .app:hover {
     transform: translateY(-4px);
@@ -51,11 +52,32 @@
   .app-icon { font-size: 3rem; margin-bottom: 12px; }
   .app-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 6px; }
   .app-desc { font-size: 0.85rem; color: #94a3b8; }
+  .app-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #10b981;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+  .app-badge.gray { background: #64748b; }
   .footer {
     text-align: center;
     margin-top: 40px;
     color: #64748b;
     font-size: 0.85rem;
+  }
+  .stats {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    padding: 12px;
+    background: #1e293b;
+    border-radius: 10px;
   }
 </style>
 </head>
@@ -64,46 +86,58 @@
   <h1>🌌 Я в натуре...</h1>
   <p class="subtitle">Экосистема жизни — 8 приложений</p>
 
+  <div class="stats">
+    📦 В облаке: <b style="color: #10b981;">6 из 8</b> · Осталось: Отдыхаю, Хаб
+  </div>
+
   <div class="apps">
-    <a href="garden-universal-v14.0/index.html" class="app">
+    <a href="garden-universal-v14.0/" class="app">
+      <span class="app-badge">v14.0</span>
       <div class="app-icon">🌿</div>
       <div class="app-name">Садовод</div>
-      <div class="app-desc">40 растений</div>
+      <div class="app-desc">40 растений · геймификация</div>
     </a>
-    <a href="auto-universal-v9.0/index.html" class="app">
+    <a href="auto-universal-v9.0/" class="app">
+      <span class="app-badge">v9.0</span>
       <div class="app-icon">🚗</div>
       <div class="app-name">Автомобилист</div>
-      <div class="app-desc">110+ машин</div>
+      <div class="app-desc">110+ машин · фото · модули</div>
     </a>
-    <a href="cook-universal-v5.0/index.html" class="app">
+    <a href="cook-universal-v5.0/" class="app">
+      <span class="app-badge">v5.0</span>
       <div class="app-icon">🍳</div>
       <div class="app-name">Повар</div>
-      <div class="app-desc">55 рецептов</div>
+      <div class="app-desc">55+ рецептов МАКСИМУМ</div>
     </a>
-    <a href="master-universal-v5.0/index.html" class="app">
+    <a href="master-universal-v5.0/" class="app">
+      <span class="app-badge">v5.0</span>
       <div class="app-icon">🏠</div>
       <div class="app-name">Мастер</div>
-      <div class="app-desc">30 работ</div>
+      <div class="app-desc">30 работ · SOS · калькулятор</div>
     </a>
-    <a href="pedagog-universal-v2.0/index.html" class="app">
+    <a href="pedagog-universal-v2.4/" class="app">
+      <span class="app-badge">v2.4</span>
       <div class="app-icon">🎓</div>
       <div class="app-name">Педагог</div>
-      <div class="app-desc">12 методик + право</div>
+      <div class="app-desc">12 методик · 8 документов · дневник</div>
     </a>
-    <a href="doctor-aibolit-v1.0/index.html" class="app">
+    <a href="doctor-aibolit-v2.0/" class="app">
+      <span class="app-badge">v2.0</span>
       <div class="app-icon">🩺</div>
       <div class="app-name">Айболит</div>
-      <div class="app-desc">SOS + аптечка</div>
+      <div class="app-desc">15 модулей · 12 SOS · 44 препарата</div>
     </a>
-    <a href="otdyhayu-universal-v1.0/index.html" class="app">
+    <a href="#" class="app" style="opacity: 0.5; pointer-events: none;">
+      <span class="app-badge gray">скоро</span>
       <div class="app-icon">🌌</div>
       <div class="app-name">Отдыхаю</div>
-      <div class="app-desc">Цивилизация</div>
+      <div class="app-desc">Цивилизация · в разработке</div>
     </a>
-    <a href="life-hub-v2.0/index.html" class="app">
+    <a href="#" class="app" style="opacity: 0.5; pointer-events: none;">
+      <span class="app-badge gray">скоро</span>
       <div class="app-icon">🏠</div>
       <div class="app-name">Хаб</div>
-      <div class="app-desc">Профиль и XP</div>
+      <div class="app-desc">Профиль и XP · в разработке</div>
     </a>
   </div>
 
