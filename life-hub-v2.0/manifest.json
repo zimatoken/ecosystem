@@ -1,0 +1,8 @@
+{
+  "name": "\u041c\u043e\u044f \u0416\u0438\u0437\u043d\u044c - \u042d\u043a\u043e\u0441\u0438\u0441\u0442\u0435\u043c\u0430",
+  "short_name": "\u041c\u043e\u044f \u0416\u0438\u0437\u043d\u044c",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#3b82f6"
+}

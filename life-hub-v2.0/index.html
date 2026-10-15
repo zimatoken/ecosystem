@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏠 Моя Жизнь | Экосистема v2</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>🌌 Экосистема</h2>
+      <button class="btn btn-outline" onclick="ECOSYSTEM_THEME.toggle()">🌓 Тема</button>
+    </div>
+
+    <div class="profile-hero">
+      <div class="avatar" id="p-avatar">🌟</div>
+      <div class="profile-info" style="flex:1">
+        <h1 id="p-name">Загрузка...</h1>
+        <div class="stats-row">
+          <div class="stat-badge">⭐ Уровень <span id="p-level">1</span></div>
+          <div class="stat-badge">✨ <span id="p-xp">0</span> XP</div>
+          <div class="stat-badge" style="color: var(--warning)">🔥 <span id="p-streak">0</span> дн.</div>
+        </div>
+      </div>
+      <button class="btn" onclick="editName()">✏️ Имя</button>
+    </div>
+
+    <div class="section-title">🚀 Мои Приложения</div>
+    <div class="apps-grid" id="apps-grid"></div>
+
+    <div class="section-title">🎯 Квесты дня (Экосистема)</div>
+    <ul class="quests-list" id="quests-list">
+      <li class="quest-item">
+        <div class="quest-check" id="q1"></div>
+        <div>Открыть 2 разных приложения сегодня</div>
+      </li>
+      <li class="quest-item">
+        <div class="quest-check" id="q2"></div>
+        <div>Заработать 50 XP в любом приложении</div>
+      </li>
+    </ul>
+
+    <button class="btn btn-demo" onclick="addDemoXP()">🧪 Добавить 150 демо-XP (для теста)</button>
+  </div>
+
+  <script src="core/theme.js"></script>
+  <script src="core/profile.js"></script>
+  <script src="core/aggregator.js"></script>
+  
+  <script>
+    async function render() {
+      const p = await window.ECOSYSTEM_AGGREGATOR.sync();
+      
+      document.getElementById('p-avatar').textContent = p.avatar;
+      document.getElementById('p-name').textContent = p.name;
+      document.getElementById('p-level').textContent = p.level;
+      document.getElementById('p-xp').textContent = p.totalXP;
+      document.getElementById('p-streak').textContent = p.streak;
+
+      const grid = document.getElementById('apps-grid');
+      grid.innerHTML = '';
+      
+      let activeCount = 0;
+      for (const [key, app] of Object.entries(p.apps)) {
+        if (app.active) activeCount++;
+        const card = document.createElement('a');
+        card.className = `app-card ${app.active ? '' : 'inactive'}`;
+        card.href = app.url === '#' ? 'javascript:void(0)' : app.url;
+        card.innerHTML = `
+          <div class="app-xp">${app.xp} XP</div>
+          <div class="app-icon">${app.name.split(' ')[0]}</div>
+          <div class="app-name">${app.name.substring(2)}</div>
+          <div class="app-status">${app.active ? '✅ Активно (найдено)' : '⏳ Ожидает запуска'}</div>
+        `;
+        grid.appendChild(card);
+      }
+
+      // Логика квестов
+      if (activeCount >= 2) document.getElementById('q1').classList.add('done');
+      if (p.totalXP >= 50) document.getElementById('q2').classList.add('done');
+    }
+
+    function editName() {
+      const newName = prompt("Как тебя зовут, герой?", window.ECOSYSTEM.getProfile().name);
+      if (newName) {
+        window.ECOSYSTEM.updateName(newName);
+        render();
+      }
+    }
+
+    function addDemoXP() {
+      window.ECOSYSTEM.addXP(150, 'garden');
+      render();
+    }
+
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+</body>
+</html>
