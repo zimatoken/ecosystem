@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 Журнал оценок</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 1rem; font-family: inherit; box-sizing: border-box; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+.grades-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-top: 16px; }
+.grades-table th { background: var(--accent); color: #fff; padding: 12px; text-align: left; font-size: .9rem; }
+.grades-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: .95rem; }
+.grades-table tr:last-child td { border-bottom: none; }
+.grades-table .grade-badge { display: inline-block; width: 32px; height: 32px; line-height: 32px; text-align: center; background: var(--accent); color: #fff; border-radius: 50%; font-weight: 900; }
+.grades-table .grade-badge.g5 { background: #16a34a; }
+.grades-table .grade-badge.g4 { background: #0891b2; }
+.grades-table .grade-badge.g3 { background: #f59e0b; }
+.grades-table .grade-badge.g2 { background: #dc2626; }
+.grades-table .weight-2 { box-shadow: 0 0 0 3px #fbbf24; }
+.avg-block { background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 20px; border-radius: 14px; text-align: center; margin: 20px 0; }
+[data-theme="dark"] .avg-block { background: linear-gradient(135deg, #14532d, #166534); color: #dcfce7; }
+.avg-block .num { font-size: 3rem; font-weight: 900; color: var(--accent); }
+.student-info { background: var(--card); border-left: 5px solid var(--accent); padding: 14px; border-radius: 10px; margin-bottom: 16px; font-weight: 700; }
+.btn-sm { padding: 6px 12px; border-radius: 6px; font-size: .85rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; }
+.btn-danger { background: #dc2626; color: #fff; }
+.student-selector { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.student-selector select { padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 1rem; flex: 1; min-width: 200px; font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <a href="../../index.html" class="btn btn-outline">← На главную</a>
+  <h2>📊 Журнал оценок</h2>
+</div>
+
+<div class="student-selector">
+  <label style="font-weight:700;">Ученик:</label>
+  <select id="student-select" onchange="render()">
+    <option value="">— Выбери ученика —</option>
+  </select>
+</div>
+
+<div id="content"></div>
+</div>
+
+<script src="../../core/teacherStore.js"></script>
+<script>
+function fillSelects() {
+  var students = window.PED_TEACHER.getStudents();
+  document.getElementById('student-select').innerHTML = '<option value="">— Выбери ученика —</option>' +
+    students.map(function (s) {
+      var c = window.PED_TEACHER.getClass(s.classId);
+      return '<option value="' + s.id + '">' + s.name + (c ? ' (' + c.name + ')' : '') + '</option>';
+    }).join('');
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var sid = urlParams.get('student');
+  if (sid) {
+    document.getElementById('student-select').value = sid;
+  }
+}
+
+function render() {
+  var studentId = document.getElementById('student-select').value;
+  var el = document.getElementById('content');
+
+  if (!studentId) {
+    el.innerHTML = '<div class="card" style="text-align:center;padding:40px;">📊 Выбери ученика выше</div>';
+    return;
+  }
+
+  var s = window.PED_TEACHER.getStudent(studentId);
+  if (!s) return;
+  var c = window.PED_TEACHER.getClass(s.classId);
+  var grades = window.PED_TEACHER.getGradesByStudent(studentId);
+  var avg = window.PED_TEACHER.getAverageForStudent(studentId);
+
+  var html = '<div class="student-info">👤 ' + s.name + (c ? ' · ' + c.name : '') + '</div>';
+
+  // Форма добавления оценки
+  html += '<div class="card">';
+  html += '<h3 style="margin-top:0;">➕ Добавить оценку</h3>';
+  html += '<div class="form-grid">';
+  html += '<div class="form-row"><label>Оценка</label>';
+  html += '<select id="g-grade"><option value="5">5 (отлично)</option><option value="4">4 (хорошо)</option><option value="3">3 (удовл.)</option><option value="2">2 (неудовл.)</option></select></div>';
+  html += '<div class="form-row"><label>Вес оценки</label>';
+  html += '<select id="g-weight"><option value="1">Обычная (1×)</option><option value="2">Контрольная (2×)</option><option value="3">Итоговая (3×)</option></select></div>';
+  html += '</div>';
+  html += '<div class="form-row"><label>Комментарий</label>';
+  html += '<input type="text" id="g-comment" placeholder="Например: Контрольная по теме «Дроби»"></div>';
+  html += '<div class="form-row"><label>Дата</label>';
+  html += '<input type="date" id="g-date" value="' + new Date().toISOString().split('T')[0] + '"></div>';
+  html += '<button class="btn btn-block" onclick="addGrade(\'' + studentId + '\', \'' + s.classId + '\')">📊 Добавить оценку</button>';
+  html += '</div>';
+
+  // Средний балл
+  if (avg) {
+    html += '<div class="avg-block">';
+    html += '<div style="font-size:.9rem;">Средний балл (взвешенный)</div>';
+    html += '<div class="num">' + avg + '</div>';
+    html += '<div>На основе ' + grades.length + ' оценок</div>';
+    html += '</div>';
+  }
+
+  // Таблица оценок
+  if (grades.length) {
+    html += '<table class="grades-table">';
+    html += '<thead><tr><th>Дата</th><th>Оценка</th><th>Вес</th><th>Комментарий</th><th></th></tr></thead><tbody>';
+    grades.slice().reverse().forEach(function (g) {
+      var weightLabel = g.weight === 1 ? '1×' : g.weight === 2 ? '2× (контр.)' : g.weight + '× (итог.)';
+      html += '<tr>';
+      html += '<td>' + g.date + '</td>';
+      html += '<td><span class="grade-badge g' + g.grade + (g.weight > 1 ? ' weight-2' : '') + '">' + g.grade + '</span></td>';
+      html += '<td>' + weightLabel + '</td>';
+      html += '<td>' + (g.comment || '—') + '</td>';
+      html += '<td><button class="btn-sm btn-danger" onclick="removeGrade(\'' + g.id + '\')">🗑</button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+  }
+
+  el.innerHTML = html;
+}
+
+function addGrade(studentId, classId) {
+  window.PED_TEACHER.addGrade({
+    studentId: studentId,
+    classId: classId,
+    grade: document.getElementById('g-grade').value,
+    weight: document.getElementById('g-weight').value,
+    comment: document.getElementById('g-comment').value,
+    date: document.getElementById('g-date').value
+  });
+  render();
+}
+
+function removeGrade(id) {
+  if (!confirm('Удалить оценку?')) return;
+  window.PED_TEACHER.removeGrade(id);
+  render();
+}
+
+fillSelects();
+render();
+</script>
+</body>
+</html>

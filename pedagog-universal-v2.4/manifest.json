@@ -1,0 +1,14 @@
+{
+  "name": "Я в натуре Педагог",
+  "short_name": "Педагог",
+  "description": "Умный помощник учителя: методики, SOS, правовой навигатор, планировщик",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#7c3aed",
+  "lang": "ru",
+  "icons": [
+    { "src": "assets/icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "assets/icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}

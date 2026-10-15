@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📔 Заметки учителя</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%; padding: 12px; border: 2px solid var(--border);
+  border-radius: 8px; background: var(--card); color: var(--text);
+  font-size: 1rem; font-family: inherit; box-sizing: border-box;
+}
+.form-row textarea { min-height: 80px; resize: vertical; }
+.note-card { background: var(--card); border-left: 5px solid var(--accent); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+.note-card.cat-parent { border-left-color: #0891b2; }
+.note-card.cat-idea { border-left-color: #f59e0b; }
+.note-card.cat-problem { border-left-color: #dc2626; }
+.note-card .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 12px; }
+.note-card .title { font-weight: 800; font-size: 1.05rem; }
+.note-card .cat { padding: 3px 10px; border-radius: 8px; font-size: .75rem; font-weight: 700; background: var(--bg-soft); }
+.note-card .text { margin: 8px 0; }
+.note-card .date { font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <a href="../../index.html" class="btn btn-outline">← На главную</a>
+  <h2>📔 Заметки учителя</h2>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">➕ Новая заметка</h3>
+  <div class="form-row">
+    <label>Категория</label>
+    <select id="n-cat">
+      <option value="obs">📌 Наблюдение</option>
+      <option value="parent">📞 Разговор с родителями</option>
+      <option value="idea">💡 Идея</option>
+      <option value="problem">⚠️ Проблема</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label>Заголовок</label>
+    <input type="text" id="n-title" placeholder="Например: Разговор с мамой Иванова">
+  </div>
+  <div class="form-row">
+    <label>Текст</label>
+    <textarea id="n-text" placeholder="Что произошло, что решили, что дальше"></textarea>
+  </div>
+  <button class="btn btn-block" onclick="addNote()">📔 Сохранить заметку</button>
+</div>
+
+<div id="list"></div>
+</div>
+
+<script src="../../core/teacherStore.js"></script>
+<script>
+function render() {
+  var notes = window.PED_TEACHER.getNotes().slice().reverse();
+  var el = document.getElementById('list');
+  if (!notes.length) {
+    el.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--muted);">📔 Заметок пока нет</div>';
+    return;
+  }
+  var cats = { obs: '📌 Наблюдение', parent: '📞 Родители', idea: '💡 Идея', problem: '⚠️ Проблема' };
+  el.innerHTML = notes.map(function (n) {
+    return '<div class="note-card cat-' + n.category + '">' +
+      '<div class="head"><div class="title">' + n.title + '</div>' +
+      '<span class="cat">' + (cats[n.category] || n.category) + '</span></div>' +
+      '<div class="text">' + n.text + '</div>' +
+      '<div class="date">' + new Date(n.date).toLocaleString('ru') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function addNote() {
+  var title = document.getElementById('n-title').value.trim();
+  var text = document.getElementById('n-text').value.trim();
+  if (!title || !text) { alert('Заполни заголовок и текст!'); return; }
+  window.PED_TEACHER.addNote({
+    category: document.getElementById('n-cat').value,
+    title: title,
+    text: text
+  });
+  document.getElementById('n-title').value = '';
+  document.getElementById('n-text').value = '';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

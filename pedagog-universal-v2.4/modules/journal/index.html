@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📔 Дневник учителя</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-weight:700;font-size:.9rem;margin-bottom:4px}
+.form-row input,.form-row textarea{width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;font-family:inherit;box-sizing:border-box}
+.entry-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;border-left:5px solid var(--accent)}
+.entry-card .date{font-size:.8rem;color:var(--muted);margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📔 Дневник учителя</h2>
+  </div>
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <p style="margin:0;">Записывай события: что прошло хорошо, что было трудно, идеи.</p>
+  </div>
+  <div class="card">
+    <div class="form-row">
+      <label>Класс / группа</label>
+      <input type="text" id="j-class" placeholder="Например: 7А">
+    </div>
+    <div class="form-row">
+      <label>Что произошло</label>
+      <textarea id="j-text" placeholder="Опиши событие, идею или заметку"></textarea>
+    </div>
+    <button class="btn btn-block" onclick="saveEntry()">💾 Сохранить запись</button>
+  </div>
+  <div id="entries"></div>
+</div>
+<script src="../../core/store.js"></script>
+<script>
+function render(){
+  const list = window.PED_STORE.getJournal().slice().reverse();
+  const el = document.getElementById('entries');
+  if (!list.length) {
+    el.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--muted);">📔 Записей пока нет</div>';
+    return;
+  }
+  el.innerHTML = list.map(e => `
+    <div class="entry-card">
+      <div class="date">${new Date(e.date).toLocaleString('ru-RU')}</div>
+      <b>${e.className || 'Без класса'}</b><br>
+      ${e.text}
+    </div>
+  `).join('');
+}
+function saveEntry(){
+  const className = document.getElementById('j-class').value.trim();
+  const text = document.getElementById('j-text').value.trim();
+  if (!text) { alert('Заполни текст'); return; }
+  window.PED_STORE.addJournal({ className, text });
+  document.getElementById('j-class').value = '';
+  document.getElementById('j-text').value = '';
+  alert('✅ Сохранено');
+  render();
+}
+render();
+</script>
+</body>
+</html>

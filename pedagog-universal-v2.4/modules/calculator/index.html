@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 Калькулятор оценок</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-weight:700;font-size:.9rem;margin-bottom:4px}
+.form-row input,.form-row select{width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;font-family:inherit;box-sizing:border-box}
+.result{background:linear-gradient(135deg,#ede9fe,#ddd6fe);padding:20px;border-radius:14px;margin-top:20px}
+[data-theme="dark"] .result{background:linear-gradient(135deg,#4c1d95,#5b21b6);color:#ede9fe}
+.result .avg{font-size:3rem;font-weight:900;color:var(--accent);text-align:center}
+.grade-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px;margin-top:16px}
+.grade-item{display:flex;align-items:center;gap:6px}
+.grade-item input{width:100%;padding:8px;text-align:center}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📊 Калькулятор оценок</h2>
+  </div>
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <p style="margin:0;">Введи оценки — получи средний балл и итоговую оценку.</p>
+  </div>
+  <div class="card">
+    <div class="form-row">
+      <label>Сколько оценок?</label>
+      <input type="number" id="count" value="5" min="1" max="30" oninput="buildInputs()">
+    </div>
+    <div class="grade-list" id="grades"></div>
+    <button class="btn btn-block" style="margin-top:16px;" onclick="calculate()">📊 Рассчитать</button>
+  </div>
+  <div id="result"></div>
+</div>
+<script>
+function buildInputs(){
+  const count = parseInt(document.getElementById('count').value) || 5;
+  const el = document.getElementById('grades');
+  el.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    el.innerHTML += '<div class="grade-item"><input type="number" min="1" max="5" class="grade-input" placeholder="' + (i+1) + '"></div>';
+  }
+}
+function calculate(){
+  const inputs = document.querySelectorAll('.grade-input');
+  const grades = [];
+  inputs.forEach(i => { const v = parseFloat(i.value); if (v) grades.push(v); });
+  if (!grades.length) { alert('Введи хотя бы одну оценку'); return; }
+
+  const avg = grades.reduce((s, x) => s + x, 0) / grades.length;
+  const final = avg >= 4.5 ? 5 : (avg >= 3.5 ? 4 : (avg >= 2.5 ? 3 : 2));
+
+  document.getElementById('result').innerHTML = `
+    <div class="result">
+      <div style="text-align:center;font-size:1rem;">Средний балл</div>
+      <div class="avg">${avg.toFixed(2)}</div>
+      <div style="text-align:center;font-size:1.2rem;font-weight:800;">Итоговая оценка: <span style="color:var(--accent);">${final}</span></div>
+      <div style="text-align:center;margin-top:12px;color:var(--muted);font-size:.9rem;">На основе ${grades.length} оценок</div>
+    </div>
+  `;
+}
+buildInputs();
+</script>
+</body>
+</html>

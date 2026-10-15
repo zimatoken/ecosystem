@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 Методики обучения</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.filters{display:flex;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px}
+.filters select{padding:10px 12px;border:2px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;flex:1;min-width:150px;font-family:inherit}
+.methods-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.method-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s}
+.method-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:var(--accent)}
+.method-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.method-icon{font-size:2.5rem}
+.method-name{font-weight:800;font-size:1.1rem}
+.method-meta{font-size:.85rem;color:var(--muted);line-height:1.5}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-body{background:var(--card);border-radius:16px;max-width:720px;width:100%;padding:28px;margin:40px auto}
+.section-h{font-size:1.15rem;font-weight:800;color:var(--accent);margin:20px 0 10px;border-bottom:2px solid var(--accent);padding-bottom:4px}
+.principle{padding:10px 12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px;border-left:4px solid var(--accent)}
+.mistake{padding:10px;background:#fee2e2;color:#991b1b;border-radius:8px;margin-bottom:6px;font-size:.9rem}
+[data-theme="dark"] .mistake{background:#7f1d1d;color:#fecaca}
+.history{background:linear-gradient(135deg,#ede9fe,#ddd6fe);padding:14px;border-radius:10px;margin-bottom:16px;font-style:italic;line-height:1.6;color:#4c1d95}
+[data-theme="dark"] .history{background:linear-gradient(135deg,#4c1d95,#5b21b6);color:#ede9fe}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>📚 Методики обучения</h2>
+  </div>
+  <div class="filters">
+    <select id="filter-cat">
+      <option value="">Все категории</option>
+      <option value="preschool">🧩 Дошкольное</option>
+      <option value="school">🏫 Школьное</option>
+      <option value="modern">💻 Современное</option>
+      <option value="health">💪 Здоровье</option>
+      <option value="special">🤝 Инклюзия</option>
+    </select>
+  </div>
+  <div id="grid" class="methods-grid"></div>
+</div>
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="modal-body" id="modal-body" onclick="event.stopPropagation()"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/methods/montessori.js"></script>
+<script src="../../data/methods/waldorf.js"></script>
+<script src="../../data/methods/fgos.js"></script>
+<script src="../../data/methods/problem_based.js"></script>
+<script src="../../data/methods/flipped.js"></script>
+<script src="../../data/methods/project.js"></script>
+<script src="../../data/methods/critical_thinking.js"></script>
+<script src="../../data/methods/gamification.js"></script>
+<script src="../../data/methods/health_saving.js"></script>
+<script src="../../data/methods/inclusive.js"></script>
+<script src="../../data/methods/ict.js"></script>
+<script src="../../data/methods/differentiated.js"></script>
+<script>
+const CAT = {preschool:'🧩 Дошкольное',school:'🏫 Школьное',modern:'💻 Современное',health:'💪 Здоровье',special:'🤝 Инклюзия'};
+const DIFF = {easy:'😊 Легко',medium:'🤔 Средне',hard:'💪 Сложно'};
+function render(){
+  const cat=document.getElementById('filter-cat').value;
+  let list=window.PED_FILTER_METHODS({category:cat||undefined});
+  document.getElementById('grid').innerHTML = list.length ? list.map(m=>
+    '<div class="method-card" onclick="openMethod(\''+m.meta.id+'\')">'+
+      '<div class="method-head"><div class="method-icon">'+m.meta.icon+'</div>'+
+      '<div><div class="method-name">'+m.meta.name+'</div>'+
+      '<div class="method-meta">👤 '+m.meta.author+'<br>🎂 '+m.meta.age+' · '+DIFF[m.meta.difficulty]+'</div></div></div>'+
+      '<div style="margin-top:8px;"><span class="badge badge-accent">'+CAT[m.meta.category]+'</span></div>'+
+    '</div>'
+  ).join('') : '<p style="grid-column:1/-1;text-align:center;color:var(--muted);padding:40px;">Ничего не найдено</p>';
+}
+function openMethod(id){
+  const m=window.PED_GET_METHOD(id); if(!m) return;
+  let html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'+
+    '<h2 style="margin:0;">'+m.meta.icon+' '+m.meta.name+'</h2>'+
+    '<button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">✕</button></div>';
+
+  html+='<div style="margin-bottom:16px;"><span class="badge badge-accent">'+CAT[m.meta.category]+'</span>'+
+    '<span class="badge">'+DIFF[m.meta.difficulty]+'</span>'+
+    '<span class="badge">'+m.meta.age+'</span></div>';
+
+  html+='<div class="history">👤 <b>'+m.meta.author+'</b><br>'+(m.history || m.meta.history || '—')+'</div>';
+
+  if(m.principles){
+    html+='<div class="section-h">📌 Принципы</div>';
+    m.principles.forEach(p=>{ html+='<div class="principle">'+p+'</div>'; });
+  }
+  if(m.materials){
+    html+='<div class="section-h">🛠️ Материалы</div>';
+    m.materials.forEach(x=>{
+      if(typeof x === 'object' && x !== null){
+        html+='<div class="principle"><b>'+x.name+'</b> — '+(x.purpose||'')+'</div>';
+      } else {
+        html+='<div class="principle">'+x+'</div>';
+      }
+    });
+  }
+  if(m.strengths){
+    html+='<div class="section-h">✅ Плюсы</div><ul style="line-height:1.7;">';
+    m.strengths.forEach(s=>{ html+='<li>'+s+'</li>'; });
+    html+='</ul>';
+  }
+  if(m.weaknesses){
+    html+='<div class="section-h">⚠️ Минусы</div><ul style="line-height:1.7;">';
+    m.weaknesses.forEach(w=>{ html+='<li>'+w+'</li>'; });
+    html+='</ul>';
+  }
+  if(m.mistakes){
+    html+='<div class="section-h">❌ Ошибки</div>';
+    m.mistakes.forEach(x=>{ html+='<div class="mistake">'+x+'</div>'; });
+  }
+
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('modal').classList.remove('open');}
+document.getElementById('filter-cat').addEventListener('change',render);
+render();
+</script>
+</body>
+</html>
+

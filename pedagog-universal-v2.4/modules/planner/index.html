@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📐 Конструктор урока v2</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%; padding: 12px; border: 2px solid var(--border);
+  border-radius: 8px; background: var(--card); color: var(--text);
+  font-size: 1rem; font-family: inherit; box-sizing: border-box;
+}
+.form-row textarea { resize: vertical; min-height: 60px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+.type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin: 12px 0; }
+.type-card {
+  background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+  padding: 14px; cursor: pointer; transition: .2s; text-align: center;
+}
+.type-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.type-card.active { border-color: var(--accent); background: var(--accent-soft); }
+.type-icon { font-size: 2rem; margin-bottom: 6px; }
+.type-name { font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.type-desc { font-size: .75rem; color: var(--muted); }
+
+.result { background: linear-gradient(135deg, #dcfce7, #bbf7d0); padding: 24px; border-radius: 14px; margin-top: 20px; }
+[data-theme="dark"] .result { background: linear-gradient(135deg, #14532d, #166534); color: #dcfce7; }
+.result h3 { color: var(--accent); margin-top: 0; }
+[data-theme="dark"] .result h3 { color: #dcfce7; }
+
+.stage-item { display: flex; gap: 12px; padding: 12px; background: var(--card); border-radius: 10px; margin-bottom: 8px; align-items: center; }
+.stage-item .num { background: var(--accent); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; }
+.stage-item .content { flex: 1; }
+.stage-item .name { font-weight: 700; }
+.stage-item .desc { font-size: .85rem; color: var(--muted); }
+.stage-item .time { background: var(--warning); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: .75rem; font-weight: 800; flex-shrink: 0; }
+
+.actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.actions .btn { flex: 1; min-width: 140px; }
+
+.uud-block { background: var(--bg-soft); padding: 14px; border-radius: 10px; margin: 12px 0; border-left: 4px solid var(--accent); }
+.uud-block h4 { margin: 0 0 6px; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <a href="../../index.html" class="btn btn-outline">← На главную</a>
+  <h2>📐 Конструктор урока</h2>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">1️⃣ Основное</h3>
+  <div class="form-grid">
+    <div class="form-row">
+      <label>Предмет</label>
+      <select id="subject">
+        <option>Математика</option><option>Русский язык</option><option>Литература</option>
+        <option>История</option><option>Обществознание</option><option>Физика</option>
+        <option>Химия</option><option>Биология</option><option>География</option>
+        <option>Информатика</option><option>Иностранный язык</option><option>Физкультура</option>
+        <option>Окружающий мир</option><option>ИЗО</option><option>Музыка</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Класс</label>
+      <select id="grade">
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option>
+        <option>9</option><option>10</option><option>11</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <label>Тема урока</label>
+    <input type="text" id="topic" placeholder="Например: Умножение дробей">
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">2️⃣ Тип урока</h3>
+  <div class="type-grid" id="type-grid"></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">3️⃣ Цели (SMART)</h3>
+  <div class="form-row">
+    <label>Образовательная цель (чему научатся)</label>
+    <textarea id="goal-edu" placeholder="Например: научиться умножать обыкновенные дроби"></textarea>
+  </div>
+  <div class="form-row">
+    <label>Развивающая цель (что разовьют)</label>
+    <textarea id="goal-dev" placeholder="Например: развить логическое мышление через решение задач"></textarea>
+  </div>
+  <div class="form-row">
+    <label>Воспитательная цель (что сформируют)</label>
+    <textarea id="goal-vosp" placeholder="Например: воспитать уважение к труду через парную работу"></textarea>
+  </div>
+</div>
+
+<button class="btn btn-block" style="padding: 16px; font-size: 1.1rem;" onclick="generatePlan()">📐 Составить план урока</button>
+
+<div id="result"></div>
+
+<div class="card" style="margin-top: 24px;">
+  <h3 style="margin-top:0;">📜 Мои планы (<span id="saved-count">0</span>)</h3>
+  <div id="saved-plans"></div>
+</div>
+
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/lesson_types.js"></script>
+<script src="../../data/tasks_library.js"></script>
+<script>
+var currentType = 'new_knowledge';
+
+function renderTypes() {
+  var types = window.PED_LESSON_TYPES || {};
+  document.getElementById('type-grid').innerHTML = Object.keys(types).map(function(key) {
+    var t = types[key];
+    return '<div class="type-card' + (key === currentType ? ' active' : '') + '" onclick="pickType(\'' + key + '\')">' +
+      '<div class="type-icon">' + t.icon + '</div>' +
+      '<div class="type-name">' + t.name + '</div>' +
+      '<div class="type-desc">' + t.desc + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function pickType(key) {
+  currentType = key;
+  renderTypes();
+}
+
+function generatePlan() {
+  var subject = document.getElementById('subject').value;
+  var grade = document.getElementById('grade').value;
+  var topic = document.getElementById('topic').value.trim() || 'Тема урока';
+  var goalEdu = document.getElementById('goal-edu').value.trim() || '—';
+  var goalDev = document.getElementById('goal-dev').value.trim() || '—';
+  var goalVosp = document.getElementById('goal-vosp').value.trim() || '—';
+
+  var types = window.PED_LESSON_TYPES || {};
+  var t = types[currentType];
+  if (!t) return;
+
+  var totalMin = t.stages.reduce(function(s, st) { return s + st.min; }, 0);
+
+  var html = '<div class="result">';
+  html += '<h3>' + t.icon + ' ' + topic + '</h3>';
+  html += '<p><b>Предмет:</b> ' + subject + ' · <b>Класс:</b> ' + grade + ' класс · <b>Тип:</b> ' + t.name + '</p>';
+  html += '<p><b>⏱️ Продолжительность:</b> ' + totalMin + ' мин</p>';
+
+  html += '<div class="uud-block"><h4>🎯 Образовательная цель</h4><p>' + goalEdu + '</p></div>';
+  html += '<div class="uud-block"><h4>🧠 Развивающая цель</h4><p>' + goalDev + '</p></div>';
+  html += '<div class="uud-block"><h4>❤️ Воспитательная цель</h4><p>' + goalVosp + '</p></div>';
+
+  html += '<h4>📋 Этапы урока:</h4>';
+  t.stages.forEach(function(st, i) {
+    html += '<div class="stage-item">' +
+      '<div class="num">' + (i + 1) + '</div>' +
+      '<div class="content"><div class="name">' + st.name + '</div><div class="desc">' + st.desc + '</div></div>' +
+      '<div class="time">' + st.min + ' мин</div>' +
+    '</div>';
+  });
+
+  html += '<div class="uud-block"><h4>🧩 УУД (по ФГОС)</h4><p>' + t.uud + '</p></div>';
+
+  if (t.methods) {
+    html += '<div class="uud-block"><h4>🎯 Методы</h4><p>' + t.methods.join(', ') + '</p></div>';
+  }
+
+  if (t.assessment) {
+    html += '<div class="uud-block"><h4>✅ Оценивание</h4><p>' + t.assessment + '</p></div>';
+  }
+
+  html += '<h4>📚 Библиотека заданий:</h4>';
+  if (window.PED_TASKS_LIBRARY) {
+    var lib = window.PED_TASKS_LIBRARY;
+    ['warmup', 'problem', 'practice', 'creative', 'reflection', 'homework'].forEach(function(cat) {
+      if (lib[cat]) {
+        html += '<div style="margin-top:12px;"><b>• ' + cat.charAt(0).toUpperCase() + cat.slice(1) + ':</b><br>' +
+          lib[cat].map(function(x) { return '&nbsp;&nbsp;— ' + x; }).join('<br>') + '</div>';
+      }
+    });
+  }
+
+  html += '<div class="actions">';
+  html += '<button class="btn" onclick="copyPlan()">📋 Скопировать</button>';
+  html += '<button class="btn" style="background:#16a34a;" onclick="printPlan()">🖨️ Распечатать</button>';
+  html += '<button class="btn btn-outline" onclick="savePlan(\'' + subject + '\', \'' + grade + '\', \'' + topic.replace(/'/g, "\\'") + '\')">💾 Сохранить</button>';
+  html += '</div>';
+  html += '</div>';
+
+  document.getElementById('result').innerHTML = html;
+  window.PED_STORE.registerPlan();
+}
+
+function copyPlan() {
+  var text = document.getElementById('result').innerText;
+  navigator.clipboard.writeText(text).then(function() {
+    alert('✅ План урока скопирован!');
+  });
+}
+
+function printPlan() {
+  var text = document.getElementById('result').innerText;
+  var w = window.open();
+  w.document.write('<pre style="font-family:system-ui;font-size:14px;padding:20px;line-height:1.6;">' + text + '</pre>');
+  w.document.close();
+  w.print();
+}
+
+function savePlan(subject, grade, topic) {
+  var plans = JSON.parse(localStorage.getItem('ped_saved_plans') || '[]');
+  plans.push({ subject: subject, grade: grade, topic: topic, type: currentType, date: new Date().toISOString() });
+  localStorage.setItem('ped_saved_plans', JSON.stringify(plans));
+  alert('✅ План сохранён!');
+  renderSaved();
+}
+
+function renderSaved() {
+  var plans = JSON.parse(localStorage.getItem('ped_saved_plans') || '[]');
+  document.getElementById('saved-count').textContent = plans.length;
+  if (!plans.length) {
+    document.getElementById('saved-plans').innerHTML = '<p style="color:var(--muted);text-align:center;">Пока нет сохранённых планов</p>';
+    return;
+  }
+  var types = window.PED_LESSON_TYPES || {};
+  document.getElementById('saved-plans').innerHTML = plans.slice().reverse().map(function(p) {
+    var t = types[p.type] || { icon: '📚' };
+    return '<div class="stage-item">' +
+      '<div class="num">' + t.icon + '</div>' +
+      '<div class="content"><div class="name">' + p.topic + '</div><div class="desc">' + p.subject + ' · ' + p.grade + ' класс</div></div>' +
+    '</div>';
+  }).join('');
+}
+
+renderTypes();
+renderSaved();
+</script>
+</body>
+</html>

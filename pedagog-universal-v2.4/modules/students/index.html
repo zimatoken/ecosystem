@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 Мои ученики</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%; padding: 12px; border: 2px solid var(--border);
+  border-radius: 8px; background: var(--card); color: var(--text);
+  font-size: 1rem; font-family: inherit; box-sizing: border-box;
+}
+.form-row textarea { min-height: 60px; resize: vertical; }
+.students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 20px; }
+.student-card { background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 18px; border-left: 5px solid var(--accent); }
+.student-card h3 { margin: 0 0 8px; color: var(--accent); }
+.student-card .meta { font-size: .9rem; color: var(--muted); margin-bottom: 10px; }
+.student-card .avg { background: var(--bg-soft); padding: 6px 12px; border-radius: 8px; display: inline-block; font-weight: 800; color: var(--accent); margin: 6px 0; }
+.student-card .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.class-selector { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.class-selector select { padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 1rem; flex: 1; min-width: 200px; font-family: inherit; }
+.btn-sm { padding: 8px 14px; border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; text-decoration: none; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-outline { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+.empty { text-align: center; padding: 40px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <a href="../../index.html" class="btn btn-outline">← На главную</a>
+  <h2>🎓 Мои ученики</h2>
+</div>
+
+<div class="class-selector">
+  <label style="font-weight:700;">Класс:</label>
+  <select id="class-select" onchange="render()">
+    <option value="">— Все ученики —</option>
+  </select>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">➕ Добавить ученика</h3>
+  <div class="form-row">
+    <label>Класс</label>
+    <select id="s-class"></select>
+  </div>
+  <div class="form-row">
+    <label>ФИО ученика</label>
+    <input type="text" id="s-name" placeholder="Например: Иванов Иван">
+  </div>
+  <div class="form-row">
+    <label>Контакт родителей</label>
+    <input type="text" id="s-parent" placeholder="+7 (___) ___-__-__">
+  </div>
+  <div class="form-row">
+    <label>Заметка</label>
+    <textarea id="s-note" placeholder="Например: нужна помощь по алгебре"></textarea>
+  </div>
+  <button class="btn btn-block" onclick="addStudent()">🎓 Добавить ученика</button>
+</div>
+
+<div id="grid" class="students-grid"></div>
+</div>
+
+<script src="../../core/teacherStore.js"></script>
+<script>
+function fillSelects() {
+  var classes = window.PED_TEACHER.getClasses();
+  var html = '<option value="">— Выбери класс —</option>' + classes.map(function (c) {
+    return '<option value="' + c.id + '">' + c.name + '</option>';
+  }).join('');
+  document.getElementById('class-select').innerHTML = '<option value="">— Все ученики —</option>' + classes.map(function (c) {
+    return '<option value="' + c.id + '">' + c.name + '</option>';
+  }).join('');
+  document.getElementById('s-class').innerHTML = html;
+
+  // Автовыбор класса из URL
+  var urlParams = new URLSearchParams(window.location.search);
+  var classId = urlParams.get('class');
+  if (classId) {
+    document.getElementById('class-select').value = classId;
+  }
+}
+
+function render() {
+  var classId = document.getElementById('class-select').value;
+  var students = classId ? window.PED_TEACHER.getStudentsByClass(classId) : window.PED_TEACHER.getStudents();
+  var el = document.getElementById('grid');
+
+  if (!students.length) {
+    el.innerHTML = '<div class="empty">🎓 Пока нет учеников в этом классе</div>';
+    return;
+  }
+
+  el.innerHTML = students.map(function (s) {
+    var c = window.PED_TEACHER.getClass(s.classId);
+    var avg = window.PED_TEACHER.getAverageForStudent(s.id);
+    return '<div class="student-card">' +
+      '<h3>' + s.name + '</h3>' +
+      '<div class="meta">' +
+        '📚 ' + (c ? c.name : '—') + '<br>' +
+        '📞 ' + (s.parentContact || '—') + '<br>' +
+        (s.note ? '📝 ' + s.note : '') +
+      '</div>' +
+      (avg ? '<div class="avg">⭐ Средний балл: ' + avg + '</div>' : '') +
+      '<div class="actions">' +
+        '<a href="../grades/index.html?student=' + s.id + '" class="btn-sm btn-primary">📊 Оценки</a>' +
+        '<button class="btn-sm btn-danger" onclick="removeStudent(\'' + s.id + '\')">🗑 Удалить</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function addStudent() {
+  var classId = document.getElementById('s-class').value;
+  var name = document.getElementById('s-name').value.trim();
+  if (!classId) { alert('Выбери класс!'); return; }
+  if (!name) { alert('Введи ФИО!'); return; }
+  window.PED_TEACHER.addStudent({
+    classId: classId,
+    name: name,
+    parentContact: document.getElementById('s-parent').value.trim(),
+    note: document.getElementById('s-note').value.trim()
+  });
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-parent').value = '';
+  document.getElementById('s-note').value = '';
+  render();
+}
+
+function removeStudent(id) {
+  if (!confirm('Удалить ученика?')) return;
+  window.PED_TEACHER.removeStudent(id);
+  render();
+}
+
+fillSelects();
+render();
+</script>
+</body>
+</html>

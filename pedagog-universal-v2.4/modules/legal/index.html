@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚖️ Правовой навигатор МАКСИМУМ</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.legal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.legal-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:.2s;border-left:5px solid var(--accent)}
+.legal-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:var(--accent)}
+.legal-card .doc{font-size:.8rem;color:var(--muted);font-weight:700;margin-bottom:6px;text-transform:uppercase}
+.legal-card h3{margin:0 0 8px;color:var(--accent);font-size:1.05rem}
+.legal-card .short{color:var(--muted);font-size:.9rem}
+.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-body{background:var(--card);border-radius:16px;max-width:720px;width:100%;padding:28px;margin:40px auto}
+.text-block{background:var(--bg-soft);padding:16px;border-radius:10px;margin-bottom:16px;font-style:italic;line-height:1.6}
+.section-h{font-size:1.15rem;font-weight:800;color:var(--accent);margin:20px 0 10px;border-bottom:2px solid var(--accent);padding-bottom:4px}
+.practice-item{padding:10px 12px;background:var(--bg-soft);border-radius:8px;margin-bottom:6px;border-left:4px solid var(--success)}
+.mistake{padding:10px;background:#fee2e2;color:#991b1b;border-radius:8px;margin-bottom:6px;font-size:.9rem}
+[data-theme="dark"] .mistake{background:#7f1d1d;color:#fecaca}
+.meaning{background:linear-gradient(135deg,#dbeafe,#bfdbfe);padding:14px;border-radius:10px;margin-bottom:16px;color:#1e3a8a}
+[data-theme="dark"] .meaning{background:linear-gradient(135deg,#1e3a8a,#1e40af);color:#dbeafe}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>⚖️ Правовой навигатор</h2>
+  </div>
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <p style="margin:0;">Юридическая база педагога — <b>20 статей с разбором</b>. Все нормы актуальны на 2026 год.</p>
+  </div>
+  <div id="grid" class="legal-grid"></div>
+</div>
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="modal-body" id="modal-body" onclick="event.stopPropagation()"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../data/legal/st_331_tk.js"></script>
+<script src="../../data/legal/st_43_fz273.js"></script>
+<script src="../../data/legal/st_48_fz273.js"></script>
+<script src="../../data/legal/st_44_fz273.js"></script>
+<script src="../../data/legal/st_28_fz273.js"></script>
+<script src="../../data/legal/st_41_fz273.js"></script>
+<script src="../../data/legal/st_45_fz273.js"></script>
+<script src="../../data/legal/st_47_fz273.js"></script>
+<script src="../../data/legal/st_273_fz_43_phone.js"></script>
+<script src="../../data/legal/st_2_273_fz_education.js"></script>
+<script src="../../data/legal/st_3_273_fz_principles.js"></script>
+<script src="../../data/legal/st_5_273_fz_rights.js"></script>
+<script src="../../data/legal/st_10_273_fz_structure.js"></script>
+<script src="../../data/legal/st_11_273_fz_fgos.js"></script>
+<script src="../../data/legal/st_58_fz273.js"></script>
+<script src="../../data/legal/st_43_tk_discipline.js"></script>
+<script src="../../data/legal/st_81_tk_dismissal.js"></script>
+<script src="../../data/legal/st_5_61_koap.js"></script>
+<script src="../../data/legal/st_128_1_uk.js"></script>
+<script src="../../data/legal/sp_2_4_2_4283.js"></script>
+<script>
+function render(){
+  const list = window.PED_GET_ALL_LEGAL();
+  document.getElementById('grid').innerHTML = list.map(l =>
+    '<div class="legal-card" onclick="openArticle(\'' + l.id + '\')">' +
+      '<div class="doc">' + l.doc + '</div>' +
+      '<h3>' + l.name + '</h3>' +
+      '<div class="short">' + l.short + '</div>' +
+    '</div>'
+  ).join('');
+}
+function openArticle(id){
+  const l = window.PED_GET_LEGAL(id);
+  if (!l) return;
+  let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+    '<h2 style="margin:0;">⚖️ ' + l.name + '</h2>' +
+    '<button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text);">✕</button></div>';
+  html += '<div class="doc" style="font-weight:700;color:var(--muted);margin-bottom:8px;">' + l.doc + '</div>';
+  html += '<div class="text-block">📖 <b>Текст:</b> ' + l.text + '</div>';
+  html += '<div class="meaning">💡 <b>Что это значит:</b> ' + l.meaning + '</div>';
+  if (l.practice && l.practice.length) {
+    html += '<div class="section-h">✅ На практике</div>';
+    l.practice.forEach(p => html += '<div class="practice-item">' + p + '</div>');
+  }
+  if (l.mistakes && l.mistakes.length) {
+    html += '<div class="section-h">⚠️ Ошибки</div>';
+    l.mistakes.forEach(m => html += '<div class="mistake">' + m + '</div>');
+  }
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('modal').classList.remove('open');}
+render();
+</script>
+</body>
+</html>

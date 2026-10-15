@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#7c3aed">
+<title>🎓 Я в натуре Педагог</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🎓 Я в натуре Педагог</h1>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline" onclick="toggleTheme()">🌓</button>
+      <a href="../life-hub-v2.0/index.html" class="btn btn-outline" style="font-weight:700;">🏠 Моя Жизнь</a>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat">⭐ Уровень <span id="s-level">1</span></div>
+    <div class="stat">✨ <span id="s-xp">0</span> XP</div>
+    <div class="stat">📚 <span id="s-lessons">0</span> уроков</div>
+    <div class="stat">🔥 <span id="s-streak">0</span> дн.</div>
+  </div>
+
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <h2 style="margin-top:0;">Привет, педагог! 🎓</h2>
+    <p>Методики, SOS-помощь, правовой навигатор, планировщик уроков.</p>
+    <p style="font-size:.85rem;color:var(--muted);margin:0;">⚖️ Все рекомендации — на основе ФЗ-273, ТК РФ, Профстандарта 544н, СП 2.4.2.4283-26</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
+    <a href="modules/methods/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">📚</span>Методики</a>
+    <a href="modules/planner/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#16a34a,#22c55e);"><span style="font-size:1.8rem">📐</span>Конструктор урока</a>
+    <a href="modules/sos/index.html" class="btn btn-danger btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">🆘</span>SOS Педагога</a>
+    <a href="modules/documents/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#0891b2,#06b6d4);"><span style="font-size:1.8rem">📄</span>Документы</a>
+    <a href="modules/legal/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#0891b2,#06b6d4);"><span style="font-size:1.8rem">⚖️</span>Правовой навигатор</a>
+    <a href="modules/classes/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#ea580c,#f59e0b);"><span style="font-size:1.8rem">👥</span>Мои классы</a>
+    <a href="modules/students/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#ea580c,#f59e0b);"><span style="font-size:1.8rem">🎓</span>Ученики</a>
+    <a href="modules/grades/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#ea580c,#f59e0b);"><span style="font-size:1.8rem">📊</span>Журнал</a>
+    <a href="modules/notes/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#ea580c,#f59e0b);"><span style="font-size:1.8rem">📔</span>Заметки</a>
+    <a href="modules/calculator/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">📊</span>Калькулятор оценок</a>
+    <a href="modules/achievements/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">🏆</span>Награды</a>
+    <a href="modules/settings/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">⚙️</span>Настройки</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="core/registry.js"></script>
+<script src="core/store.js"></script>
+<script src="core/sosEngine.js"></script>
+<script src="core/teacherStore.js"></script>
+<script src="data/templates/documents.js"></script>
+<script src="data/legal/st_331_tk.js"></script>
+<script src="data/legal/st_43_fz273.js"></script>
+<script src="data/legal/st_48_fz273.js"></script>
+<script src="data/legal/st_44_fz273.js"></script>
+<script src="data/legal/st_28_fz273.js"></script>
+<script src="data/legal/st_41_fz273.js"></script>
+<script src="data/legal/st_45_fz273.js"></script>
+<script src="data/legal/st_47_fz273.js"></script>
+<script src="data/legal/st_273_fz_43_phone.js"></script>
+<script src="data/legal/st_2_273_fz_education.js"></script>
+<script src="data/legal/st_3_273_fz_principles.js"></script>
+<script src="data/legal/st_5_273_fz_rights.js"></script>
+<script src="data/legal/st_10_273_fz_structure.js"></script>
+<script src="data/legal/st_11_273_fz_fgos.js"></script>
+<script src="data/legal/st_58_fz273.js"></script>
+<script src="data/legal/st_43_tk_discipline.js"></script>
+<script src="data/legal/st_81_tk_dismissal.js"></script>
+<script src="data/legal/st_5_61_koap.js"></script>
+<script src="data/legal/st_128_1_uk.js"></script>
+<script src="data/legal/sp_2_4_2_4283.js"></script>
+<script src="data/methods/montessori.js"></script>
+<script src="data/methods/waldorf.js"></script>
+<script src="data/methods/fgos.js"></script>
+<script src="data/methods/problem_based.js"></script>
+<script src="data/methods/flipped.js"></script>
+<script src="data/methods/project.js"></script>
+<script src="data/methods/critical_thinking.js"></script>
+<script src="data/methods/gamification.js"></script>
+<script src="data/methods/health_saving.js"></script>
+<script src="data/methods/inclusive.js"></script>
+<script src="data/methods/ict.js"></script>
+<script src="data/methods/differentiated.js"></script>
+<script src="data/sos/conflict_student.js"></script>
+<script src="data/sos/no_motivation.js"></script>
+<script src="data/sos/fight.js"></script>
+<script src="data/sos/bullying.js"></script>
+<script src="data/sos/crying.js"></script>
+<script src="data/sos/insult_teacher.js"></script>
+<script src="data/sos/parent_dissatisfied.js"></script>
+<script src="data/sos/phone_in_class.js"></script>
+<script src="data/sos/left_class.js"></script>
+<script src="data/sos/injury.js"></script>
+
+<script>
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('ecosystem_theme_universal_v2',next);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const s=window.PED_STORE.getStats();
+  document.getElementById('s-level').textContent=s.level||1;
+  document.getElementById('s-xp').textContent=s.xp||0;
+  document.getElementById('s-lessons').textContent=s.lessons||0;
+  document.getElementById('s-streak').textContent=s.streak||0;
+});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

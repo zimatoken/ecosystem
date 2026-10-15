@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🆘 SOS Педагога</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.sos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.sos-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:.2s;font-weight:700;font-size:1.05rem}
+.sos-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.solution{background:var(--card);border:2px solid var(--accent);border-radius:12px;padding:24px;margin-top:20px}
+.solution h3{color:var(--accent);margin-top:0;font-size:1.3rem}
+.solution ol{line-height:1.9;padding-left:22px;font-size:1.05rem}
+.legal-block{background:var(--bg-soft);padding:14px;border-radius:10px;margin-top:16px;border-left:4px solid var(--success)}
+.warn-block{background:#fef3c7;color:#92400e;padding:14px;border-radius:10px;margin-top:12px;font-weight:600}
+[data-theme="dark"] .warn-block{background:#78350f;color:#fef3c7}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2 style="color:var(--danger);">🆘 SOS Педагога</h2>
+  </div>
+  <div class="card" style="border-left:5px solid var(--danger);">
+    <p style="margin:0;line-height:1.6;">
+      ⚖️ <b>Юридически грамотные решения</b> на основе ФЗ-273, ТК РФ, СП 2.4.2.4283-26.
+    </p>
+  </div>
+  <div id="content"></div>
+</div>
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../core/sosEngine.js"></script>
+<script src="data/sos/conflict_student.js"></script>
+<script src="data/sos/no_motivation.js"></script>
+<script src="data/sos/fight.js"></script>
+<script src="data/sos/bullying.js"></script>
+<script src="data/sos/crying.js"></script>
+<script src="data/sos/insult_teacher.js"></script>
+<script src="data/sos/parent_dissatisfied.js"></script>
+<script src="data/sos/phone_in_class.js"></script>
+<script src="data/sos/left_class.js"></script>
+<script src="data/sos/injury.js"></script>
+<script>
+function renderTriggers(){
+  const list = window.PED_SOS_ENGINE.getTriggers();
+  document.getElementById('content').innerHTML =
+    '<div class="sos-grid">' +
+    list.map(s => '<div class="sos-card" onclick="openSOS(\'' + s.id + '\')">' + s.icon + ' ' + s.title + '<br><small style="font-weight:400;color:var(--muted);">' + s.description + '</small></div>').join('') +
+    '</div>';
+}
+function openSOS(id){
+  const s = window.PED_SOS_ENGINE.getTrigger(id);
+  if (!s) return;
+  let html = '<button class="btn btn-outline" onclick="renderTriggers()">← Назад</button>' +
+    '<div class="solution" style="margin-top:16px;">' +
+    '<h3>' + s.icon + ' ' + s.title + '</h3>' +
+    '<p style="color:var(--muted);margin-top:-8px;">' + s.description + '</p>' +
+    '<h4>📋 Что делать:</h4><ol>' + s.steps.map(x => '<li>' + x + '</li>').join('') + '</ol>';
+  if (s.legal) {
+    html += '<div class="legal-block"><h4 style="margin-top:0;color:var(--success);">⚖️ Правовая основа</h4>' +
+      s.legal.map(x => '<p style="margin:4px 0;">• ' + x + '</p>').join('') + '</div>';
+  }
+  if (s.warnings) {
+    html += '<div class="warn-block">⚠️ ' + s.warnings.join('<br>⚠️ ') + '</div>';
+  }
+  html += '<button class="btn btn-block" style="margin-top:16px;" onclick="markSolved()">✅ Решено (+75 XP)</button></div>';
+  document.getElementById('content').innerHTML = html;
+}
+function markSolved(){
+  window.PED_STORE.registerSOS();
+  alert('✅ Отлично! +75 XP');
+  renderTriggers();
+}
+renderTriggers();
+</script>
+</body>
+</html>

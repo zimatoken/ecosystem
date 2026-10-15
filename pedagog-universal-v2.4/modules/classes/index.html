@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👥 Мои классы</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.form-row { margin-bottom: 14px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 1rem; font-family: inherit; box-sizing: border-box; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+.classes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 20px; }
+.class-card { background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 18px; border-left: 5px solid var(--accent); position: relative; }
+.class-card h3 { margin: 0 0 8px; color: var(--accent); font-size: 1.4rem; }
+.class-card .meta { font-size: .9rem; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+.class-card .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.class-card .btn-sm { padding: 8px 14px; border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; border: none; font-family: inherit; text-decoration: none; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-danger { background: #dc2626; color: #fff; }
+.empty { text-align: center; padding: 40px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <a href="../../index.html" class="btn btn-outline">← На главную</a>
+  <h2>👥 Мои классы</h2>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">➕ Добавить класс</h3>
+  <div class="form-grid">
+    <div class="form-row">
+      <label>Название класса</label>
+      <input type="text" id="c-name" placeholder="Например: 7А">
+    </div>
+    <div class="form-row">
+      <label>Предмет</label>
+      <input type="text" id="c-subject" placeholder="Например: Математика">
+    </div>
+  </div>
+  <div class="form-grid">
+    <div class="form-row">
+      <label>Учебный год</label>
+      <input type="number" id="c-year" value="2026">
+    </div>
+    <div class="form-row">
+      <label>Расписание (когда ведёте)</label>
+      <input type="text" id="c-schedule" placeholder="Пн, Ср, Пт — 3-й урок">
+    </div>
+  </div>
+  <button class="btn btn-block" onclick="addClass()">👥 Добавить класс</button>
+</div>
+
+<div id="grid" class="classes-grid"></div>
+</div>
+
+<script src="../../core/teacherStore.js"></script>
+<script>
+function render() {
+  var list = window.PED_TEACHER.getClasses();
+  var el = document.getElementById('grid');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">👥 Пока нет классов. Добавь первый!</div>';
+    return;
+  }
+  el.innerHTML = list.map(function (c) {
+    var students = window.PED_TEACHER.getStudentsByClass(c.id);
+    return '<div class="class-card">' +
+      '<h3>' + c.name + '</h3>' +
+      '<div class="meta">' +
+        '📚 ' + (c.subject || '—') + '<br>' +
+        '👥 ' + students.length + ' учеников<br>' +
+        '📅 ' + (c.schedule || '—') + '<br>' +
+        '🎓 ' + c.year + ' год' +
+      '</div>' +
+      '<div class="actions">' +
+        '<a href="../students/index.html?class=' + c.id + '" class="btn-sm btn-primary">👥 Ученики</a>' +
+        '<button class="btn-sm btn-danger" onclick="removeClass(\'' + c.id + '\')">🗑 Удалить</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function addClass() {
+  var name = document.getElementById('c-name').value.trim();
+  if (!name) { alert('Введи название класса!'); return; }
+  window.PED_TEACHER.addClass({
+    name: name,
+    subject: document.getElementById('c-subject').value.trim(),
+    year: parseInt(document.getElementById('c-year').value),
+    schedule: document.getElementById('c-schedule').value.trim()
+  });
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-subject').value = '';
+  document.getElementById('c-schedule').value = '';
+  render();
+}
+
+function removeClass(id) {
+  if (!confirm('Удалить класс? Все оценки и ученики этого класса тоже удалятся.')) return;
+  window.PED_TEACHER.removeClass(id);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
