@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🚑 Навигатор v2</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.level-card { border-radius: 14px; padding: 20px; margin-bottom: 16px; border-left: 8px solid; cursor: pointer; transition: .2s; }
+.level-card:hover { transform: translateX(4px); }
+.level-green { border-left-color: #16a34a; background: #dcfce7; }
+.level-yellow { border-left-color: #f59e0b; background: #fef3c7; }
+.level-red { border-left-color: #dc2626; background: #fee2e2; }
+[data-theme="dark"] .level-green { background: #14532d; color: #dcfce7; }
+[data-theme="dark"] .level-yellow { background: #78350f; color: #fef3c7; }
+[data-theme="dark"] .level-red { background: #7f1d1d; color: #fecaca; }
+.level-card h3 { margin-top: 0; }
+.level-card ul { margin: 8px 0; padding-left: 20px; line-height: 1.9; }
+.checker { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 20px; }
+.checker h3 { margin-top: 0; color: var(--accent); }
+.check-item { padding: 12px 14px; background: var(--bg-soft); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.check-item input { width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent); }
+.result { padding: 20px; border-radius: 12px; margin-top: 16px; font-size: 1.1rem; font-weight: 700; text-align: center; }
+.result-red { background: #fee2e2; color: #991b1b; border: 3px solid #dc2626; }
+.result-yellow { background: #fef3c7; color: #92400e; border: 3px solid #f59e0b; }
+.result-green { background: #dcfce7; color: #166534; border: 3px solid #16a34a; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>🚑 Навигатор</h2></div>
+
+<div class="level-card level-green" onclick="toggleLevel(this)">
+  <h3>🟢 САМ (домашние средства)</h3>
+  <p>Лёгкие симптомы — можно дома</p>
+  <ul style="display:none;">
+    <li>Насморк, лёгкая простуда</li>
+    <li>Небольшая ссадина, царапина</li>
+    <li>Лёгкая головная боль</li>
+    <li>Температура до 38.5 (хорошо переносится)</li>
+    <li>Лёгкое пищевое отравление</li>
+    <li>Укус комара, мошки</li>
+  </ul>
+</div>
+
+<div class="level-card level-yellow" onclick="toggleLevel(this)">
+  <h3>🟡 ВРАЧ (записаться, вызвать на дом)</h3>
+  <p>Обратись к врачу в течение суток</p>
+  <ul style="display:none;">
+    <li>Температура >38.5 больше 3 дней</li>
+    <li>Сильная боль в животе</li>
+    <li>Кашель с кровью</li>
+    <li>Сыпь с температурой</li>
+    <li>Боль в ухе, гнойные выделения</li>
+    <li>Сильная головная боль с тошнотой</li>
+    <li>Понос/рвота более 2 дней</li>
+    <li>Признаки обезвоживания</li>
+  </ul>
+</div>
+
+<div class="level-card level-red" onclick="toggleLevel(this)">
+  <h3>🔴 СКОРАЯ (103, немедленно!)</h3>
+  <p>Угроза жизни — счёт на минуты</p>
+  <ul style="display:none;">
+    <li>Боль в груди (инфаркт)</li>
+    <li>Признаки инсульта (FAST-тест)</li>
+    <li>Сильное кровотечение</li>
+    <li>Потеря сознания</li>
+    <li>Судороги</li>
+    <li>Удушье (инородное тело)</li>
+    <li>Тяжёлое отравление</li>
+    <li>Травма головы с потерей сознания</li>
+    <li>Укус змеи</li>
+    <li>Анафилактический шок</li>
+    <li>Утопление</li>
+    <li>Обширные ожоги (>10% тела)</li>
+    <li>Сильное обморожение</li>
+    <li>Ребёнок <3 мес с температурой</li>
+    <li>Температура >40°C</li>
+  </ul>
+</div>
+
+<div class="checker">
+  <h3>🔍 Проверь симптомы — куда обращаться?</h3>
+  <p style="color:var(--muted);">Отметь, что есть у тебя (или близкого):</p>
+  <div id="check-list"></div>
+  <button class="btn btn-block" style="margin-top:16px;" onclick="checkResult()">🔍 Проверить</button>
+  <div id="result-box"></div>
+</div>
+
+</div>
+<script src="../../core/store.js"></script>
+<script src="../../core/achievements.js"></script>
+<script>
+var SYMPTOMS = [
+  { id: 'chest_pain', text: 'Боль в груди (давящая, отдаёт в руку)', level: 'red' },
+  { id: 'stroke', text: 'Перекос лица, слабость в руке, нарушение речи', level: 'red' },
+  { id: 'bleeding', text: 'Сильное кровотечение (не останавливается)', level: 'red' },
+  { id: 'unconscious', text: 'Потеря сознания', level: 'red' },
+  { id: 'convulsions', text: 'Судороги', level: 'red' },
+  { id: 'choking', text: 'Удушье (подавился)', level: 'red' },
+  { id: 'poisoning_severe', text: 'Отравление (химия, грибы)', level: 'red' },
+  { id: 'head_trauma', text: 'Травма головы с потерей сознания', level: 'red' },
+  { id: 'snake_bite', text: 'Укус змеи', level: 'red' },
+  { id: 'anaphylaxis', text: 'Отёк лица/горла (анафилаксия)', level: 'red' },
+  { id: 'fever_high', text: 'Температура >38.5 больше 3 дней', level: 'yellow' },
+  { id: 'stomach_pain', text: 'Сильная боль в животе', level: 'yellow' },
+  { id: 'cough_blood', text: 'Кашель с кровью', level: 'yellow' },
+  { id: 'rash_fever', text: 'Сыпь + температура', level: 'yellow' },
+  { id: 'ear_pain', text: 'Боль в ухе, гной', level: 'yellow' },
+  { id: 'headache_severe', text: 'Сильная головная боль с тошнотой', level: 'yellow' },
+  { id: 'diarrhea_2', text: 'Понос/рвота более 2 дней', level: 'yellow' },
+  { id: 'dehydration', text: 'Признаки обезвоживания', level: 'yellow' },
+  { id: 'runny_nose', text: 'Насморк, лёгкая простуда', level: 'green' },
+  { id: 'small_cut', text: 'Небольшая ссадина', level: 'green' },
+  { id: 'headache_light', text: 'Лёгкая головная боль', level: 'green' },
+  { id: 'fever_low', text: 'Температура до 38.5 (хорошо)', level: 'green' }
+];
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('check-list').innerHTML = SYMPTOMS.map(function (s) {
+    return '<label class="check-item"><input type="checkbox" value="' + s.id + '" data-level="' + s.level + '"> ' + s.text + '</label>';
+  }).join('');
+});
+
+function toggleLevel(card) {
+  var ul = card.querySelector('ul');
+  if (ul) ul.style.display = ul.style.display === 'none' ? 'block' : 'none';
+}
+
+function checkResult() {
+  var checked = [];
+  document.querySelectorAll('#check-list input:checked').forEach(function (cb) {
+    checked.push(cb.dataset.level);
+  });
+  var box = document.getElementById('result-box');
+  if (checked.length === 0) {
+    box.innerHTML = '<div class="result result-green">🤔 Ничего не отмечено. Если плохо — обратись к врачу.</div>';
+    return;
+  }
+  if (checked.indexOf('red') !== -1) {
+    box.innerHTML = '<div class="result result-red">🚨 СКОРАЯ 103 НЕМЕДЛЕННО!<br><a href="tel:103" class="btn" style="margin-top:12px;background:#dc2626;">📞 ЗВОНИТЬ 103</a></div>';
+  } else if (checked.indexOf('yellow') !== -1) {
+    box.innerHTML = '<div class="result result-yellow">🟡 Обратись к ВРАЧУ в течение суток.</div>';
+  } else {
+    box.innerHTML = '<div class="result result-green">🟢 Можно дома. Но если хуже — к врачу.</div>';
+  }
+}
+</script></body></html>

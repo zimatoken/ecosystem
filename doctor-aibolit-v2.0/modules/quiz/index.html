@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🎮 Проверь себя</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.quiz-intro { background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 24px; border-radius: 14px; text-align: center; color: #1e3a8a; margin-bottom: 20px; }
+[data-theme="dark"] .quiz-intro { background: linear-gradient(135deg, #1e3a8a, #1e40af); color: #dbeafe; }
+.quiz-intro h1 { font-size: 2rem; margin: 0 0 8px; }
+.quiz-btn { display: inline-block; padding: 14px 32px; background: #2563eb; color: #fff; border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer; border: none; font-family: inherit; margin: 6px; }
+.quiz-btn:hover { background: #1e40af; }
+
+.question { background: var(--card); border: 2px solid var(--accent); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+.q-text { font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; }
+.answers { display: grid; gap: 10px; }
+.answer { padding: 14px 18px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1rem; text-align: left; font-family: inherit; color: var(--text); transition: .2s; }
+.answer:hover:not(:disabled) { border-color: var(--accent); transform: translateX(4px); }
+.answer:disabled { cursor: default; }
+.answer.correct { background: #dcfce7; border-color: #16a34a; color: #166534; }
+.answer.wrong { background: #fee2e2; border-color: #dc2626; color: #991b1b; }
+[data-theme="dark"] .answer.correct { background: #14532d; color: #dcfce7; }
+[data-theme="dark"] .answer.wrong { background: #7f1d1d; color: #fecaca; }
+.answer .mark { float: right; font-size: 1.2rem; }
+
+.result-card { background: var(--card); border: 3px solid var(--accent); border-radius: 14px; padding: 32px; text-align: center; }
+.result-card .icon { font-size: 5rem; margin-bottom: 16px; }
+.result-card .score { font-size: 2rem; font-weight: 900; color: var(--accent); margin-bottom: 8px; }
+.result-card .msg { font-size: 1.2rem; margin-bottom: 20px; }
+
+.progress { height: 8px; background: var(--bg-soft); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+.progress > div { height: 100%; background: linear-gradient(90deg, #2563eb, #22d3ee); transition: width .4s; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>🎮 Проверь себя</h2></div>
+<div id="content"></div>
+</div>
+
+<script src="../../core/store.js"></script>
+<script src="../../core/achievements.js"></script>
+<script>
+var QUIZ_STATS_KEY = 'aib_quiz_stats';
+var QUESTIONS = [
+  { q: 'Сколько нажатий при СЛР за один цикл?', a: '30', opts: ['15', '30', '50', '100'], correct: 1 },
+  { q: 'Какова глубина нажатий при СЛР у взрослого?', a: '5-6 см', opts: ['2-3 см', '5-6 см', '7-8 см', '10 см'], correct: 1 },
+  { q: 'Что делать при артериальном кровотечении?', a: 'Жгут ВЫШЕ раны', opts: ['Жгут НИЖЕ раны', 'Жгут ВЫШЕ раны', 'Просто бинт', 'Ничего'], correct: 1 },
+  { q: 'Можно ли вызывать рвоту при отравлении химией?', a: 'НЕТ', opts: ['Да', 'НЕТ', 'Только если воды много', 'Да, обязательно'], correct: 1 },
+  { q: 'Что НЕЛЬЗЯ при ожоге?', a: 'Мазать маслом', opts: ['Охлаждать водой', 'Мазать маслом', 'Накрывать салфеткой', 'Снимать украшения'], correct: 1 },
+  { q: 'Сколько минут охлаждать ожог?', a: '15-20 минут', opts: ['1-2 минуты', '5 минут', '15-20 минут', 'Час'], correct: 2 },
+  { q: 'Приём Геймлиха — это?', a: 'Кулак выше пупка', opts: ['Удар по спине', 'Кулак выше пупка', 'Нажатие на грудь', 'Массаж сердца'], correct: 1 },
+  { q: 'Что делать при обморожении?', a: 'Согревать постепенно', opts: ['Растирать снегом', 'Согревать постепенно', 'Горячая вода', 'Алкоголь'], correct: 1 },
+  { q: 'Какой номер скорой?', a: '103', opts: ['101', '102', '103', '112'], correct: 2 },
+  { q: 'Сколько времени накладывать жгут летом?', a: '60 минут', opts: ['30 минут', '60 минут', '2 часа', '4 часа'], correct: 1 },
+  { q: 'Что НЕЛЬЗЯ при обморожении?', a: 'Растирать снегом', opts: ['Занести в тепло', 'Растирать снегом', 'Снять одежду', 'Укутать'], correct: 1 },
+  { q: 'Можно ли давать аспирин детям до 12 лет?', a: 'НЕТ', opts: ['Да', 'НЕТ', 'Только при жаре', 'В малой дозе'], correct: 1 },
+  { q: 'При инсульте что важнее всего?', a: 'Время', opts: ['Лекарства', 'Время', 'Сон', 'Еда'], correct: 1 },
+  { q: 'Что делать при укусе змеи?', a: 'Обездвижить конечность', opts: ['Отсасывать яд', 'Наложить жгут', 'Обездвижить конечность', 'Дать алкоголь'], correct: 2 },
+  { q: 'Как понять, что у человека инсульт?', a: 'FAST-тест', opts: ['Проверить пульс', 'FAST-тест', 'Измерить давление', 'Пощупать лоб'], correct: 1 },
+  { q: 'Что делать при кровотечении из носа?', a: 'Наклонить голову вперёд', opts: ['Откинуть голову назад', 'Наклонить голову вперёд', 'Лечь на спину', 'Вставить вату и лечь'], correct: 1 },
+  { q: 'Через сколько минут повторить парацетамол?', a: '4-6 часов', opts: ['1 час', '2 часа', '4-6 часов', '8 часов'], correct: 2 },
+  { q: 'Что делать при укусе пчелы?', a: 'Удалить жало ногтем', opts: ['Сжать пальцами', 'Удалить жало ногтем', 'Растереть', 'Приложить лёд прямо на жало'], correct: 1 },
+  { q: 'Сколько времени накладывать жгут зимой?', a: '30 минут', opts: ['30 минут', '60 минут', '90 минут', '120 минут'], correct: 0 },
+  { q: 'Какое положение при обмороке?', a: 'Ноги выше головы', opts: ['Лёжа ровно', 'Ноги выше головы', 'Сидя', 'Стоя'], correct: 1 },
+  { q: 'Что НЕЛЬЗЯ при отравлении грибами?', a: 'Давать алкоголь', opts: ['Вызывать рвоту', 'Давать алкоголь', 'Давать уголь', 'Пить воду'], correct: 1 },
+  { q: 'Признаки анафилаксии?', a: 'Отёк лица, трудно дышать', opts: ['Только сыпь', 'Отёк лица, трудно дышать', 'Только тошнота', 'Головная боль'], correct: 1 },
+  { q: 'При ожоге кислотой — что делать?', a: 'Промыть водой 15-20 мин', opts: ['Нейтрализовать щёлочью', 'Промыть водой 15-20 мин', 'Помазать маслом', 'Ничего'], correct: 1 },
+  { q: 'Что делать при потере сознания?', a: 'Проверить дыхание', opts: ['Дать воды', 'Проверить дыхание', 'Сделать массаж сердца сразу', 'Дать таблетку'], correct: 1 },
+  { q: 'Как проверить дыхание?', a: '10 секунд смотреть на грудь', opts: ['Слушать пульс', '10 секунд смотреть на грудь', 'Проверить зрачки', 'Пощупать лоб'], correct: 1 },
+  { q: 'Какое положение при рвоте у спящего?', a: 'На боку', opts: ['На спине', 'На боку', 'На животе', 'Сидя'], correct: 1 },
+  { q: 'Что делать при обморожении после тёплой ванны?', a: 'Сухая повязка', opts: ['Помазать маслом', 'Сухая повязка', 'Растирать', 'Греть феном'], correct: 1 },
+  { q: 'Сколько времени делать СЛР?', a: 'До приезда скорой', opts: ['5 минут', '10 минут', 'До приезда скорой', 'До 30 минут'], correct: 2 },
+  { q: 'Что НЕЛЬЗЯ при потере сознания?', a: 'Давать пить', opts: ['Проверять дыхание', 'Давать пить', 'Переворачивать на бок', 'Вызывать 103'], correct: 1 },
+  { q: 'Группа крови — где указать?', a: 'В медпрофиле', opts: ['В дневнике', 'В медпрофиле', 'В аптечке', 'В SOS'], correct: 1 }
+];
+
+function getQuizStats() {
+  return JSON.parse(localStorage.getItem(QUIZ_STATS_KEY) || '{"quizzes":0,"correct":0,"total":0,"best":0}');
+}
+
+function saveQuizStats(s) {
+  localStorage.setItem(QUIZ_STATS_KEY, JSON.stringify(s));
+}
+
+function renderIntro() {
+  var s = getQuizStats();
+  document.getElementById('content').innerHTML =
+    '<div class="quiz-intro">' +
+      '<h1>🎮 Проверь себя</h1>' +
+      '<p>30 вопросов о первой помощи. Знаешь ли ты, что делать?</p>' +
+      '<button class="quiz-btn" onclick="startQuiz()">▶️ Начать викторину</button>' +
+      '<div style="margin-top:20px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:10px;">' +
+        '<div><div style="font-size:1.8rem;font-weight:900;">' + s.quizzes + '</div><div>пройдено</div></div>' +
+        '<div><div style="font-size:1.8rem;font-weight:900;">' + s.correct + '</div><div>верных</div></div>' +
+        '<div><div style="font-size:1.8rem;font-weight:900;">' + s.best + '</div><div>лучший</div></div>' +
+      '</div>' +
+    '</div>';
+}
+
+var currentQuiz = null;
+var currentIndex = 0;
+var correctCount = 0;
+
+function startQuiz() {
+  var shuffled = QUESTIONS.slice().sort(function () { return 0.5 - Math.random(); });
+  currentQuiz = shuffled.slice(0, 10);
+  currentIndex = 0;
+  correctCount = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  if (currentIndex >= currentQuiz.length) { renderResult(); return; }
+  var q = currentQuiz[currentIndex];
+  var prog = Math.round(currentIndex / currentQuiz.length * 100);
+  var shuffledOpts = q.opts.map(function (opt, i) {
+    return { text: opt, original: i };
+  }).sort(function () { return 0.5 - Math.random(); });
+
+  var html = '<div class="progress"><div style="width:' + prog + '%"></div></div>';
+  html += '<div style="text-align:center;margin-bottom:12px;color:var(--muted);font-weight:700;">Вопрос ' + (currentIndex + 1) + ' / ' + currentQuiz.length + '</div>';
+  html += '<div class="question"><div class="q-text">' + q.q + '</div><div class="answers">';
+  shuffledOpts.forEach(function (o) {
+    var isCorrect = o.original === q.correct;
+    html += '<button class="answer" onclick="answer(' + (isCorrect ? 1 : 0) + ', this)">' + o.text + '</button>';
+  });
+  html += '</div></div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function answer(isCorrect, btn) {
+  var buttons = document.querySelectorAll('.answer');
+  buttons.forEach(function (b) { b.disabled = true; });
+  if (isCorrect) {
+    btn.classList.add('correct');
+    btn.innerHTML += '<span class="mark">✅</span>';
+    correctCount++;
+  } else {
+    btn.classList.add('wrong');
+    btn.innerHTML += '<span class="mark">❌</span>';
+    // Показываем правильный
+    var q = currentQuiz[currentIndex];
+    buttons.forEach(function (b) {
+      if (b.textContent.trim() === q.a) {
+        b.classList.add('correct');
+        b.innerHTML += '<span class="mark">✅</span>';
+      }
+    });
+  }
+  setTimeout(function () {
+    currentIndex++;
+    renderQuestion();
+  }, 1500);
+}
+
+function renderResult() {
+  var s = getQuizStats();
+  s.quizzes++;
+  s.correct += correctCount;
+  s.total += currentQuiz.length;
+  if (correctCount > s.best) s.best = correctCount;
+  saveQuizStats(s);
+
+  if (window.AIB_STORE) {
+    var st = window.AIB_STORE.getStats();
+    st.xp += correctCount * 10;
+    st.level = Math.floor(st.xp / 100) + 1;
+    localStorage.setItem('aib_stats_v1', JSON.stringify(st));
+  }
+
+  var icon = correctCount >= 9 ? '🏆' : correctCount >= 7 ? '🌟' : correctCount >= 5 ? '👍' : '📚';
+  var msg = correctCount >= 9 ? 'ВОСХИТИТЕЛЬНО!' : correctCount >= 7 ? 'Отлично!' : correctCount >= 5 ? 'Хорошо!' : 'Попробуй ещё!';
+
+  document.getElementById('content').innerHTML =
+    '<div class="result-card">' +
+      '<div class="icon">' + icon + '</div>' +
+      '<div class="score">' + correctCount + ' / ' + currentQuiz.length + '</div>' +
+      '<div class="msg">' + msg + '</div>' +
+      '<p style="font-size:1.5rem;color:var(--accent);font-weight:900;">+' + (correctCount * 10) + ' XP</p>' +
+      '<button class="quiz-btn" onclick="startQuiz()">🔄 Ещё раз</button>' +
+      '<button class="quiz-btn" style="background:#6b7280;" onclick="renderIntro()">🏠 На главную</button>' +
+    '</div>';
+}
+
+renderIntro();
+</script></body></html>

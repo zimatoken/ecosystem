@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>📤 Экспорт для врача</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.export-card { background: var(--card); border: 2px solid var(--accent); border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+.export-card h3 { margin-top: 0; color: var(--accent); }
+.filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-btn { padding: 8px 16px; border: 2px solid var(--border); border-radius: 8px; background: var(--card); cursor: pointer; font-weight: 700; font-family: inherit; color: var(--text); font-size: .9rem; }
+.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.preview { background: var(--bg-soft); border-radius: 10px; padding: 20px; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: .9rem; white-space: pre-wrap; line-height: 1.6; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+@media (max-width: 480px) { .actions { grid-template-columns: 1fr; } }
+.btn-print { background: #16a34a; color: #fff; }
+.btn-copy { background: var(--accent); color: #fff; }
+.btn-share { background: #7c3aed; color: #fff; }
+.empty-state { text-align: center; padding: 40px; color: var(--muted); }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>📤 Экспорт для врача</h2></div>
+
+<div class="card" style="border-left:5px solid var(--accent);">
+  <p style="margin:0;">Создай выписку для врача — что было за последние дни. Распечатай или отправь.</p>
+</div>
+
+<div class="export-card">
+  <h3>Период</h3>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="pickDays(7, this)">7 дней</button>
+    <button class="filter-btn" onclick="pickDays(14, this)">14 дней</button>
+    <button class="filter-btn" onclick="pickDays(30, this)">30 дней</button>
+    <button class="filter-btn" onclick="pickDays(90, this)">90 дней</button>
+    <button class="filter-btn" onclick="pickDays(9999, this)">Всё время</button>
+  </div>
+
+  <h3>Что включить</h3>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="toggleInc(\'temp\', this)">🌡️ Температура</button>
+    <button class="filter-btn active" onclick="toggleInc(\'pressure\', this)">🩸 Давление</button>
+    <button class="filter-btn active" onclick="toggleInc(\'sugar\', this)">🍬 Сахар</button>
+    <button class="filter-btn active" onclick="toggleInc(\'meds\', this)">💊 Лекарства</button>
+    <button class="filter-btn active" onclick="toggleInc(\'notes\', this)">📝 Заметки</button>
+  </div>
+
+  <button class="btn btn-block" style="font-size:1.1rem;padding:16px;" onclick="generateExport()">📋 Создать выписку</button>
+</div>
+
+<div id="export-result"></div>
+</div>
+
+<script src="../../core/profileStore.js"></script>
+<script>
+var periodDays = 7;
+var included = { temp: true, pressure: true, sugar: true, meds: true, notes: true };
+
+function pickDays(d, el) {
+  periodDays = d;
+  document.querySelectorAll('.filter-btn').forEach(function (b) {
+    if (b.textContent.match(/\d+|Всё/)) b.classList.remove('active');
+  });
+  el.classList.add('active');
+}
+
+function toggleInc(type, el) {
+  included[type] = !included[type];
+  el.classList.toggle('active', included[type]);
+}
+
+function getJournal() {
+  return JSON.parse(localStorage.getItem('aib_journal_v2') || '[]');
+}
+
+function generateExport() {
+  var journal = getJournal();
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - periodDays);
+
+  var filtered = journal.filter(function (e) {
+    return new Date(e.date) >= cutoff;
+  });
+
+  var profile = window.AIB_PROFILE ? window.AIB_PROFILE.get() : {};
+  var emergency = window.AIB_PROFILE ? window.AIB_PROFILE.getEmergency() : {};
+
+  var text = '═══ ВЫПИСКА ДЛЯ ВРАЧА ═══\n';
+  text += 'Дата создания: ' + new Date().toLocaleString('ru') + '\n';
+  text += 'Период: последние ' + (periodDays > 1000 ? 'все' : periodDays + ' дней') + '\n';
+  text += 'Записей: ' + filtered.length + '\n\n';
+
+  text += '─── ПАЦИЕНТ ───\n';
+  if (profile.name) text += 'Имя: ' + profile.name + '\n';
+  if (profile.age) text += 'Возраст: ' + profile.age + '\n';
+  if (profile.bloodType) text += 'Группа крови: ' + profile.bloodType + '\n';
+  if (profile.weight) text += 'Вес: ' + profile.weight + ' кг\n';
+  if (profile.height) text += 'Рост: ' + profile.height + ' см\n';
+  if (profile.allergies) text += 'Аллергии: ' + profile.allergies + '\n';
+  if (profile.chronic) text += 'Хронические: ' + profile.chronic + '\n';
+  if (profile.medications) text += 'Постоянные лекарства: ' + profile.medications + '\n';
+  text += '\n';
+
+  // Группируем по типам
+  if (included.temp) {
+    var temps = filtered.filter(function (e) { return e.type === 'temp'; });
+    if (temps.length) {
+      text += '─── ТЕМПЕРАТУРА ───\n';
+      temps.reverse().forEach(function (e) {
+        text += new Date(e.date).toLocaleString('ru') + ' — ' + e.value + '°C' + (e.who ? ' (' + e.who + ')' : '') + (e.note ? ' · ' + e.note : '') + '\n';
+      });
+      text += '\n';
+    }
+  }
+
+  if (included.pressure) {
+    var presses = filtered.filter(function (e) { return e.type === 'pressure'; });
+    if (presses.length) {
+      text += '─── ДАВЛЕНИЕ ───\n';
+      presses.reverse().forEach(function (e) {
+        text += new Date(e.date).toLocaleString('ru') + ' — ' + e.value + ' мм рт.ст.\n';
+      });
+      text += '\n';
+    }
+  }
+
+  if (included.sugar) {
+    var sugars = filtered.filter(function (e) { return e.type === 'sugar'; });
+    if (sugars.length) {
+      text += '─── САХАР ───\n';
+      sugars.reverse().forEach(function (e) {
+        text += new Date(e.date).toLocaleString('ru') + ' — ' + e.value + ' ммоль/л\n';
+      });
+      text += '\n';
+    }
+  }
+
+  if (included.meds) {
+    var meds = filtered.filter(function (e) { return e.type === 'meds'; });
+    if (meds.length) {
+      text += '─── ПРИЁМ ЛЕКАРСТВ ───\n';
+      meds.reverse().forEach(function (e) {
+        text += new Date(e.date).toLocaleString('ru') + ' — ' + e.med + (e.note ? ' · ' + e.note : '') + '\n';
+      });
+      text += '\n';
+    }
+  }
+
+  if (included.notes) {
+    var notes = filtered.filter(function (e) { return e.type === 'note'; });
+    if (notes.length) {
+      text += '─── ЗАМЕТКИ ───\n';
+      notes.reverse().forEach(function (e) {
+        text += new Date(e.date).toLocaleString('ru') + ' — ' + (e.who ? e.who + ': ' : '') + e.note + '\n';
+      });
+      text += '\n';
+    }
+  }
+
+  text += '─── КОНЕЦ ВЫПИСКИ ───\n';
+  text += 'Создано в приложении «Доктор Айболит»';
+
+  document.getElementById('export-result').innerHTML =
+    '<div class="export-card">' +
+      '<h3>📄 Готово</h3>' +
+      '<div class="preview" id="preview-text">' + text + '</div>' +
+      '<div class="actions">' +
+        '<button class="btn btn-print" onclick="printExport()">🖨️ Распечатать</button>' +
+        '<button class="btn btn-copy" onclick="copyExport()">📋 Скопировать</button>' +
+      '</div>' +
+      '<button class="btn btn-share btn-block" style="margin-top:10px;" onclick="shareExport()">📤 Поделиться</button>' +
+    '</div>';
+
+  window._exportText = text;
+}
+
+function printExport() {
+  var w = window.open();
+  w.document.write('<pre style="font-family:monospace;font-size:14px;padding:20px;">' + window._exportText + '</pre>');
+  w.document.close();
+  w.print();
+}
+
+function copyExport() {
+  navigator.clipboard.writeText(window._exportText).then(function () {
+    alert('✅ Скопировано! Вставь в письмо или мессенджер врачу.');
+  }).catch(function () {
+    prompt('Скопируй вручную:', window._exportText);
+  });
+}
+
+function shareExport() {
+  if (navigator.share) {
+    navigator.share({ title: 'Выписка для врача', text: window._exportText });
+  } else {
+    copyExport();
+  }
+}
+</script></body></html>

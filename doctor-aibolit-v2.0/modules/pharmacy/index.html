@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>💊 Домашняя аптечка</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.cat-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.cat-tab { padding: 10px 16px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); cursor: pointer; font-weight: 700; font-size: .9rem; transition: .2s; font-family: inherit; color: var(--text); }
+.cat-tab:hover { border-color: var(--accent); }
+.cat-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.cat-tab .count { font-size: .75rem; opacity: .8; margin-left: 4px; }
+
+.rec-block { background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 5px solid #f59e0b; padding: 16px; border-radius: 12px; margin-bottom: 20px; color: #78350f; }
+[data-theme="dark"] .rec-block { background: linear-gradient(135deg, #78350f, #92400e); color: #fef3c7; }
+.rec-block h3 { margin-top: 0; }
+.rec-block ul { margin: 8px 0; padding-left: 20px; line-height: 1.7; }
+
+.med-list { display: grid; gap: 10px; }
+.med-row { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 14px; cursor: pointer; transition: .2s; display: flex; align-items: center; gap: 14px; }
+.med-row:hover { border-color: var(--accent); transform: translateX(4px); }
+.med-row.checked { border-left: 5px solid #16a34a; background: #dcfce7; }
+[data-theme="dark"] .med-row.checked { background: #14532d; }
+.med-row .icon { font-size: 2rem; flex-shrink: 0; }
+.med-row .info { flex: 1; min-width: 0; }
+.med-row .name { font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; }
+.med-row .active { font-size: .85rem; color: var(--muted); }
+.med-row .badge-must { background: #dc2626; color: #fff; padding: 2px 8px; border-radius: 8px; font-size: .7rem; font-weight: 800; margin-left: 8px; }
+.med-row .check { font-size: 1.4rem; flex-shrink: 0; }
+
+.stats-kit { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 20px; }
+.stat-kit { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
+.stat-kit .v { font-size: 1.6rem; font-weight: 900; color: var(--accent); }
+.stat-kit .l { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+
+.modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.85); display: none; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
+.modal.open { display: flex; }
+.modal-body { background: var(--card); border-radius: 16px; max-width: 640px; width: 100%; padding: 28px; margin: 40px auto; }
+.section-h { font-size: 1.1rem; font-weight: 800; color: var(--accent); margin: 18px 0 8px; border-bottom: 2px solid var(--accent); padding-bottom: 4px; }
+.price-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.price-box { padding: 12px; border-radius: 10px; text-align: center; }
+.price-cheap { background: #dcfce7; color: #166534; }
+.price-expensive { background: #fee2e2; color: #991b1b; }
+[data-theme="dark"] .price-cheap { background: #14532d; color: #dcfce7; }
+[data-theme="dark"] .price-expensive { background: #7f1d1d; color: #fecaca; }
+.price-box .name { font-size: .8rem; margin-bottom: 4px; }
+.price-box .price { font-size: 1.2rem; font-weight: 900; }
+.save-badge { background: #16a34a; color: #fff; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: 800; margin-top: 8px; }
+.warn-block { background: #fee2e2; color: #991b1b; padding: 14px; border-radius: 10px; margin-top: 12px; font-weight: 600; }
+[data-theme="dark"] .warn-block { background: #7f1d1d; color: #fecaca; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← Назад</a><h2>💊 Домашняя аптечка</h2></div>
+
+<div class="stats-kit">
+  <div class="stat-kit"><div class="v" id="s-total">0</div><div class="l">Всего препаратов</div></div>
+  <div class="stat-kit"><div class="v" id="s-have">0</div><div class="l">У меня есть</div></div>
+  <div class="stat-kit"><div class="v" id="s-need">0</div><div class="l">Обязательных</div></div>
+  <div class="stat-kit"><div class="v" id="s-pct">0%</div><div class="l">Готовность</div></div>
+</div>
+
+<div class="rec-block">
+  <h3>💡 Рекомендация: базовая аптечка</h3>
+  <p>В каждой семье должно быть <b>минимум 10 препаратов</b> (отмечены 🔴):</p>
+  <ul>
+    <li>Обезболивающие: парацетамол, ибупрофен, аспирин</li>
+    <li>Антисептики: хлоргексидин, йод, перекись</li>
+    <li>ЖКТ: активированный уголь, смекта, регидрон</li>
+    <li>Прибор: термометр</li>
+  </ul>
+  <p><b>Для детей:</b> жаропонижающие сиропы, свечи, капли в нос</p>
+  <p><b>Для пожилых:</b> тонометр, нитроглицерин, валидол</p>
+</div>
+
+<div class="cat-tabs" id="cat-tabs"></div>
+<div class="med-list" id="med-list"></div>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal(event)"><div class="modal-body" id="modal-body" onclick="event.stopPropagation()"></div></div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../data/pharmacy.js"></script>
+<script>
+var currentCat = 'all';
+
+function render() {
+  var list = window.AIB_GET_ALL_PHARMACY();
+  var kit = window.AIB_STORE.getKit().map(function (k) { return k.id; });
+  var mustCount = list.filter(function (p) { return p.must; }).length;
+  var haveCount = kit.length;
+  var pct = Math.round(haveCount / list.length * 100);
+
+  document.getElementById('s-total').textContent = list.length;
+  document.getElementById('s-have').textContent = haveCount;
+  document.getElementById('s-need').textContent = mustCount;
+  document.getElementById('s-pct').textContent = pct + '%';
+
+  var cats = [
+    { id: 'all', name: '📋 Все', count: list.length },
+    { id: 'base', name: '⭐ Базовые', count: list.filter(function(p){return p.cat==='base';}).length },
+    { id: 'kids', name: '👶 Детям', count: list.filter(function(p){return p.cat==='kids';}).length },
+    { id: 'elderly', name: '👴 Пожилым', count: list.filter(function(p){return p.cat==='elderly';}).length },
+    { id: 'allergy', name: '🤧 Аллергия', count: list.filter(function(p){return p.cat==='allergy';}).length },
+    { id: 'gastro', name: '🍽️ ЖКТ', count: list.filter(function(p){return p.cat==='gastro';}).length },
+    { id: 'heart', name: '💓 Сердце', count: list.filter(function(p){return p.cat==='heart';}).length },
+    { id: 'antiseptic', name: '🧴 Антисептики', count: list.filter(function(p){return p.cat==='antiseptic';}).length }
+  ];
+
+  document.getElementById('cat-tabs').innerHTML = cats.map(function (c) {
+    return '<button class="cat-tab' + (currentCat === c.id ? ' active' : '') + '" onclick="pickCat(\'' + c.id + '\')">' + c.name + ' <span class="count">' + c.count + '</span></button>';
+  }).join('');
+
+  var filtered = currentCat === 'all' ? list : list.filter(function (p) { return p.cat === currentCat; });
+  document.getElementById('med-list').innerHTML = filtered.map(function (p) {
+    var isIn = kit.indexOf(p.id) !== -1;
+    return '<div class="med-row' + (isIn ? ' checked' : '') + '" onclick="openMed(\'' + p.id + '\')">' +
+      '<div class="icon">' + p.icon + '</div>' +
+      '<div class="info">' +
+        '<div class="name">' + p.name + (p.must ? '<span class="badge-must">ОБЯЗАТЕЛЬНО</span>' : '') + '</div>' +
+        '<div class="active">' + p.active + '</div>' +
+      '</div>' +
+      '<div class="check">' + (isIn ? '✅' : '➕') + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function pickCat(id) {
+  currentCat = id;
+  render();
+}
+
+function openMed(id) {
+  var p = window.AIB_GET_PHARMACY(id);
+  var kit = window.AIB_STORE.getKit().map(function (k) { return k.id; });
+  var isIn = kit.indexOf(p.id) !== -1;
+
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;">';
+  html += '<h2 style="margin:0;">' + p.icon + ' ' + p.name + '</h2>';
+  html += '<button onclick="closeModal()" style="background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--text);">✕</button></div>';
+  if (p.must) html += '<div class="warn-block" style="margin-top:8px;">⭐ Обязательный препарат в базовой аптечке</div>';
+
+  html += '<div class="section-h">📌 Действующее вещество</div><p>' + p.active + '</p>';
+  html += '<div class="section-h">🔄 Аналоги</div><p>' + p.analogs + '</p>';
+  html += '<div class="section-h">💰 Цены: дёшево vs дорого</div>';
+  html += '<div class="price-compare">';
+  html += '<div class="price-box price-cheap"><div class="name">💚 Экономно</div><div class="price">' + p.cheap + '</div></div>';
+  html += '<div class="price-box price-expensive"><div class="name">💎 Дорого</div><div class="price">' + p.expensive + '</div></div>';
+  html += '</div>';
+  if (p.save && p.save !== '—') html += '<div style="text-align:center;"><span class="save-badge">💰 Экономия: ' + p.save + '</span></div>';
+
+  html += '<div class="section-h">💡 Для чего</div><p>' + p.use + '</p>';
+  html += '<div class="section-h">💊 Дозировка (взрослый)</div><p>' + p.adult + '</p>';
+  html += '<div class="section-h">👶 Дозировка (ребёнок)</div><p>' + p.child + '</p>';
+  html += '<div class="section-h">⛔ Противопоказания</div><p>' + p.contra + '</p>';
+  html += '<div class="section-h">⚠️ Побочные</div><p>' + p.side + '</p>';
+  html += '<div class="section-h">📦 Хранение</div><p>' + p.storage + '</p>';
+  html += '<div class="warn-block">' + p.important + '</div>';
+
+  html += '<button class="btn btn-block" style="margin-top:16px;background:' + (isIn ? '#dc2626' : '#16a34a') + ';padding:16px;font-size:1.05rem;" onclick="tog(\'' + p.id + '\')">' +
+    (isIn ? '❌ Убрать из аптечки' : '➕ Добавить в мою аптечку (+15 XP)') + '</button>';
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function tog(id) {
+  var p = window.AIB_GET_PHARMACY(id);
+  var kit = window.AIB_STORE.getKit().map(function (k) { return k.id; });
+  if (kit.indexOf(id) !== -1) window.AIB_STORE.removeFromKit(id);
+  else window.AIB_STORE.addToKit(p);
+  closeModal();
+  render();
+}
+
+function closeModal(e) { if (e && e.target !== e.currentTarget) return; document.getElementById('modal').classList.remove('open'); }
+
+render();
+</script></body></html>

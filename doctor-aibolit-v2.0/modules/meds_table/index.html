@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>💊 Таблица медикаментов</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.search-bar { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+.search-bar input { width: 100%; padding: 12px; border: none; background: transparent; color: var(--text); font-size: 1.1rem; font-family: inherit; outline: none; }
+.sorts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.sort-btn { padding: 8px 14px; border: 2px solid var(--border); border-radius: 8px; background: var(--card); cursor: pointer; font-weight: 700; font-size: .85rem; font-family: inherit; color: var(--text); transition: .2s; }
+.sort-btn:hover { border-color: var(--accent); }
+.sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.med-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+.med-table th { background: var(--accent); color: #fff; padding: 12px 10px; text-align: left; font-size: .85rem; font-weight: 800; }
+.med-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: .9rem; }
+.med-table tr:last-child td { border-bottom: none; }
+.med-table tr:hover { background: var(--bg-soft); }
+.med-table .name { font-weight: 800; }
+.med-table .active { font-size: .8rem; color: var(--muted); }
+.med-table .cheap { color: #16a34a; font-weight: 800; }
+.med-table .expensive { color: #dc2626; text-decoration: line-through; font-size: .85rem; }
+.med-table .save { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 8px; font-weight: 800; font-size: .8rem; }
+
+@media (max-width: 600px) {
+  .med-table th:nth-child(3),
+  .med-table th:nth-child(4),
+  .med-table td:nth-child(3),
+  .med-table td:nth-child(4) { display: none; }
+  .med-table td, .med-table th { padding: 10px 6px; font-size: .8rem; }
+}
+
+.summary-card { background: linear-gradient(135deg, #dcfce7, #bbf7d0); border-radius: 14px; padding: 20px; margin-bottom: 20px; color: #166534; }
+[data-theme="dark"] .summary-card { background: linear-gradient(135deg, #14532d, #166534); color: #dcfce7; }
+.summary-card h3 { margin-top: 0; }
+.summary-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 12px; }
+.summary-stat { background: rgba(255,255,255,0.5); padding: 12px; border-radius: 10px; text-align: center; }
+.summary-stat .v { font-size: 1.8rem; font-weight: 900; }
+.summary-stat .l { font-size: .8rem; }
+
+.symptom-block { background: linear-gradient(135deg, #dbeafe, #bfdbfe); border-left: 5px solid #2563eb; padding: 16px; border-radius: 12px; margin-bottom: 16px; color: #1e3a8a; }
+[data-theme="dark"] .symptom-block { background: linear-gradient(135deg, #1e3a8a, #1e40af); color: #dbeafe; }
+.symptom-block h3 { margin-top: 0; }
+.symptom-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.symptom-btn { padding: 8px 14px; background: #fff; color: #1e3a8a; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: .85rem; font-family: inherit; }
+.symptom-btn:hover { background: #2563eb; color: #fff; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>💊 Таблица медикаментов</h2></div>
+
+<div class="summary-card">
+  <h3>💰 Экономия на аптечке</h3>
+  <p>Выбирай дешёвые аналоги — тот же эффект, в 3-10 раз дешевле!</p>
+  <div class="summary-stats" id="summary-stats"></div>
+</div>
+
+<div class="symptom-block">
+  <h3>🔍 Что у тебя болит?</h3>
+  <p>Выбери симптом — покажу, что купить:</p>
+  <div class="symptom-btns">
+    <button class="symptom-btn" onclick="filterSymptom('голова')">🤕 Голова</button>
+    <button class="symptom-btn" onclick="filterSymptom('жар')">🌡️ Жар</button>
+    <button class="symptom-btn" onclick="filterSymptom('живот')">🤢 Живот</button>
+    <button class="symptom-btn" onclick="filterSymptom('горло')">😷 Горло</button>
+    <button class="symptom-btn" onclick="filterSymptom('нос')">👃 Насморк</button>
+    <button class="symptom-btn" onclick="filterSymptom('аллерг')">🤧 Аллергия</button>
+    <button class="symptom-btn" onclick="filterSymptom('сердц')">💓 Сердце</button>
+    <button class="symptom-btn" onclick="clearFilter()">❌ Сброс</button>
+  </div>
+</div>
+
+<div class="search-bar"><input id="search" placeholder="🔍 Поиск: «парацетамол», «жар», «аналог»..."></div>
+
+<div class="sorts">
+  <button class="sort-btn active" onclick="pickSort('name', this)">🔤 По названию</button>
+  <button class="sort-btn" onclick="pickSort('cheap', this)">💚 Сначала дешёвые</button>
+  <button class="sort-btn" onclick="pickSort('save', this)">💰 Сначала экономия</button>
+  <button class="sort-btn" onclick="pickSort('cat', this)">📂 По категории</button>
+</div>
+
+<div id="table-wrap" style="overflow-x:auto;"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../data/pharmacy.js"></script>
+<script>
+var sortBy = 'name';
+var filterText = '';
+
+function pickSort(s, el) {
+  sortBy = s;
+  document.querySelectorAll('.sort-btn').forEach(function (b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  render();
+}
+
+function filterSymptom(text) {
+  filterText = text;
+  document.getElementById('search').value = text;
+  render();
+}
+
+function clearFilter() {
+  filterText = '';
+  document.getElementById('search').value = '';
+  render();
+}
+
+function render() {
+  var list = window.AIB_GET_ALL_PHARMACY();
+  var search = (document.getElementById('search').value || '').toLowerCase();
+
+  var filtered = list.filter(function (p) {
+    if (!search) return true;
+    var haystack = (p.name + ' ' + p.active + ' ' + p.use + ' ' + p.analogs).toLowerCase();
+    return haystack.indexOf(search) !== -1;
+  });
+
+  // Сортировка
+  if (sortBy === 'name') {
+    filtered.sort(function (a, b) { return a.name.localeCompare(b.name); });
+  } else if (sortBy === 'cat') {
+    filtered.sort(function (a, b) {
+      var ac = a.catName || a.cat || '';
+      var bc = b.catName || b.cat || '';
+      return ac.localeCompare(bc) || a.name.localeCompare(b.name);
+    });
+  } else if (sortBy === 'cheap') {
+    filtered.sort(function (a, b) {
+      function pp(s) { if (!s) return 99999; var str = String(s); var num = ''; for (var i = 0; i < str.length; i++) { var c = str.charCodeAt(i); if (c >= 48 && c <= 57) num += str[i]; else if (num) break; } return num ? parseInt(num) : 99999; }
+      return pp(a.cheap) - pp(b.cheap);
+    });
+  } else if (sortBy === 'save') {
+    filtered.sort(function (a, b) {
+      var aSave = parseInt(String(a.save || '0').replace(/[^0-9]/g, '')) || 0;
+      var bSave = parseInt(String(b.save || '0').replace(/[^0-9]/g, '')) || 0;
+      return bSave - aSave;
+    });
+  }
+
+  // Таблица
+  var html = '<table class="med-table"><thead><tr>';
+  html += '<th>Название</th><th>Действующее</th><th>💚 Дешёвый</th><th>💎 Дорогой</th><th>Экономия</th>';
+  html += '</tr></thead><tbody>';
+  filtered.forEach(function (p) {
+    html += '<tr>';
+    html += '<td><div class="name">' + p.icon + ' ' + p.name + (p.must ? ' <span style="color:#dc2626;font-size:.7rem;">★</span>' : '') + '</div></td>';
+    html += '<td><div class="active">' + p.active + '</div></td>';
+    html += '<td class="cheap">' + (p.cheap || '—') + '</td>';
+    html += '<td class="expensive">' + (p.expensive || '—') + '</td>';
+    html += '<td>' + (p.save && p.save !== '—' ? '<span class="save">💰 ' + p.save + '</span>' : '—') + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  document.getElementById('table-wrap').innerHTML = html;
+
+  // Статистика
+  var totalSave = 0;
+  list.forEach(function (p) {
+    var s = parseInt((p.save || '0').replace(/[^0-9]/g, '')) || 0;
+    totalSave += s;
+  });
+  document.getElementById('summary-stats').innerHTML =
+    '<div class="summary-stat"><div class="v">' + list.length + '</div><div class="l">Препаратов</div></div>' +
+    '<div class="summary-stat"><div class="v">' + Math.round(totalSave / 1000) + 'k ₽</div><div class="l">Можно сэкономить</div></div>' +
+    '<div class="summary-stat"><div class="v">' + list.filter(function(p){return p.must;}).length + '</div><div class="l">Обязательных</div></div>';
+}
+
+document.getElementById('search').addEventListener('input', render);
+render();
+</script></body></html>
+
+

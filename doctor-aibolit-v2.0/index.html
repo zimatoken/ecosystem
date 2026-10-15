@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🩺 Доктор Айболит</title>
+<link rel="stylesheet" href="css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🩺 Доктор Айболит</h1>
+    <button class="btn btn-outline" onclick="AIB_THEME.toggle()">🌓 Тема</button>
+  </div>
+  <div class="stats-bar">
+    <div class="stat">⭐ Уровень: <span id="s-level">1</span></div>
+    <div class="stat">✨ XP: <span id="s-xp">0</span></div>
+    <div class="stat">💊 Аптечка: <span id="s-kit">0</span></div>
+  <div class="card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#78350f;border-left:5px solid #f59e0b;">
+    <h3 style="margin-top:0;">🏆 Твой прогресс</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;">
+      <div><b id="ach-count">0</b> / <span id="ach-total">25</span> достижений</div>
+      <div>📋 Медпрофиль: <b id="prof-status">не заполнен</b></div>
+      <div>💊 Аптечка: <b id="kit-progress">0%</b></div>
+      <div>🆘 SOS: <b id="sos-count">0</b> решено</div>
+    </div>
+  </div>
+
+  </div>
+  <div class="danger-box">
+    🚨 ПРИ УГРОЗЕ ЖИЗНИ — ЗВОНИ 103 НЕМЕДЛЕННО!<br>
+    <span style="font-weight:400;font-size:.9rem;">Приложение НЕ ЗАМЕНЯЕТ врача. Все рекомендации — информационные.</span>
+  </div>
+  <div class="card" style="border-left:5px solid var(--accent);">
+    <h2>Помощь до прихода врача 🩺</h2>
+    <p>Первая помощь, домашняя аптечка, навигатор «куда обращаться».</p>
+    <p style="font-size:.85rem;color:var(--muted);">⚖️ На основе ФЗ-323, Приказа Минздрава № 477н, Постановления № 1086</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;">
+    <a href="modules/profile/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#f59e0b,#ea580c);"><span style="font-size:1.8rem">📋</span>Медпрофиль</a>
+    <a href="modules/sos/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:#dc2626;"><span style="font-size:1.8rem">🆘</span>SOS Айболит</a>
+    <a href="modules/pharmacy/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:#0891b2;"><span style="font-size:1.8rem">💊</span>Аптечка</a>
+    <a href="modules/first_aid/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:#16a34a;"><span style="font-size:1.8rem">🩹</span>Первая помощь</a>
+    <a href="modules/navigator_v2/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:#7c3aed;"><span style="font-size:1.8rem">🚑</span>Навигатор</a>
+    <a href="modules/symptom_checker/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#2563eb,#3b82f6);"><span style="font-size:1.8rem">🤖</span>Симптом-анализатор</a>
+    <a href="modules/export/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#7c3aed,#a855f7);"><span style="font-size:1.8rem">📤</span>Экспорт врачу</a>
+    <a href="modules/kids/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#ec4899,#f472b6);"><span style="font-size:1.8rem">👶</span>Детский</a>
+    <a href="modules/map_emergency/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#0ea5e9,#06b6d4);"><span style="font-size:1.8rem">🗺️</span>Службы</a>
+    <a href="modules/meds_table/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#0891b2,#06b6d4);"><span style="font-size:1.8rem">📊</span>Медикаменты</a>
+    <a href="modules/quiz/index.html" class="btn btn-block" style="flex-direction:column;padding:18px;background:linear-gradient(135deg,#7c3aed,#a855f7);"><span style="font-size:1.8rem">🎮</span>Викторина</a>
+    <a href="modules/journal_v2/index.html" class="btn btn-outline btn-block" style="flex-direction:column;padding:18px;"><span style="font-size:1.8rem">📔</span>Дневник v2</a>
+    
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#78350f;">
+    <h3>📞 Экстренные телефоны</h3>
+    <p><b>103</b> — Скорая помощь</p>
+    <p><b>112</b> — Единый экстренный</p>
+    <p><b>101</b> — Пожарная</p>
+    <p><b>102</b> — Полиция</p>
+  </div>
+</div>
+<script src="core/registry.js"></script>
+<script src="core/store.js"></script>
+<script src="core/theme.js"></script>
+<script src="core/sosEngine.js"></script>
+<script src="core/profileStore.js"></script>
+<script src="core/achievements.js"></script>
+<script src="data/sos/bleeding.js"></script>
+<script src="data/sos/burns.js"></script>
+<script src="data/sos/fever.js"></script>
+<script src="data/sos/poisoning.js"></script>
+<script src="data/sos/chest_pain.js"></script>
+<script src="data/sos/stroke.js"></script>
+<script src="data/sos/fracture.js"></script>
+<script src="data/sos/fainting.js"></script>
+<script src="data/sos/bite.js"></script>
+<script src="data/sos/choking.js"></script>
+<script src="data/pharmacy.js"></script>
+<script src="data/sos/drowning.js"></script>
+<script src="data/sos/frostbite.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const s = window.AIB_STORE.getStats();
+  document.getElementById('s-level').textContent = s.level || 1;
+  document.getElementById('s-xp').textContent = s.xp || 0;
+  document.getElementById('s-kit').textContent = window.AIB_STORE.getKit().length;
+
+  // Мини-статы
+  if (window.AIB_ACHIEVEMENTS) {
+    window.AIB_ACHIEVEMENTS.check();
+    var unlocked = window.AIB_ACHIEVEMENTS.getUnlocked();
+    var total = Object.keys(window.AIB_ACHIEVEMENTS.getAll()).length;
+    var el = document.getElementById('ach-count'); if (el) el.textContent = unlocked.length;
+    var el2 = document.getElementById('ach-total'); if (el2) el2.textContent = total;
+  }
+  if (window.AIB_PROFILE) {
+    var filled = window.AIB_PROFILE.isFilled();
+    var el = document.getElementById('prof-status');
+    if (el) {
+      el.textContent = filled ? '✅ заполнен' : '⚠️ не заполнен';
+      el.style.color = filled ? '#16a34a' : '#dc2626';
+    }
+  }
+  var kit = window.AIB_STORE.getKit().length;
+  var total = window.AIB_GET_ALL_PHARMACY ? window.AIB_GET_ALL_PHARMACY().length : 60;
+  var el = document.getElementById('kit-progress'); if (el) el.textContent = Math.round(kit / total * 100) + '%';
+  var el = document.getElementById('sos-count'); if (el) el.textContent = s.sosSolved || 0;
+});
+</script>
+</body>
+</html>

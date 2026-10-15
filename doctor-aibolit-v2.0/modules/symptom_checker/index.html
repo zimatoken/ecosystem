@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🤖 Симптом-анализатор</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.cat-block { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+.cat-block h3 { margin-top: 0; color: var(--accent); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.cat-block .arrow { transition: .2s; }
+.cat-block.open .arrow { transform: rotate(90deg); }
+.symptoms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-top: 12px; display: none; }
+.cat-block.open .symptoms-grid { display: grid; }
+.symptom-btn { padding: 10px 12px; background: var(--bg-soft); border: 2px solid transparent; border-radius: 8px; cursor: pointer; font-size: .9rem; font-weight: 600; font-family: inherit; color: var(--text); text-align: left; transition: .2s; }
+.symptom-btn:hover { border-color: var(--accent); }
+.symptom-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.selected-block { background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 16px; border-radius: 12px; margin-bottom: 16px; color: #1e3a8a; }
+[data-theme="dark"] .selected-block { background: linear-gradient(135deg, #1e3a8a, #1e40af); color: #dbeafe; }
+.selected-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.selected-chip { background: #fff; color: #1e3a8a; padding: 6px 12px; border-radius: 16px; font-weight: 700; font-size: .85rem; display: flex; align-items: center; gap: 6px; }
+.selected-chip .remove { cursor: pointer; font-weight: 900; }
+.result-card { border-radius: 14px; padding: 20px; margin-bottom: 14px; border-left: 8px solid; }
+.result-red { background: #fee2e2; border-left-color: #dc2626; color: #991b1b; }
+.result-yellow { background: #fef3c7; border-left-color: #f59e0b; color: #92400e; }
+.result-green { background: #dcfce7; border-left-color: #16a34a; color: #166534; }
+[data-theme="dark"] .result-red { background: #7f1d1d; color: #fecaca; }
+[data-theme="dark"] .result-yellow { background: #78350f; color: #fef3c7; }
+[data-theme="dark"] .result-green { background: #14532d; color: #dcfce7; }
+.result-card h3 { margin-top: 0; }
+.result-card .prob { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: .8rem; font-weight: 800; background: rgba(0,0,0,.1); }
+.disclaimer { text-align: center; color: var(--muted); font-size: .85rem; padding: 20px; border-top: 1px solid var(--border); margin-top: 20px; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>🤖 Симптом-анализатор</h2></div>
+
+<div class="danger-box">⚠️ Это НЕ диагноз! Только рекомендации. При сомнениях — к врачу!</div>
+
+<div class="selected-block">
+  <div><b>Выбрано симптомов: <span id="sel-count">0</span></b></div>
+  <div class="selected-chips" id="sel-chips"></div>
+  <button class="btn btn-block" style="margin-top:12px;" onclick="analyze()">🔍 Проанализировать</button>
+</div>
+
+<div id="results"></div>
+
+<div id="cats"></div>
+
+<div class="disclaimer">
+  🩺 Приложение НЕ ЗАМЕНЯЕТ врача. Все советы — информационные.<br>
+  При острых состояниях — звони 103!
+</div>
+</div>
+
+<script src="../../core/store.js"></script>
+<script src="../../core/achievements.js"></script>
+<script src="../../data/symptoms.js"></script>
+<script>
+var selected = {};
+
+// Симптомы по категориям
+var CATEGORIES = [
+  { id: 'head', name: '🤕 Голова', symptoms: ['headache', 'migraine', 'dizziness', 'fainting'] },
+  { id: 'temp', name: '🌡️ Температура и жар', symptoms: ['fever_low', 'fever_high', 'chills', 'sweating'] },
+  { id: 'chest', name: '💔 Грудь и сердце', symptoms: ['chest_pain', 'heart_palpitations', 'shortness_breath', 'cough'] },
+  { id: 'stomach', name: '🤢 Живот', symptoms: ['stomach_pain', 'nausea', 'vomiting', 'diarrhea', 'constipation', 'heartburn'] },
+  { id: 'throat', name: '😷 Горло и нос', symptoms: ['throat_pain', 'runny_nose', 'sneezing', 'loss_voice', 'ear_pain'] },
+  { id: 'limbs', name: '🦵 Руки, ноги, спина', symptoms: ['joint_pain', 'muscle_pain', 'back_pain', 'swelling', 'numbness'] },
+  { id: 'skin', name: '🩹 Кожа', symptoms: ['rash', 'itching', 'bruise', 'wound', 'burn'] },
+  { id: 'mental', name: '🧠 Психика', symptoms: ['insomnia', 'anxiety', 'depression', 'irritability'] },
+  { id: 'other', name: '📋 Прочее', symptoms: ['fatigue', 'eye_redness', 'toothache', 'blood_pressure_high', 'blood_pressure_low'] }
+];
+
+function renderCats() {
+  document.getElementById('cats').innerHTML = CATEGORIES.map(function (cat) {
+    var symptoms = cat.symptoms.map(function (id) {
+      var s = window.AIB_SYMPTOMS ? window.AIB_SYMPTOMS[id] : null;
+      if (!s) return '';
+      return '<button class="symptom-btn' + (selected[id] ? ' selected' : '') + '" onclick="toggle(\'' + id + '\')">' + s.icon + ' ' + s.name + '</button>';
+    }).join('');
+    return '<div class="cat-block" id="cat-' + cat.id + '">' +
+      '<h3 onclick="toggleCat(\'' + cat.id + '\')">' + cat.name + '<span class="arrow">▶</span></h3>' +
+      '<div class="symptoms-grid">' + symptoms + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleCat(id) {
+  var el = document.getElementById('cat-' + id);
+  if (el) el.classList.toggle('open');
+}
+
+function toggle(id) {
+  if (selected[id]) delete selected[id];
+  else selected[id] = true;
+  renderCats();
+  renderSelected();
+}
+
+function renderSelected() {
+  var ids = Object.keys(selected);
+  document.getElementById('sel-count').textContent = ids.length;
+  document.getElementById('sel-chips').innerHTML = ids.map(function (id) {
+    var s = window.AIB_SYMPTOMS[id];
+    if (!s) return '';
+    return '<span class="selected-chip">' + s.icon + ' ' + s.name + ' <span class="remove" onclick="toggle(\'' + id + '\')">✕</span></span>';
+  }).join('') || '<span style="opacity:.7;">Ничего не выбрано</span>';
+}
+
+function analyze() {
+  var ids = Object.keys(selected);
+  if (ids.length === 0) {
+    document.getElementById('results').innerHTML = '<div class="card">⚠️ Выбери хотя бы один симптом!</div>';
+    return;
+  }
+
+  // Проверяем красные флаги (срочно к врачу)
+  var redFlags = ['chest_pain', 'fainting', 'shortness_breath', 'loss_voice', 'numbness'];
+  var hasRed = ids.some(function (id) { return redFlags.indexOf(id) !== -1; });
+
+  // Проверяем жёлтые флаги
+  var yellowFlags = ['fever_high', 'vomiting', 'diarrhea', 'blood_pressure_high', 'migraine'];
+  var hasYellow = ids.some(function (id) { return yellowFlags.indexOf(id) !== -1; });
+
+  var level = hasRed ? 'red' : hasYellow ? 'yellow' : 'green';
+  var title = hasRed ? '🚨 СКОРАЯ 103!' : hasYellow ? '🟡 К ВРАЧУ в течение суток' : '🟢 Можно дома';
+  var advice = hasRed
+    ? 'У тебя симптомы, опасные для жизни. НЕ жди — звони 103 немедленно!'
+    : hasYellow
+      ? 'Состояние требует врача. Запишись или вызови на дом.'
+      : 'Похоже, что-то лёгкое. Отдохни, полечись дома. Если хуже — к врачу.';
+
+  var html = '<div class="result-card result-' + level + '">';
+  html += '<h3>' + title + '</h3>';
+  html += '<p style="font-size:1.1rem;font-weight:700;">' + advice + '</p>';
+  if (hasRed) html += '<a href="tel:103" class="btn btn-block" style="margin-top:12px;background:#dc2626;">📞 ЗВОНИТЬ 103</a>';
+  html += '</div>';
+
+  // Возможные причины
+  if (window.AIB_SYMPTOM_ANALYZE) {
+    var causes = window.AIB_SYMPTOM_ANALYZE(ids);
+    if (causes.length > 0) {
+      html += '<div class="card"><h3>🔬 Возможные причины:</h3>';
+      causes.forEach(function (c) {
+        html += '<div style="padding:12px;background:var(--bg-soft);border-radius:10px;margin-bottom:8px;">';
+        html += '<div style="font-weight:800;font-size:1.05rem;">' + c.name + ' <span class="prob">' + c.prob + '%</span></div>';
+        html += '<div style="font-size:.9rem;color:var(--muted);margin-top:4px;">' + c.advice + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  // Что можно принять
+  if (level === 'green') {
+    html += '<div class="card"><h3>💊 Что можно принять:</h3>';
+    if (ids.indexOf('headache') !== -1) html += '<p>🤕 Головная боль: <b>парацетамол 500 мг</b> или <b>ибупрофен 400 мг</b></p>';
+    if (ids.indexOf('fever_low') !== -1) html += '<p>🌡️ Жар до 38.5: <b>обильное питьё</b>, жаропонижающее при плохом самочувствии</p>';
+    if (ids.indexOf('runny_nose') !== -1) html += '<p>👃 Насморк: <b>промывание солевым раствором</b>, капли (не более 5 дней)</p>';
+    if (ids.indexOf('throat_pain') !== -1) html += '<p>😷 Боль в горле: <b>полоскание</b>, спрей-антисептик</p>';
+    if (ids.indexOf('heartburn') !== -1) html += '<p>🔥 Изжога: <b>омепразол 20 мг</b> или антацид</p>';
+    html += '</div>';
+  }
+
+  document.getElementById('results').innerHTML = html;
+
+  // Скролл к результату
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+renderCats();
+renderSelected();
+</script></body></html>

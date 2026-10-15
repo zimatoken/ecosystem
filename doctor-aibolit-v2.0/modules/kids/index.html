@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>👶 Детский модуль</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.tab { padding: 10px 16px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); cursor: pointer; font-weight: 700; font-family: inherit; color: var(--text); }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.vaccine-item { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--card); border-left: 4px solid var(--accent); border-radius: 10px; margin-bottom: 8px; }
+.vaccine-item .age { font-weight: 800; color: var(--accent); min-width: 80px; }
+.vaccine-item .name { flex: 1; font-weight: 700; }
+.vaccine-item .check { font-size: 1.4rem; cursor: pointer; }
+.vaccine-item.done { background: #dcfce7; border-left-color: #16a34a; }
+[data-theme="dark"] .vaccine-item.done { background: #14532d; }
+.growth-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 12px; background: var(--card); border-radius: 8px; margin-bottom: 6px; align-items: center; }
+.growth-row .age { font-weight: 700; color: var(--accent); }
+.growth-row .val { text-align: center; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>👶 Детский модуль</h2></div>
+
+<div class="tabs">
+  <button class="tab active" onclick="pickTab('vaccines', this)">💉 Прививки</button>
+  <button class="tab" onclick="pickTab('growth', this)">📏 Рост и вес</button>
+  <button class="tab" onclick="pickTab('teeth', this)">🦷 Зубы</button>
+  <button class="tab" onclick="pickTab('tips', this)">💡 Советы</button>
+</div>
+
+<div id="content"></div>
+</div>
+
+<script src="../../core/store.js"></script>
+<script>
+var currentTab = 'vaccines';
+
+function pickTab(id, el) {
+  currentTab = id;
+  document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  render();
+}
+
+function render() {
+  if (currentTab === 'vaccines') renderVaccines();
+  else if (currentTab === 'growth') renderGrowth();
+  else if (currentTab === 'teeth') renderTeeth();
+  else renderTips();
+}
+
+var VACCINES = [
+  { age: '0-1 день', name: 'Гепатит B — 1' },
+  { age: '3-7 дней', name: 'Туберкулёз (БЦЖ)' },
+  { age: '1 мес', name: 'Гепатит B — 2' },
+  { age: '2 мес', name: 'Пневмококк — 1' },
+  { age: '3 мес', name: 'Коклюш-дифтерия-столбняк (АКДС) — 1' },
+  { age: '3 мес', name: 'Полиомиелит — 1' },
+  { age: '3 мес', name: 'Гепатит B — 3' },
+  { age: '4.5 мес', name: 'АКДС — 2, Полио — 2, Пневмо — 2' },
+  { age: '6 мес', name: 'АКДС — 3, Полио — 3' },
+  { age: '12 мес', name: 'Корь-краснуха-паротит (КПК) — 1' },
+  { age: '12 мес', name: 'Гепатит B — 4' },
+  { age: '18 мес', name: 'АКДС — ревакцинация' },
+  { age: '20 мес', name: 'Полио — ревакцинация' },
+  { age: '6 лет', name: 'КПК — ревакцинация' },
+  { age: '7 лет', name: 'АДС-M (дифтерия-столбняк)' },
+  { age: '7 лет', name: 'БЦЖ — ревакцинация' },
+  { age: '14 лет', name: 'АДС-M — ревакцинация' },
+  { age: '14 лет', name: 'Полио — ревакцинация' }
+];
+
+function renderVaccines() {
+  var done = JSON.parse(localStorage.getItem('aib_vaccines') || '[]');
+  document.getElementById('content').innerHTML =
+    '<div class="card" style="border-left:5px solid var(--accent);">' +
+      '<h3 style="margin-top:0;">💉 Календарь прививок (по РФ)</h3>' +
+      '<p style="margin:0;">Отмечай сделанные прививки — увидишь прогресс.</p>' +
+    '</div>' +
+    VACCINES.map(function (v, i) {
+      var isDone = done.indexOf(i) !== -1;
+      return '<div class="vaccine-item' + (isDone ? ' done' : '') + '" onclick="toggleVaccine(' + i + ')">' +
+        '<div class="age">' + v.age + '</div>' +
+        '<div class="name">' + v.name + '</div>' +
+        '<div class="check">' + (isDone ? '✅' : '⬜') + '</div>' +
+      '</div>';
+    }).join('');
+}
+
+function toggleVaccine(i) {
+  var done = JSON.parse(localStorage.getItem('aib_vaccines') || '[]');
+  var idx = done.indexOf(i);
+  if (idx !== -1) done.splice(idx, 1);
+  else done.push(i);
+  localStorage.setItem('aib_vaccines', JSON.stringify(done));
+  render();
+}
+
+function renderGrowth() {
+  // Примерные нормы ВОЗ (мальчики, средние)
+  var norms = [
+    { age: 'Рождение', weight: '3.3 кг', height: '50 см' },
+    { age: '1 мес', weight: '4.5 кг', height: '55 см' },
+    { age: '2 мес', weight: '5.6 кг', height: '58 см' },
+    { age: '3 мес', weight: '6.4 кг', height: '61 см' },
+    { age: '6 мес', weight: '7.9 кг', height: '67 см' },
+    { age: '9 мес', weight: '9.2 кг', height: '72 см' },
+    { age: '12 мес', weight: '10.3 кг', height: '76 см' },
+    { age: '18 мес', weight: '11.5 кг', height: '82 см' },
+    { age: '2 года', weight: '12.7 кг', height: '87 см' },
+    { age: '3 года', weight: '14.4 кг', height: '96 см' }
+  ];
+  document.getElementById('content').innerHTML =
+    '<div class="card" style="border-left:5px solid var(--accent);">' +
+      '<h3 style="margin-top:0;">📏 Нормы роста и веса</h3>' +
+      '<p style="margin:0;">Примерные нормы ВОЗ. Для индивидуальных — к педиатру.</p>' +
+    '</div>' +
+    '<div class="card" style="padding:0;">' +
+      norms.map(function (n) {
+        return '<div class="growth-row">' +
+          '<div class="age">' + n.age + '</div>' +
+          '<div class="val">⚖️ ' + n.weight + '</div>' +
+          '<div class="val">📏 ' + n.height + '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+}
+
+function renderTeeth() {
+  document.getElementById('content').innerHTML =
+    '<div class="card" style="border-left:5px solid var(--accent);">' +
+      '<h3 style="margin-top:0;">🦷 Прорезывание зубов</h3>' +
+    '</div>' +
+    '<div class="card">' +
+      '<h4>Порядок прорезывания:</h4>' +
+      '<ul style="line-height:1.9;">' +
+        '<li><b>6-8 мес</b> — Нижние центральные резцы</li>' +
+        '<li><b>8-10 мес</b> — Верхние центральные резцы</li>' +
+        '<li><b>9-12 мес</b> — Верхние боковые резцы</li>' +
+        '<li><b>10-14 мес</b> — Нижние боковые резцы</li>' +
+        '<li><b>12-15 мес</b> — Первые коренные (верхние)</li>' +
+        '<li><b>13-18 мес</b> — Первые коренные (нижние)</li>' +
+        '<li><b>16-20 мес</b> — Клыки</li>' +
+        '<li><b>20-30 мес</b> — Вторые коренные</li>' +
+      '</ul>' +
+      '<p style="color:var(--muted);margin-top:12px;">⚠️ Всего 20 молочных зубов к 2.5-3 годам.</p>' +
+    '</div>' +
+    '<div class="card" style="background:#dcfce7;">' +
+      '<h4 style="color:#166534;margin-top:0;">✅ Что делать при прорезывании:</h4>' +
+      '<ul style="line-height:1.9;color:#166534;">' +
+        '<li>Прорезыватели (охлаждённые)</li>' +
+        '<li>Массаж дёсен пальцем</li>' +
+        '<li>Гели для дёсен (по возрасту)</li>' +
+        '<li>Жаропонижающее при температуре</li>' +
+        '<li>Много внимания, терпения</li>' +
+      '</ul>' +
+    '</div>';
+}
+
+function renderTips() {
+  var tips = [
+    { icon: '🤱', title: 'Грудное вскармливание', text: 'До 6 месяцев — только ГВ. После — прикорм.' },
+    { icon: '😴', title: 'Сон', text: '0-3 мес: 14-17 ч/сут. 4-11 мес: 12-15 ч. 1-2 года: 11-14 ч.' },
+    { icon: '🍎', title: 'Прикорм', text: 'С 6 мес: овощи, каши, фрукты. Постепенно, по одному продукту.' },
+    { icon: '💧', title: 'Вода', text: 'До 6 мес — не нужна. После — понемногу.' },
+    { icon: '🛁', title: 'Купание', text: 'Температура воды: 36-37°C. Каждый день.' },
+    { icon: '🌡️', title: 'Температура у ребёнка', text: 'До 38.5 — НЕ сбивать (если хорошо переносит). При судорогах — скорая.' },
+    { icon: '💊', title: 'Жаропонижающее', text: 'Парацетамол (10-15 мг/кг) или ибупрофен (5-10 мг/кг). Аспирин — НЕТ!' },
+    { icon: '🚨', title: 'Скорая', text: 'Судороги, потеря сознания, температура >40, сыпь с температурой.' }
+  ];
+  document.getElementById('content').innerHTML =
+    tips.map(function (t) {
+      return '<div class="card" style="border-left:4px solid var(--accent);">' +
+        '<div style="display:flex;align-items:center;gap:12px;">' +
+          '<div style="font-size:2rem;">' + t.icon + '</div>' +
+          '<div><div style="font-weight:800;font-size:1.05rem;">' + t.title + '</div>' +
+          '<div style="color:var(--muted);font-size:.9rem;">' + t.text + '</div></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+}
+
+render();
+</script></body></html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🆘 SOS Айболит</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.sos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.sos-card { background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 18px; cursor: pointer; transition: .2s; }
+.sos-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.sos-card .icon { font-size: 2.5rem; margin-bottom: 8px; }
+.sos-card .title { font-weight: 800; font-size: 1.05rem; margin-bottom: 4px; }
+.sos-card .desc { font-size: .85rem; color: var(--muted); }
+
+.solution { background: var(--card); border: 2px solid var(--accent); border-radius: 14px; padding: 24px; margin-top: 20px; }
+.solution h3 { color: var(--accent); margin-top: 0; font-size: 1.3rem; }
+.solution .intro { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 10px; margin: 12px 0; font-weight: 700; }
+[data-theme="dark"] .solution .intro { background: #7f1d1d; color: #fecaca; }
+.step { padding: 12px 14px; background: var(--bg-soft); border-left: 4px solid var(--accent); border-radius: 8px; margin-bottom: 8px; font-size: 1rem; line-height: 1.6; }
+.warn-item { padding: 12px 14px; background: #fee2e2; color: #991b1b; border-radius: 8px; margin-bottom: 6px; font-weight: 700; border-left: 4px solid #dc2626; }
+[data-theme="dark"] .warn-item { background: #7f1d1d; color: #fecaca; }
+.legal-block { background: #f0fdf4; padding: 14px; border-radius: 10px; margin-top: 16px; border-left: 4px solid #16a34a; }
+[data-theme="dark"] .legal-block { background: #14532d; color: #dcfce7; }
+.btn-103 { background: #dc2626; color: #fff; padding: 16px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; text-align: center; text-decoration: none; display: block; margin-top: 20px; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← Назад</a><h2 style="color:#dc2626">🆘 SOS Айболит</h2></div>
+<div class="danger-box">🚨 ЗВОНИ 103 ПРИ УГРОЗЕ ЖИЗНИ!</div>
+<div id="content"></div>
+</div>
+
+<script src="../../core/registry.js"></script>
+<script src="../../core/store.js"></script>
+<script src="../../core/sosEngine.js"></script>
+<script src="../../core/profileStore.js"></script>
+<script src="../../core/achievements.js"></script>
+<script src="../../data/sos/bite.js"></script>
+<script src="../../data/sos/bleeding.js"></script>
+<script src="../../data/sos/burns.js"></script>
+<script src="../../data/sos/chest_pain.js"></script>
+<script src="../../data/sos/choking.js"></script>
+<script src="../../data/sos/drowning.js"></script>
+<script src="../../data/sos/fainting.js"></script>
+<script src="../../data/sos/fever.js"></script>
+<script src="../../data/sos/fracture.js"></script>
+<script src="../../data/sos/frostbite.js"></script>
+<script src="../../data/sos/poisoning.js"></script>
+<script src="../../data/sos/stroke.js"></script>
+<script>
+function renderList() {
+  var list = window.AIB_SOS_ENGINE.getAll();
+  if (list.length === 0) {
+    document.getElementById('content').innerHTML = '<div class="card">⚠️ SOS ситуации не загружены. Проверь data/sos/</div>';
+    return;
+  }
+  document.getElementById('content').innerHTML = '<div class="sos-grid">' + list.map(function (s) {
+    return '<div class="sos-card" onclick="openSOS(\'' + s.id + '\')">' +
+      '<div class="icon">' + (s.icon || '🆘') + '</div>' +
+      '<div class="title">' + s.title + '</div>' +
+      '<div class="desc">' + (s.description || '') + '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function openSOS(id) {
+  var s = window.AIB_SOS_ENGINE.get(id);
+  if (!s) return;
+
+  // Показываем экстренные контакты если есть
+  var emergency = window.AIB_PROFILE ? window.AIB_PROFILE.getEmergency() : null;
+  var profile = window.AIB_PROFILE ? window.AIB_PROFILE.get() : null;
+
+  var html = '<button class="btn btn-outline" onclick="renderList()">← Назад к списку</button>';
+  html += '<div class="solution"><h3>' + s.icon + ' ' + s.title + '</h3>';
+  if (s.intro) html += '<div class="intro">' + s.intro + '</div>';
+
+  // Медпрофиль (критично!)
+  if (profile && profile.bloodType) {
+    html += '<div style="background:#fef3c7;color:#78350f;padding:12px;border-radius:8px;margin:12px 0;font-weight:700;">';
+    html += '🩸 Группа крови: ' + profile.bloodType;
+    if (profile.allergies) html += '<br>⛔ Аллергии: ' + profile.allergies;
+    if (profile.chronic) html += '<br>📋 Хронические: ' + profile.chronic;
+    if (profile.medications) html += '<br>💊 Принимает: ' + profile.medications;
+    html += '</div>';
+  }
+
+  html += '<h4>📋 Что делать:</h4>';
+  if (s.steps) s.steps.forEach(function (st) { html += '<div class="step">' + st + '</div>'; });
+  if (s.warnings) {
+    html += '<h4>⚠️ КРИТИЧНО — ЧТО НЕ ДЕЛАТЬ:</h4>';
+    s.warnings.forEach(function (w) { html += '<div class="warn-item">⛔ ' + w + '</div>'; });
+  }
+  if (s.legal) {
+    html += '<div class="legal-block"><h4 style="color:#16a34a;margin-top:0;">⚖️ Правовая основа</h4>';
+    s.legal.forEach(function (l) { html += '<p>• ' + l + '</p>'; });
+    html += '</div>';
+  }
+
+  html += '<a href="tel:103" class="btn-103">📞 ЗВОНИТЬ 103 — СКОРАЯ</a>';
+
+  // Экстренные контакты
+  if (emergency && emergency.contact1Phone) {
+    html += '<div style="margin-top:16px;background:#dbeafe;padding:14px;border-radius:10px;">';
+    html += '<h4 style="margin-top:0;color:#1e40af;">📞 Твои экстренные контакты:</h4>';
+    html += '<p>👤 ' + emergency.contact1Name + ': <a href="tel:' + emergency.contact1Phone + '">' + emergency.contact1Phone + '</a></p>';
+    if (emergency.contact2Phone) html += '<p>👤 ' + emergency.contact2Name + ': <a href="tel:' + emergency.contact2Phone + '">' + emergency.contact2Phone + '</a></p>';
+    html += '</div>';
+  }
+
+  html += '<button class="btn btn-block" style="margin-top:16px;" onclick="mark()">✅ Помогло (+50 XP)</button>';
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function mark() {
+  window.AIB_STORE.registerSOS();
+  if (window.AIB_ACHIEVEMENTS) window.AIB_ACHIEVEMENTS.check();
+  alert('✅ Молодец! +50 XP');
+  renderList();
+}
+
+renderList();
+</script></body></html>

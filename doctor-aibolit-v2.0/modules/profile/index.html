@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>📋 Медицинский профиль</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.field { margin-bottom: 14px; }
+.field label { display: block; font-weight: 700; margin-bottom: 6px; font-size: .95rem; }
+.field input, .field textarea, .field select {
+  width: 100%; padding: 12px; border: 2px solid var(--border);
+  border-radius: 8px; background: var(--card); color: var(--text);
+  font-size: 1rem; font-family: inherit; box-sizing: border-box;
+}
+.field textarea { min-height: 80px; resize: vertical; }
+.warning-box { background: #fef3c7; color: #92400e; padding: 16px; border-radius: 12px; margin-bottom: 16px; font-weight: 600; border-left: 5px solid #f59e0b; }
+[data-theme="dark"] .warning-box { background: #78350f; color: #fef3c7; }
+.emergency-box { background: linear-gradient(135deg, #fee2e2, #fecaca); padding: 16px; border-radius: 12px; border: 2px solid #dc2626; margin-bottom: 16px; }
+[data-theme="dark"] .emergency-box { background: linear-gradient(135deg, #7f1d1d, #991b1b); color: #fecaca; }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>📋 Медицинский профиль</h2></div>
+
+<div class="warning-box">
+  🚨 <b>Заполни обязательно!</b><br>
+  В экстренной ситуации врач должен знать группу крови и аллергии.
+</div>
+
+<div class="card">
+  <h3>👤 Основное</h3>
+  <div class="field"><label>Имя</label><input id="p-name" placeholder="Иван Иванов"></div>
+  <div class="field"><label>Возраст</label><input id="p-age" type="number" placeholder="35"></div>
+  
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div class="field"><label>Вес (кг)</label><input id="p-weight" type="number" placeholder="70"></div>
+    <div class="field"><label>Рост (см)</label><input id="p-height" type="number" placeholder="175"></div>
+  </div>
+  <div id="bmi-block" style="display:none;background:linear-gradient(135deg,#dbeafe,#bfdbfe);padding:14px;border-radius:10px;margin-bottom:14px;text-align:center;">
+    <div style="font-size:.85rem;color:#1e40af;">Индекс массы тела (BMI)</div>
+    <div style="font-size:2.5rem;font-weight:900;color:#1e40af;" id="bmi-value">—</div>
+    <div style="font-weight:700;" id="bmi-status">—</div>
+  </div>
+  <div class="field"><label>Группа крови</label>
+    <select id="p-blood">
+      <option value="">— Не знаю —</option>
+      <option value="O(I) Rh+">O(I) Rh+</option>
+      <option value="O(I) Rh-">O(I) Rh-</option>
+      <option value="A(II) Rh+">A(II) Rh+</option>
+      <option value="A(II) Rh-">A(II) Rh-</option>
+      <option value="B(III) Rh+">B(III) Rh+</option>
+      <option value="B(III) Rh-">B(III) Rh-</option>
+      <option value="AB(IV) Rh+">AB(IV) Rh+</option>
+      <option value="AB(IV) Rh-">AB(IV) Rh-</option>
+    </select>
+  </div>
+  <div class="field"><label>Аллергии (что НЕЛЬЗЯ)</label><textarea id="p-allergies" placeholder="Пенициллин, аспирин, орехи..."></textarea></div>
+  <div class="field"><label>Хронические заболевания</label><textarea id="p-chronic" placeholder="Диабет 2 типа, астма, гипертония..."></textarea></div>
+  <div class="field"><label>Принимаемые лекарства</label><textarea id="p-meds" placeholder="Метформин 500мг 2 раза/день, эналаприл 10мг утром..."></textarea></div>
+  <div class="field"><label>Телефон врача</label><input id="p-doctor" placeholder="+7 (___) ___-__-__"></div>
+</div>
+
+<div class="emergency-box">
+  <h3 style="margin-top:0;">🚑 Экстренные контакты</h3>
+  <div class="field"><label>Контакт 1 — Имя</label><input id="e-c1-name" placeholder="Мама / жена"></div>
+  <div class="field"><label>Контакт 1 — Телефон</label><input id="e-c1-phone" type="tel" placeholder="+7 (___) ___-__-__"></div>
+  <div class="field"><label>Контакт 2 — Имя</label><input id="e-c2-name" placeholder="Друг / брат"></div>
+  <div class="field"><label>Контакт 2 — Телефон</label><input id="e-c2-phone" type="tel" placeholder="+7 (___) ___-__-__"></div>
+  <div class="field"><label>Домашний адрес</label><input id="e-address" placeholder="Где ты живёшь (для скорой)"></div>
+</div>
+
+<button class="btn btn-block" style="font-size:1.1rem; padding:16px;" onclick="saveAll()">💾 Сохранить профиль (+100 XP)</button>
+<div id="saved-msg" style="text-align:center; margin-top:12px; font-weight:700; color:#16a34a; display:none;">✅ Сохранено!</div>
+</div>
+
+<script src="../../core/store.js"></script>
+<script src="../../core/profileStore.js"></script>
+<script src="../../core/achievements.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var p = window.AIB_PROFILE.get();
+  var e = window.AIB_PROFILE.getEmergency();
+  document.getElementById('p-name').value = p.name || '';
+  document.getElementById('p-age').value = p.age || '';
+  document.getElementById('p-weight').value = p.weight || '';
+  document.getElementById('p-height').value = p.height || '';
+  calcBMI();
+  document.getElementById('p-blood').value = p.bloodType || '';
+  document.getElementById('p-allergies').value = p.allergies || '';
+  document.getElementById('p-chronic').value = p.chronic || '';
+  document.getElementById('p-meds').value = p.medications || '';
+  document.getElementById('p-doctor').value = p.doctorPhone || '';
+  document.getElementById('e-c1-name').value = e.contact1Name || '';
+  document.getElementById('e-c1-phone').value = e.contact1Phone || '';
+  document.getElementById('e-c2-name').value = e.contact2Name || '';
+  document.getElementById('e-c2-phone').value = e.contact2Phone || '';
+  document.getElementById('e-address').value = e.address || '';
+});
+
+
+document.getElementById('p-weight').addEventListener('input', calcBMI);
+document.getElementById('p-height').addEventListener('input', calcBMI);
+
+function calcBMI() {
+  var w = parseFloat(document.getElementById('p-weight').value);
+  var h = parseFloat(document.getElementById('p-height').value);
+  if (!w || !h) { document.getElementById('bmi-block').style.display = 'none'; return; }
+  var bmi = w / ((h / 100) * (h / 100));
+  var status = '';
+  var color = '#1e40af';
+  if (bmi < 18.5) { status = '⚠️ Недостаточный вес'; color = '#f59e0b'; }
+  else if (bmi < 25) { status = '✅ Норма'; color = '#16a34a'; }
+  else if (bmi < 30) { status = '⚠️ Избыточный вес'; color = '#f59e0b'; }
+  else { status = '🚨 Ожирение'; color = '#dc2626'; }
+  document.getElementById('bmi-block').style.display = 'block';
+  document.getElementById('bmi-value').textContent = bmi.toFixed(1);
+  document.getElementById('bmi-value').style.color = color;
+  document.getElementById('bmi-status').innerHTML = '<span style="color:' + color + ';">' + status + '</span>';
+}
+
+function saveAll() {
+  window.AIB_PROFILE.save({
+    name: document.getElementById('p-name').value,
+    age: document.getElementById('p-age').value,
+    weight: document.getElementById('p-weight').value,
+    height: document.getElementById('p-height').value,
+    bloodType: document.getElementById('p-blood').value,
+    allergies: document.getElementById('p-allergies').value,
+    chronic: document.getElementById('p-chronic').value,
+    medications: document.getElementById('p-meds').value,
+    doctorPhone: document.getElementById('p-doctor').value
+  });
+  window.AIB_PROFILE.saveEmergency({
+    contact1Name: document.getElementById('e-c1-name').value,
+    contact1Phone: document.getElementById('e-c1-phone').value,
+    contact2Name: document.getElementById('e-c2-name').value,
+    contact2Phone: document.getElementById('e-c2-phone').value,
+    address: document.getElementById('e-address').value
+  });
+  window.AIB_ACHIEVEMENTS.check();
+  document.getElementById('saved-msg').style.display = 'block';
+  setTimeout(function () { document.getElementById('saved-msg').style.display = 'none'; }, 2000);
+}
+</script></body></html>

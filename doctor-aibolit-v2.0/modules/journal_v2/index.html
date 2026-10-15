@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>📔 Дневник здоровья</title><link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){if(localStorage.getItem('ecosystem_theme_universal_v2')==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.type-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.type-tab { padding: 10px 16px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); cursor: pointer; font-weight: 700; font-size: .9rem; transition: .2s; font-family: inherit; color: var(--text); }
+.type-tab:hover { border-color: var(--accent); }
+.type-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.entry-form { background: var(--card); border: 2px solid var(--accent); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.form-row input, .form-row textarea, .form-row select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); font-size: 1rem; font-family: inherit; box-sizing: border-box; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+.entry-list { display: grid; gap: 10px; }
+.entry { background: var(--card); border-left: 5px solid var(--accent); border-radius: 10px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; }
+.entry.temp { border-left-color: #f59e0b; }
+.entry.pressure { border-left-color: #dc2626; }
+.entry.meds { border-left-color: #16a34a; }
+.entry.sugar { border-left-color: #7c3aed; }
+.entry.mood { border-left-color: #ec4899; }
+.entry .icon { font-size: 1.8rem; flex-shrink: 0; }
+.entry .content { flex: 1; }
+.entry .date { font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
+.entry .main { font-size: 1.2rem; font-weight: 800; }
+.entry .note { font-size: .9rem; color: var(--muted); margin-top: 4px; }
+.entry .del { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); flex-shrink: 0; }
+
+.chart-block { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+.chart-bars { display: flex; gap: 8px; align-items: flex-end; min-height: 120px; padding: 10px 0; }
+.chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.chart-bar { width: 100%; max-width: 40px; background: linear-gradient(180deg, #f59e0b, #ea580c); border-radius: 4px 4px 0 0; min-height: 4px; }
+.chart-bar.pressure-bar { background: linear-gradient(180deg, #dc2626, #991b1b); }
+.chart-label { font-size: .7rem; color: var(--muted); }
+.chart-value { font-size: .75rem; font-weight: 700; color: var(--accent); }
+
+.empty { text-align: center; padding: 40px; color: var(--muted); }
+</style>
+</head><body>
+<div class="container">
+<div class="header"><a href="../../index.html" class="btn btn-outline">← На главную</a><h2>📔 Дневник здоровья</h2></div>
+
+<div class="type-tabs" id="tabs"></div>
+<div id="content"></div>
+</div>
+
+<script src="../../core/store.js"></script>
+<script src="../../core/profileStore.js"></script>
+<script>
+var currentType = 'temp';
+var JOURNAL_KEY = 'aib_journal_v2';
+
+function getEntries() {
+  return JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+}
+function saveEntries(list) {
+  localStorage.setItem(JOURNAL_KEY, JSON.stringify(list));
+}
+function addEntry(e) {
+  var l = getEntries();
+  e.date = new Date().toISOString();
+  e.id = 'e_' + Date.now();
+  l.push(e);
+  saveEntries(l);
+  if (window.AIB_STORE) { window.AIB_STORE.addXP ? null : null; }
+}
+
+var TYPES = [
+  { id: 'temp', name: '🌡️ Температура', icon: '🌡️', unit: '°C', min: 34, max: 42, step: 0.1 },
+  { id: 'pressure', name: '🩸 Давление', icon: '🩸', unit: 'мм рт.ст.', min: 60, max: 220, step: 1 },
+  { id: 'sugar', name: '🍬 Сахар', icon: '🍬', unit: 'ммоль/л', min: 1, max: 30, step: 0.1 },
+  { id: 'meds', name: '💊 Лекарства', icon: '💊', unit: '', min: 0, max: 0, step: 0 },
+  { id: 'mood', name: '😊 Настроение', icon: '😊', unit: '', min: 0, max: 0, step: 0 },
+  { id: 'note', name: '📝 Заметка', icon: '📝', unit: '', min: 0, max: 0, step: 0 }
+];
+
+function renderTabs() {
+  document.getElementById('tabs').innerHTML = TYPES.map(function (t) {
+    return '<button class="type-tab' + (currentType === t.id ? ' active' : '') + '" onclick="pickType(\'' + t.id + '\')">' + t.name + '</button>';
+  }).join('');
+}
+
+function pickType(id) {
+  currentType = id;
+  render();
+}
+
+function render() {
+  renderTabs();
+  var type = TYPES.find(function (t) { return t.id === currentType; });
+  var entries = getEntries().filter(function (e) { return e.type === currentType; }).reverse();
+
+  var html = '';
+
+  // Форма добавления
+  if (currentType === 'meds') {
+    html += '<div class="entry-form"><h3 style="margin-top:0;">💊 Записать приём лекарства</h3>';
+    html += '<div class="form-row"><label>Что принял</label><input id="f-med" placeholder="Парацетамол 500 мг"></div>';
+    html += '<div class="form-row"><label>Заметка</label><textarea id="f-note" placeholder="Через сколько минут стало легче"></textarea></div>';
+    html += '<button class="btn btn-block" onclick="saveMeds()">💾 Сохранить</button></div>';
+  } else if (currentType === 'mood') {
+    html += '<div class="entry-form"><h3 style="margin-top:0;">😊 Настроение</h3>';
+    html += '<div class="form-row"><label>Оценка</label><select id="f-mood"><option value="5">😄 Отлично</option><option value="4">🙂 Хорошо</option><option value="3">😐 Нормально</option><option value="2">😔 Плохо</option><option value="1">😢 Очень плохо</option></select></div>';
+    html += '<div class="form-row"><label>Заметка</label><textarea id="f-note"></textarea></div>';
+    html += '<button class="btn btn-block" onclick="saveMood()">💾 Сохранить</button></div>';
+  } else if (currentType === 'note') {
+    html += '<div class="entry-form"><h3 style="margin-top:0;">📝 Заметка</h3>';
+    html += '<div class="form-row"><label>Кто</label><input id="f-who" placeholder="Я / мама / ребёнок"></div>';
+    html += '<div class="form-row"><label>Что</label><textarea id="f-note" placeholder="Что произошло"></textarea></div>';
+    html += '<button class="btn btn-block" onclick="saveNote()">💾 Сохранить</button></div>';
+  } else {
+    html += '<div class="entry-form"><h3 style="margin-top:0;">' + type.icon + ' ' + type.name + '</h3>';
+    html += '<div class="form-grid">';
+    html += '<div class="form-row"><label>Значение (' + type.unit + ')</label><input id="f-value" type="number" step="' + type.step + '" min="' + type.min + '" max="' + type.max + '"></div>';
+    html += '<div class="form-row"><label>Кто</label><input id="f-who" placeholder="Я / мама / ребёнок"></div>';
+    html += '</div>';
+    html += '<div class="form-row"><label>Заметка</label><textarea id="f-note"></textarea></div>';
+    html += '<button class="btn btn-block" onclick="saveValue()">💾 Сохранить</button></div>';
+  }
+
+  // График для числовых типов
+  if (['temp', 'pressure', 'sugar'].indexOf(currentType) !== -1 && entries.length > 0) {
+    var last10 = entries.slice(0, 10).reverse();
+    var max = Math.max.apply(null, last10.map(function (e) { return e.value; }));
+    var min = Math.min.apply(null, last10.map(function (e) { return e.value; }));
+    var range = max - min || 1;
+    html += '<div class="chart-block"><h3 style="margin-top:0;">📊 Последние 10 замеров</h3><div class="chart-bars">';
+    last10.forEach(function (e) {
+      var h = Math.round((e.value - min + 1) / (range + 1) * 100);
+      html += '<div class="chart-col"><div class="chart-value">' + e.value + '</div><div class="chart-bar' + (currentType === 'pressure' ? ' pressure-bar' : '') + '" style="height:' + h + 'px"></div><div class="chart-label">' + new Date(e.date).toLocaleDateString('ru', { day: 'numeric', month: 'numeric' }) + '</div></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // Список
+  if (entries.length === 0) {
+    html += '<div class="empty">📔 Записей пока нет. Добавь первую!</div>';
+  } else {
+    html += '<div class="entry-list">';
+    entries.forEach(function (e) {
+      html += '<div class="entry ' + e.type + '">';
+      html += '<div class="icon">' + (TYPES.find(function (t) { return t.id === e.type; }) || {}).icon + '</div>';
+      html += '<div class="content">';
+      html += '<div class="date">' + new Date(e.date).toLocaleString('ru') + (e.who ? ' · ' + e.who : '') + '</div>';
+      if (e.value !== undefined) html += '<div class="main">' + e.value + ' ' + (TYPES.find(function (t) { return t.id === e.type; }) || {}).unit + '</div>';
+      if (e.med) html += '<div class="main">' + e.med + '</div>';
+      if (e.mood) html += '<div class="main">' + ['', '😢', '😔', '😐', '🙂', '😄'][e.mood] + '</div>';
+      if (e.note) html += '<div class="note">' + e.note + '</div>';
+      html += '</div>';
+      html += '<button class="del" onclick="delEntry(\'' + e.id + '\')">🗑</button>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function saveValue() {
+  var val = parseFloat(document.getElementById('f-value').value);
+  if (!val) return alert('Введи значение');
+  addEntry({ type: currentType, value: val, who: document.getElementById('f-who').value, note: document.getElementById('f-note').value });
+  render();
+}
+
+function saveMeds() {
+  var med = document.getElementById('f-med').value;
+  if (!med) return alert('Что принял?');
+  addEntry({ type: 'meds', med: med, note: document.getElementById('f-note').value });
+  render();
+}
+
+function saveMood() {
+  var mood = parseInt(document.getElementById('f-mood').value);
+  addEntry({ type: 'mood', mood: mood, note: document.getElementById('f-note').value });
+  render();
+}
+
+function saveNote() {
+  var note = document.getElementById('f-note').value;
+  if (!note) return alert('Заполни заметку');
+  addEntry({ type: 'note', who: document.getElementById('f-who').value, note: note });
+  render();
+}
+
+function delEntry(id) {
+  if (!confirm('Удалить запись?')) return;
+  var l = getEntries().filter(function (e) { return e.id !== id; });
+  saveEntries(l);
+  render();
+}
+
+render();
+</script></body></html>

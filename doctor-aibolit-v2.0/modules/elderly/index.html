@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>👴 Пожилые — Доктор Айболит</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<script>(function(){const t=localStorage.getItem('ecosystem_theme_universal_v2');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');})();</script>
+<style>
+.tabs { display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap; }
+.tab { padding: 10px 18px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: .9rem; transition: .2s; }
+.tab:hover { border-color: #dc2626; }
+.tab.active { background: #dc2626; color: #fff; border-color: #dc2626; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.warning-box { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 5px solid #dc2626; border-radius: 12px; padding: 16px; margin-bottom: 16px; color: #7f1d1d; }
+[data-theme="dark"] .warning-box { background: linear-gradient(135deg, #7f1d1d, #991b1b); color: #fecaca; }
+
+.info-card { background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 12px; border-left: 5px solid #f59e0b; }
+.info-card h3 { margin: 0 0 8px; color: #dc2626; font-size: 1.1rem; }
+.info-card .desc { color: var(--muted); font-size: .9rem; line-height: 1.6; }
+.info-card ul { margin: 8px 0; padding-left: 20px; }
+.info-card li { margin-bottom: 4px; line-height: 1.5; }
+
+.drug-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
+.drug-card { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 14px; }
+.drug-card h4 { margin: 0 0 6px; color: #dc2626; }
+.drug-card .purpose { font-size: .85rem; color: var(--muted); margin-bottom: 6px; }
+.drug-card .warn { font-size: .8rem; color: #dc2626; font-weight: 700; }
+
+.symptom-card { background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 12px; padding: 14px; margin-bottom: 10px; color: #78350f; }
+[data-theme="dark"] .symptom-card { background: linear-gradient(135deg, #78350f, #92400e); color: #fef3c7; }
+
+.big-call { display: block; text-align: center; padding: 18px; background: #dc2626; color: #fff; border-radius: 12px; font-weight: 900; font-size: 1.2rem; text-decoration: none; margin: 12px 0; }
+.big-call:hover { background: #b91c1c; }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+  <a href="../../index.html" class="btn btn-outline">← На главную</a>
+  <h2>👴 Пожилые</h2>
+</div>
+
+<div class="warning-box">
+  ⚠️ <b>Это НЕ диагноз!</b> Только рекомендации. При любых сомнениях — к врачу.<br>
+  Для пожилых особенно важно: НЕ заниматься самолечением и проверять сочетаемость препаратов.
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('drugs', this)">💊 Препараты</div>
+  <div class="tab" onclick="showTab('diseases', this)">🩺 Болезни</div>
+  <div class="tab" onclick="showTab('danger', this)">⚠️ Опасные сочетания</div>
+  <div class="tab" onclick="showTab('prevention', this)">🛡️ Профилактика</div>
+  <div class="tab" onclick="showTab('sos', this)">🚨 SOS</div>
+</div>
+
+<!-- ПРЕПАРАТЫ -->
+<div id="tab-drugs" class="tab-content active">
+  <h3 style="margin-bottom: 8px;">💊 Базовые препараты для пожилых</h3>
+  <p style="color: var(--muted);">Всегда под рукой. Дозировка — ТОЛЬКО по назначению врача!</p>
+
+  <div class="drug-list">
+    <div class="drug-card">
+      <h4>💊 Тонометр</h4>
+      <div class="purpose">Измерение давления 2 раза в день</div>
+      <div class="warn">⚠️ Ведение дневника давления</div>
+    </div>
+    <div class="drug-card">
+      <h4>💊 Нитроглицерин</h4>
+      <div class="purpose">Боль в груди, стенокардия</div>
+      <div class="warn">⚠️ Только под язык, 1 таблетка!</div>
+    </div>
+    <div class="drug-card">
+      <h4>💊 Валидол</h4>
+      <div class="purpose">Успокоительное, лёгкая боль в груди</div>
+      <div class="warn">⚠️ Не заменяет нитроглицерин</div>
+    </div>
+    <div class="drug-card">
+      <h4>💊 Аспирин (кардио)</h4>
+      <div class="purpose">Разжижение крови (по назначению)</div>
+      <div class="warn">⚠️ Только по назначению кардиолога</div>
+    </div>
+    <div class="drug-card">
+      <h4>💊 Каптоприл</h4>
+      <div class="purpose">Резкое повышение давления</div>
+      <div class="warn">⚠️ Только при кризе, по назначению</div>
+    </div>
+    <div class="drug-card">
+      <h4>💊 Смекта / Энтеросгель</h4>
+      <div class="purpose">Отравление, диарея</div>
+      <div class="warn">⚠️ Принимать по инструкции</div>
+    </div>
+    <div class="drug-card">
+      <h4>💊 Мезим / Креон</h4>
+      <div class="purpose">Тяжесть в желудке, вздутие</div>
+      <div class="warn">⚠️ Во время еды</div>
+    </div>
+    <div class="drug-card">
+      <h4>💊 Сенаде / Дюфалак</h4>
+      <div class="purpose">Запоры (частая проблема пожилых)</div>
+      <div class="warn">⚠️ Дюфалак мягче</div>
+    </div>
+  </div>
+</div>
+
+<!-- БОЛЕЗНИ -->
+<div id="tab-diseases" class="tab-content">
+  <h3 style="margin-bottom: 8px;">🩺 Возрастные заболевания</h3>
+
+  <div class="info-card">
+    <h3>❤️ Гипертония</h3>
+    <div class="desc">Повышенное давление — самое частое у пожилых.</div>
+    <ul>
+      <li>Измеряй давление 2 раза в день (утро, вечер)</li>
+      <li>Веди дневник — показывай врачу</li>
+      <li>Ограничь соль (до 5 г/день)</li>
+      <li>Не вставай резко с кровати</li>
+      <li>При кризе: каптоприл (если назначен) + вызов 103</li>
+    </ul>
+  </div>
+
+  <div class="info-card">
+    <h3>🩸 Диабет 2 типа</h3>
+    <div class="desc">Нарушение уровня сахара в крови.</div>
+    <ul>
+      <li>Контроль сахара глюкометром</li>
+      <li>Диета: меньше быстрых углеводов</li>
+      <li>Не пропускать приём препаратов</li>
+      <li>Осмотр стоп ежедневно (диабетическая стопа)</li>
+      <li>При сахаре ниже 3.9 — съесть 2 куска сахара</li>
+    </ul>
+  </div>
+
+  <div class="info-card">
+    <h3>🦴 Артрит / Артроз</h3>
+    <div class="desc">Боли в суставах, ограничение подвижности.</div>
+    <ul>
+      <li>Умеренная гимнастика (не через боль!)</li>
+      <li>Тёплые компрессы, но не горячие</li>
+      <li>Хондропротекторы (по назначению)</li>
+      <li>Контроль веса</li>
+      <li>При сильной боли — к врачу</li>
+    </ul>
+  </div>
+
+  <div class="info-card">
+    <h3>🧠 Деменция / Память</h3>
+    <div class="desc">Снижение памяти, внимания, ориентации.</div>
+    <ul>
+      <li>Тренируй мозг: кроссворды, чтение, счёт</li>
+      <li>Общение с людьми — обязательно</li>
+      <li>Физическая активность — прогулки</li>
+      <li>Не оставляй одного с газом / лекарствами</li>
+      <li>Лекарства — по назначению невролога</li>
+    </ul>
+  </div>
+
+  <div class="info-card">
+    <h3>👁️ Катаракта / Глаукома</h3>
+    <div class="desc">Ухудшение зрения — частое у пожилых.</div>
+    <ul>
+      <li>Осмотр офтальмолога 1 раз в год</li>
+      <li>Хорошее освещение в комнате</li>
+      <li>Не читать при плохом свете</li>
+      <li>При глаукоме — капли строго по часам</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ОПАСНЫЕ СОЧЕТАНИЯ -->
+<div id="tab-danger" class="tab-content">
+  <h3 style="margin-bottom: 8px;">⚠️ Опасные сочетания препаратов</h3>
+  <p style="color: var(--muted); margin-bottom: 16px;">Полипрагмазия — главная проблема пожилых. Всегда проверяй с врачом!</p>
+
+  <div class="info-card" style="border-left-color: #dc2626;">
+    <h3>❌ Аспирин + Варфарин</h3>
+    <div class="desc">Риск кровотечения увеличивается в разы. Только под контролем врача + анализы.</div>
+  </div>
+
+  <div class="info-card" style="border-left-color: #dc2626;">
+    <h3>❌ Ибупрофен + Препараты от давления</h3>
+    <div class="desc">Ибупрофен снижает эффект от давления и вредит почкам. Замена — парацетамол.</div>
+  </div>
+
+  <div class="info-card" style="border-left-color: #dc2626;">
+    <h3>❌ Нитроглицерин + Виагра</h3>
+    <div class="desc">Резкое падение давления. Смертельно опасно! Между ними — минимум 24 часа.</div>
+  </div>
+
+  <div class="info-card" style="border-left-color: #dc2626;">
+    <h3>❌ Антибиотики + Препараты от холестерина</h3>
+    <div class="desc">Риск повреждения мышц (рабдомиолиз). Сообщи врачу ВСЕ препараты.</div>
+  </div>
+
+  <div class="info-card" style="border-left-color: #dc2626;">
+    <h3>❌ Снотворные + Обезболивающие</h3>
+    <div class="desc">Угнетение дыхания, падения ночью. Не сочетать без назначения.</div>
+  </div>
+
+  <div class="info-card" style="border-left-color: #dc2626;">
+    <h3>❌ Мочегонные + Сердечные гликозиды</h3>
+    <div class="desc">Риск аритмии из-за потери калия. Контроль электролитов обязателен.</div>
+  </div>
+
+  <div class="info-card" style="border-left-color: #dc2626;">
+    <h3>❌ Грейпфрут + Лекарства от давления</h3>
+    <div class="desc">Усиливает действие препарата → резкое падение давления.</div>
+  </div>
+
+  <h3 style="margin-top: 24px;">✅ Правила безопасности</h3>
+  <div class="info-card" style="border-left-color: #16a34a;">
+    <ul>
+      <li>Веди полный список ВСЕХ принимаемых препаратов (включая БАДы)</li>
+      <li>Показывай список врачу на каждом приёме</li>
+      <li>Не начинай приём нового препарата без консультации</li>
+      <li>Читай инструкцию — раздел «Противопоказания» и «Взаимодействия»</li>
+      <li>Используй органайзер для таблеток (по дням/часам)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ПРОФИЛАКТИКА -->
+<div id="tab-prevention" class="tab-content">
+  <h3 style="margin-bottom: 8px;">🛡️ Профилактика для пожилых</h3>
+
+  <div class="info-card" style="border-left-color: #16a34a;">
+    <h3>🚶 Физическая активность</h3>
+    <ul>
+      <li>Прогулка 30-40 минут в день (в удобном темпе)</li>
+      <li>Утренняя гимнастика 10-15 минут</li>
+      <li>Плавание / аквааэробика — идеально для суставов</li>
+      <li>Скандинавская ходьба — тренирует всё тело</li>
+      <li>Избегай резких движений и подъёма тяжестей</li>
+    </ul>
+  </div>
+
+  <div class="info-card" style="border-left-color: #16a34a;">
+    <h3>🍎 Питание</h3>
+    <ul>
+      <li>Белок — обязательно (мясо, рыба, яйца, творог)</li>
+      <li>Кальций — молочное, кунжут, зелень (для костей)</li>
+      <li>Витамин D — рыбий жир, солнце, добавки</li>
+      <li>Клетчатка — овощи, фрукты, крупы (для ЖКТ)</li>
+      <li>Соль — до 5 г/день, сахар — минимум</li>
+      <li>Вода — 1.5-2 литра в день (если нет противопоказаний)</li>
+    </ul>
+  </div>
+
+  <div class="info-card" style="border-left-color: #16a34a;">
+    <h3>🧠 Мозг и память</h3>
+    <ul>
+      <li>Кроссворды, судоку, шахматы</li>
+      <li>Чтение книг (не только новости)</li>
+      <li>Изучение нового (язык, хобби, компьютер)</li>
+      <li>Общение с внуками, друзьями</li>
+      <li>Записывай важное в блокнот</li>
+    </ul>
+  </div>
+
+  <div class="info-card" style="border-left-color: #16a34a;">
+    <h3>😴 Сон</h3>
+    <ul>
+      <li>7-8 часов, ложиться и вставать в одно время</li>
+      <li>Проветривать спальню перед сном</li>
+      <li>Не смотреть ТВ в постели</li>
+      <li>Не пить кофе после 15:00</li>
+      <li>При бессоннице — к врачу (не заниматься самолечением!)</li>
+    </ul>
+  </div>
+
+  <div class="info-card" style="border-left-color: #16a34a;">
+    <h3>💉 Регулярные обследования</h3>
+    <ul>
+      <li>Терапевт — 1 раз в год (диспансеризация)</li>
+      <li>Давление — контроль 2 раза в день</li>
+      <li>Кровь на сахар и холестерин — 1 раз в год</li>
+      <li>Офтальмолог — 1 раз в год</li>
+      <li>Стоматолог — 1 раз в год</li>
+      <li>Прививки: грипп (ежегодно), пневмококк (1 раз в 5 лет)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SOS -->
+<div id="tab-sos" class="tab-content">
+  <h3 style="margin-bottom: 8px;">🚨 Когда СРОЧНО вызывать 103</h3>
+
+  <div class="symptom-card">
+    <b>❤️ Боль в груди</b><br>
+    Давящая, жгущая, отдаёт в руку/челюсть/спину. Нитроглицерин под язык → если не помогло через 5 минут → 103.
+  </div>
+
+  <div class="symptom-card">
+    <b>🧠 Инсульт (FAST-тест)</b><br>
+    F — лицо (улыбка кривая), A — рука (не поднимается), S — речь (невнятная), T — время (немедленно 103!).
+  </div>
+
+  <div class="symptom-card">
+    <b>💓 Аритмия</b><br>
+    Пульс выше 120 или ниже 50, перебои, головокружение → 103.
+  </div>
+
+  <div class="symptom-card">
+    <b>🫁 Одышка</b><br>
+    Затруднение дыхания в покое, посинение губ → 103.
+  </div>
+
+  <div class="symptom-card">
+    <b>🩸 Кровотечение</b><br>
+    Не останавливается за 10-15 минут, сильное → 103.
+  </div>
+
+  <div class="symptom-card">
+    <b>🤕 Падение + потеря сознания</b><br>
+    Даже если очнулся — срочно 103 (возможна травма головы, перелом).
+  </div>
+
+  <div class="symptom-card">
+    <b>🌡️ Температура 39+ у пожилого</b><br>
+    Опасно! Не сбивать самому → 103.
+  </div>
+
+  <a href="tel:103" class="big-call">📞 ЗВОНИ 103 НЕМЕДЛЕННО!</a>
+  <a href="tel:112" class="big-call" style="background: #0891b2;">📞 112 — Единый экстренный</a>
+</div>
+
+</div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>
