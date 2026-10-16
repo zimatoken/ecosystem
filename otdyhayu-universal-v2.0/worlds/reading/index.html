@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📖 Мир Чтения</title>
+<link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn-outline">← Назад</a>
+    <h2>📖 Мир Чтения</h2>
+  </div>
+
+  <div class="ai-box">
+    <p id="ai-reading"></p>
+  </div>
+
+  <a href="library.html" class="btn-primary" style="display:block; text-align:center; text-decoration:none; padding:16px; margin-bottom:20px; font-size:1.1rem;">📚 Библиотека книг (60 книг с рейтингами)</a>
+
+  <div class="card">
+    <h3>📚 Трекер книг</h3>
+    <input type="text" id="book-title" placeholder="Название книги">
+    <input type="text" id="book-author" placeholder="Автор">
+    <select id="book-status">
+      <option value="want">Хочу прочитать</option>
+      <option value="reading">Читаю сейчас</option>
+      <option value="done">Прочитал</option>
+    </select>
+    <button class="btn-primary" onclick="addBook()">➕ Добавить книгу</button>
+  </div>
+
+  <div id="books-list"></div>
+
+  <div class="card">
+    <h3>📊 Статистика</h3>
+    <p>Прочитано: <b id="stat-done">0</b> книг</p>
+    <p>Читаю: <b id="stat-reading">0</b></p>
+    <p>В списке: <b id="stat-want">0</b></p>
+  </div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script>
+const KEY = 'otd_reading_books_v1';
+
+function getBooks() {
+  return JSON.parse(localStorage.getItem(KEY) || '[]');
+}
+
+function addBook() {
+  const title = document.getElementById('book-title').value.trim();
+  const author = document.getElementById('book-author').value.trim();
+  const status = document.getElementById('book-status').value;
+  
+  if (!title) return alert('Введи название книги!');
+  
+  const books = getBooks();
+  books.push({ id: Date.now(), title, author, status, added: new Date().toISOString() });
+  localStorage.setItem(KEY, JSON.stringify(books));
+  
+  window.OTD_IDENTITY.addXP(10);
+  window.OTD_CHRONICLE.add(`📖 Добавлена книга: "${title}"`);
+  
+  document.getElementById('book-title').value = '';
+  document.getElementById('book-author').value = '';
+  render();
+}
+
+function removeBook(id) {
+  const books = getBooks().filter(b => b.id !== id);
+  localStorage.setItem(KEY, JSON.stringify(books));
+  render();
+}
+
+function render() {
+  const books = getBooks();
+  const list = document.getElementById('books-list');
+  
+  const want = books.filter(b => b.status === 'want');
+  const reading = books.filter(b => b.status === 'reading');
+  const done = books.filter(b => b.status === 'done');
+  
+  document.getElementById('stat-want').textContent = want.length;
+  document.getElementById('stat-reading').textContent = reading.length;
+  document.getElementById('stat-done').textContent = done.length;
+  
+  let html = '';
+  
+  if (reading.length) {
+    html += '<h3 style="margin-top:20px;">📖 Читаю сейчас</h3>';
+    html += reading.map(b => `
+      <div class="card">
+        <b>${b.title}</b><br>
+        <small>${b.author || 'Неизвестный автор'}</small><br>
+        <button class="btn-outline" style="margin-top:8px;" onclick="removeBook(${b.id})">Убрать</button>
+      </div>
+    `).join('');
+  }
+  
+  if (want.length) {
+    html += '<h3 style="margin-top:20px;">📚 Хочу прочитать</h3>';
+    html += want.map(b => `
+      <div class="card">
+        <b>${b.title}</b><br>
+        <small>${b.author || 'Неизвестный автор'}</small><br>
+        <button class="btn-outline" style="margin-top:8px;" onclick="removeBook(${b.id})">Убрать</button>
+      </div>
+    `).join('');
+  }
+  
+  if (done.length) {
+    html += '<h3 style="margin-top:20px;">✅ Прочитано</h3>';
+    html += done.map(b => `
+      <div class="card" style="opacity:0.7;">
+        <b>${b.title}</b><br>
+        <small>${b.author || 'Неизвестный автор'}</small>
+      </div>
+    `).join('');
+  }
+  
+  list.innerHTML = html || '<div class="card" style="text-align:center;color:var(--muted);">Пока нет книг. Добавь первую!</div>';
+}
+
+document.getElementById('ai-reading').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>📖 Чтение — это путешествие в другие миры, не вставая с дивана.';
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>🕉️ Мантры</title><link rel="stylesheet" href="../../css/styles.css"><style>.mantra-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;}.mantra-icon{font-size:2.5rem;}.mantra-name{font-size:1.2rem;font-weight:800;margin:6px 0;}.mantra-text{font-size:1.4rem;color:var(--accent);font-weight:700;margin:10px 0;letter-spacing:2px;}.mantra-pron{font-style:italic;color:var(--muted);margin-bottom:8px;}</style></head>
+<body><div class="container">
+<div class="header"><a href="index.html" class="btn-outline">← Назад</a><h2>🕉️ Мантры</h2></div>
+<div class="card"><p style="color:var(--muted);">Мантра — священный звук. Повторяй 108 раз для максимального эффекта.</p></div>
+<div id="mantras-list"></div>
+</div>
+<script src="../../core/theme.js"></script><script src="../../core/chronicle.js"></script><script src="../../core/identity.js"></script><script src="data/mantras.js"></script>
+<script>document.getElementById('mantras-list').innerHTML=window.OTD_MED_MANTRAS.map(function(m){return '<div class="mantra-card"><div class="mantra-icon">'+m.icon+'</div><div class="mantra-name">'+m.name+'</div><div class="mantra-text">'+m.text+'</div><div class="mantra-pron">📢 '+m.pron+'</div><div>💡 '+m.meaning+'</div><div style="color:var(--accent);font-size:.9rem;margin-top:8px;">🧘 '+m.practice+' · ~'+m.duration+' мин</div></div>';}).join('');</script>
+</body></html>

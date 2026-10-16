@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>📔 Дневник</title><link rel="stylesheet" href="../../css/styles.css"><style>.j-item{background:var(--card);border-left:3px solid var(--accent);padding:12px 16px;margin-bottom:10px;border-radius:8px;}.j-date{font-size:.8rem;color:var(--muted);margin-bottom:4px;}.j-main{font-weight:700;}</style></head>
+<body><div class="container">
+<div class="header"><a href="index.html" class="btn-outline">← Назад</a><h2>📔 Дневник</h2></div>
+<div id="journal-list"></div>
+</div>
+<script src="../../core/theme.js"></script><script src="../../core/chronicle.js"></script><script src="../../core/identity.js"></script><script src="engine.js"></script>
+<script>var sessions=window.OTD_MEDITATION.getSessions();var list=document.getElementById('journal-list');if(!sessions.length){list.innerHTML='<div class="card" style="text-align:center;color:var(--muted);">Пока нет сессий. Начни первую практику!</div>';}else{list.innerHTML=sessions.map(function(s){var d=new Date(s.date);return '<div class="j-item"><div class="j-date">'+d.toLocaleString('ru-RU')+'</div><div class="j-main">🧘 '+s.minutes+' мин · '+(s.type||'практика')+'</div></div>';}).join('');}</script>
+</body></html>

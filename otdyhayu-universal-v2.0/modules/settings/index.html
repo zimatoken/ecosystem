@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙️ Настройки</title>
+<link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn-outline">← Назад</a>
+    <h2>⚙️ Настройки</h2>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:8px;">🎭 Племя</h3>
+    <select id="tribe-select" onchange="changeTribe(this.value)">
+      <option value="sage">📚 Мудрецы</option>
+      <option value="engineer">🔧 Инженеры</option>
+      <option value="musician">🎸 Музыканты</option>
+      <option value="hunter">🎣 Ловцы</option>
+      <option value="creator">🎨 Творцы</option>
+      <option value="athlete">🏃 Спортсмены</option>
+      <option value="gourmet">🍷 Гурманы</option>
+      <option value="beastmaster">🐕 Звероловы</option>
+      <option value="social">💬 Общающиеся</option>
+      <option value="practitioner">🧘 Практики</option>
+    </select>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">💾 Данные</h3>
+    <button class="btn-primary" onclick="exportData()">📤 Экспорт JSON</button>
+    <button class="btn-outline" style="width:100%;margin-top:8px;color:#dc2626;border-color:#dc2626;"
+      onclick="if(confirm('Удалить ВСЕ данные?')){localStorage.clear();location.reload();}">🗑️ Сброс</button>
+  </div>
+</div>
+<script src="../../core/theme.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/placesEngine.js"></script>
+<script>
+document.getElementById('tribe-select').value = window.OTD_IDENTITY.get().tribe;
+function changeTribe(v){
+  if(confirm('Сменить племя?')){window.OTD_IDENTITY.setTribe(v);alert('✅ Племя изменено!');}
+  else{document.getElementById('tribe-select').value = window.OTD_IDENTITY.get().tribe;}
+}
+function exportData(){
+  var data = {identity:window.OTD_IDENTITY.get(),places:window.OTD_PLACES.getAll(),chronicle:window.OTD_CHRONICLE.getAll(),exportDate:new Date().toISOString()};
+  var blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'otdyhayu_backup_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();
+}
+</script>
+</body>
+</html>

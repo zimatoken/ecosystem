@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 Планы тренировок</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.plan-card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 24px; cursor: pointer; transition: .2s; }
+.plan-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.plan-icon { font-size: 3rem; margin-bottom: 12px; }
+.plan-name { font-size: 1.3rem; font-weight: 800; margin-bottom: 8px; }
+.plan-level { display: inline-block; padding: 4px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 12px; }
+.level-beginner { background: #dcfce7; color: #166534; }
+.level-intermediate { background: #fef3c7; color: #92400e; }
+.level-advanced { background: #fee2e2; color: #991b1b; }
+.level-expert { background: #f3e8ff; color: #6b21a8; }
+.plan-goal { font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.plan-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+.week-section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+.week-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; color: var(--accent); }
+.day-card { background: var(--bg); border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+.day-card.rest { opacity: 0.6; }
+.day-card.completed { border-left: 4px solid var(--success); }
+.day-number { font-size: 1.5rem; font-weight: 800; color: var(--accent); min-width: 40px; }
+.day-info { flex: 1; }
+.day-type { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+.day-desc { font-size: 0.9rem; line-height: 1.4; }
+.day-duration { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+.type-run { color: #10b981; }
+.type-interval { color: #f59e0b; }
+.type-long { color: #3b82f6; }
+.type-rest { color: #64748b; }
+.btn-complete { padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.85rem; }
+.btn-complete:hover { opacity: 0.9; }
+.btn-complete.completed { background: #64748b; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1000; padding: 20px; overflow-y: auto; backdrop-filter: blur(4px); }
+.modal.open { display: flex; align-items: flex-start; justify-content: center; }
+.modal-box { max-width: 800px; width: 100%; background: var(--card); border-radius: 20px; padding: 28px; position: relative; max-height: 90vh; overflow-y: auto; margin: 40px auto; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="index.html" class="btn btn-outline">← Назад к Бегу</a>
+    <h2>📋 Планы тренировок</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p style="font-size: 1rem; font-style: italic; margin: 0;">Выбери план и следуй ему неделю за неделей. Каждый завершённый день = +10 XP!</p>
+  </div>
+
+  <h3 style="margin-bottom: 16px;"> Выбери план</h3>
+  <div class="plans-grid" id="plans-grid"></div>
+
+  <div id="plan-details"></div>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/plans.js"></script>
+<script>
+var currentPlan = null;
+var currentWeek = 1;
+
+function getCompletedDays() {
+  return JSON.parse(localStorage.getItem('otd_run_plan_completed') || '{}');
+}
+
+function saveCompletedDays(data) {
+  localStorage.setItem('otd_run_plan_completed', JSON.stringify(data));
+}
+
+function renderPlans() {
+  var plans = window.OTD_RUN_PLANS;
+  var levelClasses = {
+    'Начинающий': 'level-beginner',
+    'Средний': 'level-intermediate',
+    'Продвинутый': 'level-advanced',
+    'Эксперт': 'level-expert'
+  };
+  
+  document.getElementById('plans-grid').innerHTML = plans.map(function(p) {
+    return '<div class="plan-card" onclick="openPlan(\'' + p.id + '\')">' +
+      '<div class="plan-icon">' + p.icon + '</div>' +
+      '<div class="plan-name">' + p.name + '</div>' +
+      '<span class="plan-level ' + levelClasses[p.level] + '">' + p.level + '</span>' +
+      '<div class="plan-goal"> ' + p.goal + '</div>' +
+      '<div class="plan-desc">' + p.desc + '</div>' +
+      '<div style="margin-top: 12px; font-size: 0.85rem; color: var(--muted);">⏱️ ' + p.weeks + ' недель</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openPlan(id) {
+  currentPlan = window.OTD_RUN_PLANS.find(function(p) { return p.id === id; });
+  currentWeek = 1;
+  renderPlanDetails();
+  document.getElementById('plan-details').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderPlanDetails() {
+  if (!currentPlan) return;
+  var completed = getCompletedDays();
+  var planKey = currentPlan.id;
+  
+  var html = '<div style="background: var(--card); border: 2px solid var(--accent); border-radius: 16px; padding: 24px; margin-bottom: 24px;">' +
+    '<div style="font-size: 3rem; text-align: center;">' + currentPlan.icon + '</div>' +
+    '<h2 style="text-align: center; margin: 12px 0;">' + currentPlan.name + '</h2>' +
+    '<div style="text-align: center; color: var(--muted); margin-bottom: 16px;">' + currentPlan.weeks + ' недель · ' + currentPlan.goal + '</div>' +
+    '<div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">';
+  
+  for (var w = 1; w <= currentPlan.weeks; w++) {
+    html += '<button class="btn-outline" style="padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; ' + (w === currentWeek ? 'background: var(--accent); color: white;' : '') + '" onclick="setWeek(' + w + ')">Неделя ' + w + '</button>';
+  }
+  
+  html += '</div></div>';
+  
+  var week = currentPlan.schedule.find(function(w) { return w.week === currentWeek; });
+  if (week) {
+    html += '<div class="week-section"><div class="week-title">Неделя ' + currentWeek + '</div>';
+    week.days.forEach(function(day) {
+      var dayKey = planKey + '_w' + currentWeek + '_d' + day.day;
+      var isCompleted = completed[dayKey];
+      var typeClass = 'type-' + day.type;
+      var typeLabels = {run: '🏃 БЕГ', interval: '⚡ ИНТЕРВАЛЫ', long: ' ДЛИТЕЛЬНЫЙ', rest: ' ОТДЫХ'};
+      
+      html += '<div class="day-card ' + (day.type === 'rest' ? 'rest' : '') + ' ' + (isCompleted ? 'completed' : '') + '">' +
+        '<div class="day-number">День ' + day.day + '</div>' +
+        '<div class="day-info">' +
+          '<div class="day-type ' + typeClass + '">' + (typeLabels[day.type] || day.type) + '</div>' +
+          '<div class="day-desc">' + day.desc + '</div>' +
+          '<div class="day-duration">⏱️ ' + day.duration + '</div>' +
+        '</div>' +
+        (day.type !== 'rest' ? '<button class="btn-complete ' + (isCompleted ? 'completed' : '') + '" onclick="toggleDay(\'' + dayKey + '\', ' + currentWeek + ', ' + day.day + ')">' + (isCompleted ? '✅' : 'Отметить') + '</button>' : '') +
+      '</div>';
+    });
+    html += '</div>';
+  }
+  
+  document.getElementById('plan-details').innerHTML = html;
+}
+
+function setWeek(week) {
+  currentWeek = week;
+  renderPlanDetails();
+}
+
+function toggleDay(dayKey, week, day) {
+  var completed = getCompletedDays();
+  if (completed[dayKey]) {
+    delete completed[dayKey];
+  } else {
+    completed[dayKey] = true;
+    window.OTD_IDENTITY.addXP(10);
+    window.OTD_CHRONICLE.add('📋 Завершил день ' + day + ' недели ' + week + ' плана ' + currentPlan.name);
+  }
+  saveCompletedDays(completed);
+  renderPlanDetails();
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+renderPlans();
+</script>
+</body>
+</html>

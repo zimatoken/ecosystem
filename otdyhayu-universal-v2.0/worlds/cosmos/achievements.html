@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏆 Достижения Космоса</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-align: center; }
+.stat-icon { font-size: 3rem; margin-bottom: 12px; }
+.stat-value { font-size: 2rem; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+.stat-label { font-size: 0.9rem; color: var(--muted); }
+.achievements-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.ach-card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 20px; transition: .2s; position: relative; }
+.ach-card.unlocked { border-color: var(--accent); background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05)); }
+.ach-card.locked { opacity: 0.6; }
+.ach-icon { font-size: 3rem; margin-bottom: 12px; }
+.ach-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; }
+.ach-desc { font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; line-height: 1.4; }
+.ach-xp { display: inline-block; background: var(--accent); color: white; padding: 4px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; }
+.ach-status { position: absolute; top: 12px; right: 12px; font-size: 1.5rem; }
+.progress-bar { background: var(--bg); border-radius: 8px; height: 8px; overflow: hidden; margin-top: 12px; }
+.progress-fill { background: var(--accent); height: 100%; transition: width 0.5s; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="index.html" class="btn btn-outline">← Назад к Космосу</a>
+    <h2>🏆 Достижения Космоса</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p style="font-size: 1rem; font-style: italic; margin: 0;">Исследуй космос, наблюдай за звёздами и получай достижения!</p>
+  </div>
+
+  <h3 class="section-title">📊 Твоя статистика</h3>
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <h3 class="section-title"> Достижения (<span id="ach-count">0</span>/10)</h3>
+  <div class="achievements-grid" id="achievements-grid"></div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/achievements.js"></script>
+<script>
+function renderStats() {
+  var stats = window.OTD_COSMOS_STATS.get();
+  var unlocked = window.OTD_COSMOS_ACHIEVEMENTS_ENGINE.getUnlocked();
+  
+  var statsData = [
+    {icon: '👁️', value: stats.observations, label: 'Наблюдений'},
+    {icon: '', value: stats.planets.length + '/4', label: 'Планет изучено'},
+    {icon: '⭐', value: stats.constellations.length, label: 'Созвездий открыто'},
+    {icon: '🌌', value: stats.deepSpace.length + '/10', label: 'Объектов глубокого космоса'},
+    {icon: '📚', value: stats.factsRead, label: 'Фактов прочитано'},
+    {icon: '✨', value: stats.cosmosXP, label: 'XP в Космосе'},
+    {icon: '🔥', value: stats.moonStreak, label: 'Дней лунного стрика'},
+    {icon: '', value: unlocked.length + '/10', label: 'Достижений'}
+  ];
+  
+  document.getElementById('stats-grid').innerHTML = statsData.map(function(s) {
+    return '<div class="stat-card">' +
+      '<div class="stat-icon">' + s.icon + '</div>' +
+      '<div class="stat-value">' + s.value + '</div>' +
+      '<div class="stat-label">' + s.label + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderAchievements() {
+  var unlocked = window.OTD_COSMOS_ACHIEVEMENTS_ENGINE.getUnlocked();
+  document.getElementById('ach-count').textContent = unlocked.length;
+  
+  document.getElementById('achievements-grid').innerHTML = window.OTD_COSMOS_ACHIEVEMENTS.map(function(ach) {
+    var isUnlocked = unlocked.indexOf(ach.id) !== -1;
+    var progress = getProgress(ach.condition);
+    
+    return '<div class="ach-card ' + (isUnlocked ? 'unlocked' : 'locked') + '">' +
+      '<div class="ach-status">' + (isUnlocked ? '✅' : '🔒') + '</div>' +
+      '<div class="ach-icon">' + ach.icon + '</div>' +
+      '<div class="ach-name">' + ach.name + '</div>' +
+      '<div class="ach-desc">' + ach.desc + '</div>' +
+      '<span class="ach-xp">+' + ach.xp + ' XP</span>' +
+      (!isUnlocked ? '<div class="progress-bar"><div class="progress-fill" style="width:' + progress + '%"></div></div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function getProgress(condition) {
+  var stats = window.OTD_COSMOS_STATS.get();
+  switch(condition) {
+    case 'moon_streak_7': return Math.min(100, (stats.moonStreak / 7) * 100);
+    case 'observations_10': return Math.min(100, (stats.observations / 10) * 100);
+    case 'all_planets': return Math.min(100, (stats.planets.length / 4) * 100);
+    case 'constellations_5': return Math.min(100, (stats.constellations.length / 5) * 100);
+    case 'deep_space_3': return Math.min(100, (stats.deepSpace.length / 3) * 100);
+    case 'facts_10': return Math.min(100, (stats.factsRead / 10) * 100);
+    case 'xp_500': return Math.min(100, (stats.cosmosXP / 500) * 100);
+    default: return 0;
+  }
+}
+
+// Отмечаем посещение раздела
+window.OTD_COSMOS_ACHIEVEMENTS_ENGINE.check();
+
+renderStats();
+renderAchievements();
+</script>
+</body>
+</html>

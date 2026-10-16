@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💆 Мир Восстановления</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.tracker-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.tracker-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.tracker-icon { font-size: 2.5rem; }
+.tracker-title { font-size: 1.3rem; font-weight: 800; }
+.tracker-subtitle { font-size: 0.9rem; color: var(--muted); }
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
+.input-group input, .input-group select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); font-size: 1rem; }
+.btn-track { background: var(--accent); color: white; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 1rem; width: 100%; }
+.btn-track:hover { opacity: 0.9; }
+.stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.stat-mini { background: var(--bg); padding: 12px 16px; border-radius: 10px; flex: 1; min-width: 120px; }
+.stat-mini-value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+.stat-mini-label { font-size: 0.8rem; color: var(--muted); }
+.water-glasses { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-top: 16px; }
+.glass { aspect-ratio: 1; background: var(--bg); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: .2s; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.glass.filled { background: #3b82f6; border-color: #2563eb; }
+.glass:hover { transform: scale(1.05); }
+.progress-ring { width: 120px; height: 120px; margin: 20px auto; }
+.progress-ring circle { fill: none; stroke-width: 8; }
+.progress-ring .bg { stroke: var(--border); }
+.progress-ring .progress { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>💆 Мир Восстановления</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p id="ai-recovery" style="font-size: 1rem; font-style: italic; margin: 0;"></p>
+  </div>
+
+  <!-- СОН -->
+  <div class="tracker-card">
+    <div class="tracker-header">
+      <div class="tracker-icon">😴</div>
+      <div>
+        <div class="tracker-title">Трекер сна</div>
+        <div class="tracker-subtitle">Норма: 7-9 часов (NSF)</div>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Время засыпания</label>
+      <input type="time" id="sleep-start" value="23:00">
+    </div>
+    <div class="input-group">
+      <label>Время пробуждения</label>
+      <input type="time" id="sleep-end" value="07:00">
+    </div>
+    <div class="input-group">
+      <label>Качество сна (1-5)</label>
+      <select id="sleep-quality">
+        <option value="1">1 - Ужасно</option>
+        <option value="2">2 - Плохо</option>
+        <option value="3" selected>3 - Нормально</option>
+        <option value="4">4 - Хорошо</option>
+        <option value="5">5 - Отлично</option>
+      </select>
+    </div>
+    <button class="btn-track" onclick="logSleep()"> Записать сон (+20 XP)</button>
+    <div class="stats-row">
+      <div class="stat-mini">
+        <div class="stat-mini-value" id="avg-sleep">—</div>
+        <div class="stat-mini-label">Среднее за 7 дней</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-value" id="avg-quality">—</div>
+        <div class="stat-mini-label">Среднее качество</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ВОДА -->
+  <div class="tracker-card">
+    <div class="tracker-header">
+      <div class="tracker-icon">💧</div>
+      <div>
+        <div class="tracker-title">Трекер воды</div>
+        <div class="tracker-subtitle">Норма: 30 мл/кг веса</div>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Твой вес (кг)</label>
+      <input type="number" id="water-weight" placeholder="70" value="70">
+    </div>
+    <div style="text-align: center; margin: 16px 0;">
+      <div style="font-size: 2rem; font-weight: 800; color: var(--accent);" id="water-norm">2.1 л</div>
+      <div style="color: var(--muted); font-size: 0.9rem;">Твоя дневная норма</div>
+    </div>
+    <div class="water-glasses" id="water-glasses"></div>
+    <div style="text-align: center; margin-top: 12px; font-weight: 700;" id="water-count">0/8 стаканов</div>
+  </div>
+
+  <!-- ШАГИ -->
+  <div class="tracker-card">
+    <div class="tracker-header">
+      <div class="tracker-icon">🚶</div>
+      <div>
+        <div class="tracker-title">Трекер шагов</div>
+        <div class="tracker-subtitle">Цель: 8000-10000 шагов</div>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Сколько шагов сегодня?</label>
+      <input type="number" id="steps-count" placeholder="8000">
+    </div>
+    <button class="btn-track" onclick="logSteps()">💾 Записать шаги (+15 XP)</button>
+    <div class="stats-row">
+      <div class="stat-mini">
+        <div class="stat-mini-value" id="avg-steps">—</div>
+        <div class="stat-mini-label">Среднее за 7 дней</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-value" id="total-distance">—</div>
+        <div class="stat-mini-label">Всего км</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
+  <div class="tracker-card">
+    <div class="tracker-header">
+      <div class="tracker-icon">⚡</div>
+      <div>
+        <div class="tracker-title">Быстрые действия</div>
+        <div class="tracker-subtitle">Мини-практики для восстановления</div>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+      <a href="stretching.html" class="btn-track" style="background: #8b5cf6; text-decoration: none; text-align: center; display: block;">🧘 Растяжка и Дыхание</a>
+      <button class="btn-track" style="background: #ec4899;" onclick="doBreathing()">🫁 Дыхание 4-7-8</button>
+      <button class="btn-track" style="background: #f59e0b;" onclick="doMeditation()">🧘 Медитация (10 мин)</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script>
+// Инициализация
+document.getElementById('ai-recovery').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>💆 Восстановление — это не лень, а инвестиция в энергию.';
+
+// ===== СОН =====
+function logSleep() {
+  var start = document.getElementById('sleep-start').value;
+  var end = document.getElementById('sleep-end').value;
+  var quality = parseInt(document.getElementById('sleep-quality').value);
+  
+  if (!start || !end) { alert('Заполни время!'); return; }
+  
+  var startDate = new Date('2000-01-01T' + start);
+  var endDate = new Date('2000-01-01T' + end);
+  if (endDate < startDate) endDate.setDate(endDate.getDate() + 1);
+  var hours = (endDate - startDate) / (1000 * 60 * 60);
+  
+  var stats = JSON.parse(localStorage.getItem('otd_recovery_sleep') || '[]');
+  stats.push({ date: new Date().toISOString(), hours: hours, quality: quality });
+  localStorage.setItem('otd_recovery_sleep', JSON.stringify(stats));
+  
+  window.OTD_IDENTITY.addXP(20);
+  window.OTD_CHRONICLE.add('😴 Сон: ' + hours.toFixed(1) + ' ч, качество ' + quality + '/5');
+  
+  updateSleepStats();
+  alert('✅ Сон записан! +20 XP');
+}
+
+function updateSleepStats() {
+  var stats = JSON.parse(localStorage.getItem('otd_recovery_sleep') || '[]');
+  var last7 = stats.slice(-7);
+  if (last7.length === 0) return;
+  
+  var avgHours = last7.reduce((s, x) => s + x.hours, 0) / last7.length;
+  var avgQuality = last7.reduce((s, x) => s + x.quality, 0) / last7.length;
+  
+  document.getElementById('avg-sleep').textContent = avgHours.toFixed(1) + ' ч';
+  document.getElementById('avg-quality').textContent = avgQuality.toFixed(1) + '/5';
+}
+
+// ===== ВОДА =====
+var waterGlasses = 0;
+function initWater() {
+  var grid = document.getElementById('water-glasses');
+  grid.innerHTML = '';
+  for (var i = 0; i < 8; i++) {
+    var glass = document.createElement('div');
+    glass.className = 'glass' + (i < waterGlasses ? ' filled' : '');
+    glass.textContent = '💧';
+    glass.onclick = function() { toggleGlass(parseInt(this.dataset.idx)); };
+    glass.dataset.idx = i;
+    grid.appendChild(glass);
+  }
+  document.getElementById('water-count').textContent = waterGlasses + '/8 стаканов';
+}
+
+function toggleGlass(idx) {
+  if (idx < waterGlasses) {
+    waterGlasses = idx;
+  } else {
+    waterGlasses = idx + 1;
+  }
+  initWater();
+  if (waterGlasses === 8) {
+    window.OTD_IDENTITY.addXP(10);
+    window.OTD_CHRONICLE.add('💧 Выпил норму воды (8 стаканов)');
+    alert('✅ Норма воды выполнена! +10 XP');
+  }
+}
+
+document.getElementById('water-weight').addEventListener('input', function() {
+  var weight = parseFloat(this.value) || 70;
+  var norm = (weight * 30 / 1000).toFixed(1);
+  document.getElementById('water-norm').textContent = norm + ' л';
+});
+
+// ===== ШАГИ =====
+function logSteps() {
+  var steps = parseInt(document.getElementById('steps-count').value);
+  if (!steps || steps < 0) { alert('Введи количество шагов!'); return; }
+  
+  var stats = JSON.parse(localStorage.getItem('otd_recovery_steps') || '[]');
+  stats.push({ date: new Date().toISOString(), steps: steps });
+  localStorage.setItem('otd_recovery_steps', JSON.stringify(stats));
+  
+  var xp = steps >= 10000 ? 20 : 15;
+  window.OTD_IDENTITY.addXP(xp);
+  window.OTD_CHRONICLE.add('🚶 Шаги: ' + steps);
+  
+  updateStepsStats();
+  alert('✅ Шаги записаны! +' + xp + ' XP');
+}
+
+function updateStepsStats() {
+  var stats = JSON.parse(localStorage.getItem('otd_recovery_steps') || '[]');
+  var last7 = stats.slice(-7);
+  if (last7.length === 0) return;
+  
+  var avgSteps = last7.reduce((s, x) => s + x.steps, 0) / last7.length;
+  var totalKm = stats.reduce((s, x) => s + (x.steps * 0.0007), 0);
+  
+  document.getElementById('avg-steps').textContent = Math.round(avgSteps);
+  document.getElementById('total-distance').textContent = totalKm.toFixed(1) + ' км';
+}
+
+// ===== БЫСТРЫЕ ДЕЙСТВИЯ =====
+function doStretch() {
+  window.OTD_IDENTITY.addXP(15);
+  window.OTD_CHRONICLE.add('🧘 Растяжка 5 мин');
+  alert('✅ Растяжка выполнена! +15 XP\n\nПерейди в раздел "Растяжка" для полного комплекса.');
+}
+
+function doBreathing() {
+  window.OTD_IDENTITY.addXP(10);
+  window.OTD_CHRONICLE.add('🫁 Дыхание 4-7-8');
+  alert('✅ Дыхательная практика выполнена! +10 XP\n\nВдох 4 сек → Задержка 7 сек → Выдох 8 сек');
+}
+
+function doMeditation() {
+  window.OTD_IDENTITY.addXP(25);
+  window.OTD_CHRONICLE.add('🧘 Медитация 10 мин');
+  alert('✅ Медитация выполнена! +25 XP\n\nПерейди в мир Медитации для глубокой практики.');
+}
+
+// Загрузка данных
+updateSleepStats();
+updateStepsStats();
+initWater();
+</script>
+</body>
+</html>

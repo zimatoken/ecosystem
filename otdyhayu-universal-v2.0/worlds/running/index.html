@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> Мир Бега</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.goal-card { background: linear-gradient(135deg, var(--accent), #06b6d4); color: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+.goal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+.goal-progress { background: rgba(255,255,255,0.3); border-radius: 10px; height: 12px; overflow: hidden; margin: 10px 0; }
+.goal-fill { background: white; height: 100%; transition: width 0.5s; }
+.goal-text { font-size: 0.9rem; opacity: 0.9; }
+.pulse-zones { display: grid; gap: 8px; margin-top: 12px; }
+.pulse-zone { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg); border-radius: 8px; border-left: 4px solid var(--accent); }
+.pulse-zone-name { font-weight: 700; font-size: 0.9rem; }
+.pulse-zone-range { font-size: 0.8rem; color: var(--muted); }
+.quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
+.quick-btn { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; transition: .2s; text-decoration: none; color: var(--text); }
+.quick-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+.quick-btn-icon { font-size: 2rem; margin-bottom: 6px; }
+.quick-btn-name { font-weight: 700; font-size: 0.9rem; }
+.achievements-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+.ach-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; position: relative; }
+.ach-card.unlocked { border-color: var(--success); background: rgba(16,185,129,0.05); }
+.ach-card.locked { opacity: 0.5; }
+.ach-icon { font-size: 2rem; }
+.ach-name { font-weight: 700; font-size: 0.95rem; margin: 6px 0 4px; }
+.ach-desc { font-size: 0.8rem; color: var(--muted); }
+.ach-xp { font-size: 0.75rem; color: var(--accent); font-weight: 700; margin-top: 4px; }
+.ach-status { position: absolute; top: 8px; right: 8px; font-size: 1.2rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🏃 Мир Бега</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p id="ai-running" style="font-size: 1rem; font-style: italic; margin: 0;"></p>
+  </div>
+
+  <!-- ЦЕЛЬ -->
+  <div class="goal-card">
+    <div class="goal-title"> Цель на неделю</div>
+    <div class="goal-text"><span id="week-distance">0</span> / <span id="week-goal">20</span> км</div>
+    <div class="goal-progress"><div class="goal-fill" id="goal-fill" style="width: 0%"></div></div>
+    <div class="goal-text">Осталось: <span id="goal-remaining">20</span> км</div>
+  </div>
+
+  <!-- ТРЕКЕР -->
+  <div class="tracker-card card">
+    <h3>🏃 Трекер пробежек</h3>
+    <div class="input-group">
+      <label>Дистанция (км)</label>
+      <input type="number" id="run-distance" step="0.1" placeholder="5.0">
+    </div>
+    <div class="input-group">
+      <label>Время (минуты)</label>
+      <input type="number" id="run-time" placeholder="30">
+    </div>
+    <div class="input-group">
+      <label>Твой вес (кг) — для расчёта калорий</label>
+      <input type="number" id="run-weight" value="70">
+    </div>
+    <button class="btn-primary" onclick="addRun()">➕ Добавить пробежку</button>
+    <div id="run-result" style="margin-top: 12px; font-weight: 700; color: var(--accent);"></div>
+  </div>
+
+  <!-- СТАТИСТИКА -->
+  <div class="card">
+    <h3> Статистика</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+      <div class="stat-mini"><div class="stat-mini-value" id="stat-runs">0</div><div class="stat-mini-label">Пробежек</div></div>
+      <div class="stat-mini"><div class="stat-mini-value" id="stat-distance">0</div><div class="stat-mini-label">Всего км</div></div>
+      <div class="stat-mini"><div class="stat-mini-value" id="stat-time">0</div><div class="stat-mini-label">Всего мин</div></div>
+      <div class="stat-mini"><div class="stat-mini-value" id="stat-calories">0</div><div class="stat-mini-label">Ккал сожжено</div></div>
+      <div class="stat-mini"><div class="stat-mini-value" id="stat-streak">0</div><div class="stat-mini-label">🔥 Стрик дней</div></div>
+      <div class="stat-mini"><div class="stat-mini-value" id="stat-pace">—</div><div class="stat-mini-label">Средний темп</div></div>
+    </div>
+  </div>
+
+  <!-- ПУЛЬСОВЫЕ ЗОНЫ -->
+  <div class="card">
+    <h3>❤️ Пульсовые зоны</h3>
+    <div class="input-group">
+      <label>Твой возраст</label>
+      <input type="number" id="pulse-age" value="30" onchange="updatePulseZones()">
+    </div>
+    <div class="pulse-zones" id="pulse-zones"></div>
+  </div>
+
+  <!-- БЫСТРЫЕ ДЕЙСТВИЯ -->
+  <div class="card">
+    <h3>⚡ Разделы</h3>
+    <div class="quick-actions">
+      <a href="records.html" class="quick-btn"><div class="quick-btn-icon">🏆</div><div class="quick-btn-name">Рекорды</div></a>
+      <a href="routes.html" class="quick-btn"><div class="quick-btn-icon">🗺️</div><div class="quick-btn-name">Маршруты</div></a>
+      <a href="plans.html" class="quick-btn"><div class="quick-btn-icon">📋</div><div class="quick-btn-name">Планы</div></a>
+      <a href="achievements.html" class="quick-btn"><div class="quick-btn-icon">🎖️</div><div class="quick-btn-name">Достижения</div></a>
+    </div>
+  </div>
+
+  <!-- ДОСТИЖЕНИЯ -->
+  <div class="card">
+    <h3>️ Достижения (<span id="ach-count">0</span>/12)</h3>
+    <div class="achievements-grid" id="achievements-grid"></div>
+  </div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/achievements.js"></script>
+<script>
+document.getElementById('ai-running').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>🏃 Бег — это медитация в движении. Каждый шаг — осознанность.';
+
+function addRun() {
+  var distance = parseFloat(document.getElementById('run-distance').value);
+  var time = parseFloat(document.getElementById('run-time').value);
+  var weight = parseFloat(document.getElementById('run-weight').value) || 70;
+  if (!distance || !time || distance <= 0 || time <= 0) { alert('Заполни дистанцию и время!'); return; }
+  var result = window.OTD_RUN_STATS.addRun(distance, time, weight);
+  var pace = Math.floor(result.pace);
+  var paceSec = Math.round((result.pace - pace) * 60);
+  document.getElementById('run-result').textContent = '✅ Темп: ' + pace + ':' + (paceSec < 10 ? '0' : '') + paceSec + ' мин/км ·  ' + result.calories + ' ккал';
+  window.OTD_IDENTITY.addXP(15);
+  window.OTD_CHRONICLE.add('🏃 Пробежка: ' + distance + ' км за ' + time + ' мин');
+  updateStats();
+  document.getElementById('run-distance').value = '';
+  document.getElementById('run-time').value = '';
+}
+
+function updateStats() {
+  var stats = window.OTD_RUN_STATS.get();
+  document.getElementById('stat-runs').textContent = stats.runs.length;
+  document.getElementById('stat-distance').textContent = stats.totalDistance.toFixed(1);
+  document.getElementById('stat-time').textContent = stats.totalTime;
+  document.getElementById('stat-calories').textContent = stats.totalCalories;
+  document.getElementById('stat-streak').textContent = stats.streak;
+  if (stats.runs.length > 0) {
+    var avgPace = stats.totalTime / stats.totalDistance;
+    var p = Math.floor(avgPace);
+    var ps = Math.round((avgPace - p) * 60);
+    document.getElementById('stat-pace').textContent = p + ':' + (ps < 10 ? '0' : '') + ps;
+  }
+  // Цель на неделю
+  var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+  var weekRuns = stats.runs.filter(function(r) { return new Date(r.date) >= weekAgo; });
+  var weekDist = weekRuns.reduce(function(s, r) { return s + r.distance; }, 0);
+  var goal = 20;
+  document.getElementById('week-distance').textContent = weekDist.toFixed(1);
+  document.getElementById('week-goal').textContent = goal;
+  document.getElementById('goal-remaining').textContent = Math.max(0, goal - weekDist).toFixed(1);
+  document.getElementById('goal-fill').style.width = Math.min(100, (weekDist / goal) * 100) + '%';
+  // Достижения
+  var unlocked = window.OTD_RUN_ACHIEVEMENTS_ENGINE.getUnlocked();
+  document.getElementById('ach-count').textContent = unlocked.length;
+  document.getElementById('achievements-grid').innerHTML = window.OTD_RUN_ACHIEVEMENTS.map(function(ach) {
+    var isUnlocked = unlocked.indexOf(ach.id) !== -1;
+    return '<div class="ach-card ' + (isUnlocked ? 'unlocked' : 'locked') + '">' +
+      '<div class="ach-status">' + (isUnlocked ? '✅' : '🔒') + '</div>' +
+      '<div class="ach-icon">' + ach.icon + '</div>' +
+      '<div class="ach-name">' + ach.name + '</div>' +
+      '<div class="ach-desc">' + ach.desc + '</div>' +
+      '<div class="ach-xp">+' + ach.xp + ' XP</div>' +
+    '</div>';
+  }).join('');
+}
+
+function updatePulseZones() {
+  var age = parseInt(document.getElementById('pulse-age').value) || 30;
+  var maxPulse = 220 - age;
+  var zones = [
+    {name: 'Зона 1 — Разминка', range: Math.round(maxPulse*0.5) + '-' + Math.round(maxPulse*0.6), color: '#3b82f6', desc: 'Восстановление'},
+    {name: 'Зона 2 — Жиросжигание', range: Math.round(maxPulse*0.6) + '-' + Math.round(maxPulse*0.7), color: '#10b981', desc: 'Аэробная база'},
+    {name: 'Зона 3 — Аэробная', range: Math.round(maxPulse*0.7) + '-' + Math.round(maxPulse*0.8), color: '#f59e0b', desc: 'Развитие выносливости'},
+    {name: 'Зона 4 — Анаэробная', range: Math.round(maxPulse*0.8) + '-' + Math.round(maxPulse*0.9), color: '#f97316', desc: 'Темповый бег'},
+    {name: 'Зона 5 — Максимум', range: Math.round(maxPulse*0.9) + '-' + maxPulse, color: '#ef4444', desc: 'Спринт'}
+  ];
+  document.getElementById('pulse-zones').innerHTML = zones.map(function(z) {
+    return '<div class="pulse-zone" style="border-left-color: ' + z.color + ';">' +
+      '<div style="flex:1;"><div class="pulse-zone-name">' + z.name + '</div>' +
+      '<div class="pulse-zone-range">' + z.range + ' уд/мин · ' + z.desc + '</div></div>' +
+    '</div>';
+  }).join('');
+}
+
+updateStats();
+updatePulseZones();
+</script>
+</body>
+</html>

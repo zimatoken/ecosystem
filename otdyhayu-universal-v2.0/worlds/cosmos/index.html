@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌌 Мир Космоса</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+  .moon-box { background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid #334155; border-radius: 20px; padding: 32px; text-align: center; margin-bottom: 32px; color: #f1f5f9; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .moon-visual { font-size: 6rem; margin: 12px 0; filter: drop-shadow(0 0 15px rgba(255,255,255,0.3)); }
+  .moon-name { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+  .section-title { margin: 32px 0 16px; font-size: 1.2rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+  .c-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; cursor: pointer; transition: .2s; text-align: center; position: relative; }
+  .c-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+  .c-icon { font-size: 2.5rem; margin-bottom: 8px; }
+  .c-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+  .c-meta { font-size: 0.8rem; color: var(--muted); }
+  .status-badge { position: absolute; top: 8px; right: 8px; font-size: 0.7rem; color: white; padding: 3px 8px; border-radius: 8px; font-weight: 600; }
+  .status-hot { background: #dc2626; }
+  .status-gray { background: #64748b; }
+  .ds-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; cursor: pointer; transition: .2s; }
+  .ds-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+  .ds-icon { font-size: 2.5rem; margin-bottom: 8px; }
+  .ds-name { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
+  .ds-const { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+  .ds-desc { font-size: 0.9rem; line-height: 1.4; margin-bottom: 12px; }
+  .ds-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+  .ds-eye { background: #dbeafe; color: #1e40af; }
+  .ds-binocular { background: #fef3c7; color: #92400e; }
+  .ds-telescope { background: #f3e8ff; color: #6b21a8; }
+  .scale-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; transition: .2s; }
+  .scale-item:hover { transform: translateX(8px); border-color: var(--accent); }
+  .scale-icon { font-size: 2rem; width: 50px; text-align: center; flex-shrink: 0; }
+  .scale-info { flex: 1; }
+  .scale-title { font-weight: 700; font-size: 1.05rem; }
+  .scale-dist { color: var(--accent); font-size: 0.9rem; font-weight: 600; margin: 4px 0; }
+  .scale-fact { font-size: 0.85rem; color: var(--muted); line-height: 1.4; font-style: italic; }
+  .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 12px; }
+  .info-card h3 { margin-bottom: 8px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  
+  /* НОВЫЕ СТИЛИ: СИМУЛЯТОР НЕБА */
+  .sky-simulator {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    border: 2px solid #334155;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--duration) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+  .constellation-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .constellation-line {
+    stroke: rgba(255, 255, 255, 0.4);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .constellation-star {
+    fill: #fbbf24;
+    filter: drop-shadow(0 0 4px #fbbf24);
+  }
+  .sky-label {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  /* НОВЫЕ СТИЛИ: ЛУННЫЙ КАЛЕНДАРЬ */
+  .lunar-calendar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .calendar-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .countdown {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .calendar-day {
+    aspect-ratio: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: .2s;
+    position: relative;
+  }
+  .calendar-day:hover {
+    transform: scale(1.05);
+    border-color: var(--accent);
+  }
+  .calendar-day.today {
+    border: 2px solid var(--accent);
+    background: rgba(16, 185, 129, 0.1);
+  }
+  .calendar-day .day-num {
+    font-size: 0.75rem;
+    color: var(--muted);
+    position: absolute;
+    top: 4px;
+    left: 6px;
+  }
+  .calendar-day .moon-icon {
+    font-size: 1.5rem;
+  }
+  .calendar-day .phase-name {
+    font-size: 0.6rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 2px;
+  }
+  
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1000; padding: 20px; overflow-y: auto; backdrop-filter: blur(4px); }
+  .modal.open { display: flex; align-items: center; justify-content: center; }
+  .modal-box { max-width: 500px; width: 100%; background: var(--card); border-radius: 20px; padding: 28px; position: relative; }
+  .btn-close { width: 100%; background: var(--accent); color: white; border: none; padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 700; margin-top: 20px; font-size: 1rem; }
+  .btn-close:hover { opacity: 0.9; }
+  .fact-item { background: var(--bg); padding: 10px 14px; border-radius: 10px; margin-bottom: 8px; font-size: 0.9rem; border-left: 3px solid var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn btn-outline">← На главную</a>
+    <h2>🌌 Мир Космоса</h2><a href="achievements.html" class="btn btn-outline" style="margin-left: auto;">🏆 Достижения</a>
+  </div>
+  
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p id="ai-cosmos" style="font-size: 1rem; font-style: italic; margin: 0;"></p>
+  </div>
+
+  <!-- СИМУЛЯТОР НЕБА -->
+  <h3 class="section-title"> Небо сегодня (симулятор)</h3>
+  <div class="sky-simulator" id="sky-simulator">
+    <svg class="constellation-svg" id="constellation-svg"></svg>
+    <div class="sky-label" id="sky-label">Загрузка созвездий...</div>
+  </div>
+
+  <!-- ЛУННЫЙ КАЛЕНДАРЬ -->
+  <div class="lunar-calendar">
+    <div class="calendar-header">
+      <div class="calendar-title">🌙 Лунный календарь (30 дней)</div>
+      <div class="countdown" id="countdown">Загрузка...</div>
+    </div>
+    <div class="calendar-grid" id="calendar-grid"></div>
+  </div>
+
+  <div class="moon-box">
+    <div class="moon-visual" id="moon-icon"></div>
+    <div class="moon-name" id="moon-name">Загрузка...</div>
+    <div class="moon-date" id="moon-date" style="color: #94a3b8; margin-top: 4px;"></div>
+    <div class="moon-desc" id="moon-desc" style="margin-top: 16px; line-height: 1.6; color: #cbd5e1;"></div>
+  </div>
+
+  <h3 class="section-title">🌠 Астро-события</h3>
+  <div class="grid-cards" id="events-grid"></div>
+
+  <h3 class="section-title"> Что увидеть самому (Топ-10)</h3>
+  <div class="grid-cards" id="deep-space-grid"></div>
+
+  <h3 class="section-title">📏 Масштаб Вселенной</h3>
+  <div id="scale-list"></div>
+
+  <h3 class="section-title">🪐 Планеты на небе</h3>
+  <div id="planets-list"></div>
+
+  <h3 class="section-title" id="const-title">⭐ Созвездия сезона</h3>
+  <div id="constellations-list"></div>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/moon.js"></script>
+<script src="data/events.js"></script>
+<script src="data/deep_space.js"></script>
+<script src="data/planets.js"></script>
+<script src="data/constellations.js"></script>
+<script src="data/constellations_map.js"></script>
+<script>
+  // ========== 1. СИМУЛЯТОР НЕБА ==========
+  function createSkySimulator() {
+    var simulator = document.getElementById('sky-simulator');
+    var svg = document.getElementById('constellation-svg');
+    var width = simulator.offsetWidth;
+    var height = simulator.offsetHeight;
+    
+    // Создаём 100 мерцающих звёзд
+    for (var i = 0; i < 100; i++) {
+      var star = document.createElement('div');
+      star.className = 'star';
+      var size = Math.random() * 2 + 1;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+      star.style.setProperty('--delay', Math.random() * 3 + 's');
+      simulator.appendChild(star);
+    }
+    
+    // Определяем сезон
+    var month = new Date().getMonth();
+    var season = (month === 11 || month <= 1) ? 'winter' : (month <= 4) ? 'spring' : (month <= 7) ? 'summer' : 'autumn';
+    var seasonNames = {winter:'Зимнее', spring:'Весеннее', summer:'Летнее', autumn:'Осеннее'};
+    document.getElementById('sky-label').textContent = '✨ ' + seasonNames[season] + ' небо';
+    
+    // Рисуем созвездия
+    var constellations = window.OTD_CONSTELLATIONS_MAP[season] || [];
+    var svgContent = '';
+    constellations.forEach(function(constellation) {
+      // Линии
+      constellation.lines.forEach(function(line) {
+        var s1 = constellation.stars[line[0]];
+        var s2 = constellation.stars[line[1]];
+        svgContent += '<line class="constellation-line" x1="'+(s1.x/100*width)+'" y1="'+(s1.y/100*height)+'" x2="'+(s2.x/100*width)+'" y2="'+(s2.y/100*height)+'"/>';
+      });
+      // Звёзды
+      constellation.stars.forEach(function(star) {
+        svgContent += '<circle class="constellation-star" cx="'+(star.x/100*width)+'" cy="'+(star.y/100*height)+'" r="4"/>';
+      });
+    });
+    svg.innerHTML = svgContent;
+  }
+  createSkySimulator();
+
+  // ========== 2. ЛУННЫЙ КАЛЕНДАРЬ ==========
+  function getMoonPhaseForDate(date) {
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var c = 0, e = 0;
+    if (month < 3) { year--; month += 12; }
+    ++month;
+    c = 365.25 * year;
+    e = 30.6 * month;
+    var jd = c + e + day - 694039.09;
+    var cycle = (jd / 29.5305882) - Math.floor(jd / 29.5305882);
+    var b = Math.round(cycle * 8);
+    if (b >= 8) b = 0;
+    var phases = ["🌑","🌒","🌓","🌔","","🌖","🌗",""];
+    var names = ["Новолуние","Растущий серп","Первая четверть","Растущая луна","Полнолуние","Убывающая луна","Последняя четверть","Старый серп"];
+    return { icon: phases[b], name: names[b], cycle: cycle };
+  }
+
+  function renderLunarCalendar() {
+    var grid = document.getElementById('calendar-grid');
+    var today = new Date();
+    var html = '';
+    var nextFullMoon = null;
+    var nextNewMoon = null;
+    
+    for (var i = 0; i < 30; i++) {
+      var date = new Date(today);
+      date.setDate(today.getDate() + i);
+      var phase = getMoonPhaseForDate(date);
+      var isToday = (i === 0);
+      
+      if (phase.name === 'Полнолуние' && !nextFullMoon) nextFullMoon = date;
+      if (phase.name === 'Новолуние' && !nextNewMoon) nextNewMoon = date;
+      
+      html += '<div class="calendar-day' + (isToday ? ' today' : '') + '" onclick="showDayDetails(' + i + ')">' +
+        '<div class="day-num">' + date.getDate() + '</div>' +
+        '<div class="moon-icon">' + phase.icon + '</div>' +
+        '<div class="phase-name">' + phase.name.split(' ')[0] + '</div>' +
+      '</div>';
+    }
+    grid.innerHTML = html;
+    
+    // Обратный отсчёт
+    var target = nextFullMoon || nextNewMoon;
+    if (target) {
+      var diff = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+      var type = (target === nextFullMoon) ? '🌕 Полнолуние' : '🌑 Новолуние';
+      document.getElementById('countdown').textContent = type + ' через ' + diff + ' дн.';
+    }
+  }
+  renderLunarCalendar();
+
+  function showDayDetails(dayOffset) {
+    var date = new Date();
+    date.setDate(date.getDate() + dayOffset);
+    var phase = getMoonPhaseForDate(date);
+    var pct = Math.round((1 - Math.cos(phase.cycle * 2 * Math.PI)) * 50);
+    document.getElementById('modal-box').innerHTML = 
+      '<button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;"></button>' +
+      '<div style="font-size:4rem; text-align:center;">' + phase.icon + '</div>' +
+      '<h2 style="text-align:center; margin:12px 0;">' + phase.name + '</h2>' +
+      '<div style="text-align:center; color:var(--muted); margin-bottom:16px;">📅 ' + date.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + '</div>' +
+      '<div style="text-align:center; font-size:1.2rem; font-weight:700; color:var(--accent); margin-bottom:16px;">Освещено: ' + pct + '%</div>' +
+      '<button class="btn-close" onclick="closeModal()">Закрыть</button>';
+    document.getElementById('modal').classList.add('open');
+  }
+
+  // ========== 3. ОСТАЛЬНЫЕ ФУНКЦИИ (Луна, события, Deep Space, масштаб, планеты, созвездия) ==========
+  var moon = window.OTD_MOON.getPhase();
+  document.getElementById('moon-icon').textContent = moon.icon;
+  document.getElementById('moon-name').textContent = moon.name + ' · ' + moon.pct + '%';
+  document.getElementById('moon-date').textContent = moon.date;
+  document.getElementById('moon-desc').textContent = moon.desc;
+
+  function getEventStatus(dateStr) {
+    var months = {января:0, февраля:1, марта:2, апреля:3, мая:4, июня:5, июля:6, августа:7, сентября:8, октября:9, ноября:10, декабря:11};
+    var m = dateStr.match(/(\d+)[-–]?\d*\s+(\w+)\s+(\d{4})/) || dateStr.match(/(\w+)\s+(\d{4})/);
+    if (!m) return {label:'', cls:''};
+    var y = parseInt(m[m.length-1]);
+    var monStr = m[m.length-2].toLowerCase();
+    var mon = months[monStr];
+    var d = (m[1] && !isNaN(m[1])) ? parseInt(m[1]) : 15;
+    if (mon === undefined) return {label:'', cls:''};
+    var evDate = new Date(y, mon, d);
+    var now = new Date();
+    if (evDate < now) return {label:'✅ Прошло', cls:'status-gray'};
+    var diff = (evDate - now) / (1000*60*60*24);
+    if (diff < 120) return {label:'🔜 Скоро', cls:'status-hot'};
+    return {label:'', cls:''};
+  }
+  document.getElementById('events-grid').innerHTML = window.OTD_COSMOS_EVENTS.map(function(e){
+    var st = getEventStatus(e.date);
+    var badge = st.label ? '<span class="status-badge '+st.cls+'">'+st.label+'</span>' : '';
+    return '<div class="c-card" onclick="openEvent(\''+e.id+'\')">' + badge +
+      '<div class="c-icon">'+e.icon+'</div><div class="c-name">'+e.name+'</div><div class="c-meta">'+e.date+'</div></div>';
+  }).join('');
+
+  var typeLabels = {eye: {text: '👁️ Видно глазом', cls: 'ds-eye'}, binocular: {text: '👓 Нужен бинокль', cls: 'ds-binocular'}, telescope: {text: '🔭 Нужен телескоп', cls: 'ds-telescope'}};
+  document.getElementById('deep-space-grid').innerHTML = window.OTD_DEEP_SPACE.map(function(obj){
+    var t = typeLabels[obj.type];
+    return '<div class="ds-card" onclick="openDeepSpace(\''+obj.name+'\')">' +
+      '<div class="ds-icon">'+obj.icon+'</div>' +
+      '<div class="ds-name">'+obj.name+'</div>' +
+      '<div class="ds-const">Созвездие: '+obj.const+'</div>' +
+      '<div class="ds-desc">'+obj.desc+'</div>' +
+      '<span class="ds-badge '+t.cls+'">'+t.text+'</span></div>';
+  }).join('');
+
+  document.getElementById('scale-list').innerHTML = window.OTD_UNIVERSE_SCALE.map(function(s){
+    return '<div class="scale-item">' +
+      '<div class="scale-icon">'+s.icon+'</div>' +
+      '<div class="scale-info">' +
+        '<div class="scale-title">'+s.name+'</div>' +
+        '<div class="scale-dist">Расстояние: '+s.dist+' · Свет идет: '+s.time+'</div>' +
+        '<div class="scale-fact">💡 '+s.fact+'</div>' +
+      '</div></div>';
+  }).join('');
+
+  document.getElementById('planets-list').innerHTML = window.OTD_PLANETS.map(function(p){
+    return '<div class="info-card"><h3>'+p.icon+' '+p.name+'</h3>' +
+      '<div style="font-size:0.85rem; color:var(--muted); margin-bottom:8px; font-weight:600;">👁️ Видимость: '+p.visible+'</div>' +
+      '<div style="font-size:0.95rem;">'+p.desc+'</div></div>';
+  }).join('');
+
+  var month = new Date().getMonth();
+  var season = (month === 11 || month <= 1) ? 'winter' : (month <= 4) ? 'spring' : (month <= 7) ? 'summer' : 'autumn';
+  var seasonNames = {winter:'Зимнего', spring:'Весеннего', summer:'Летнего', autumn:'Осеннего'};
+  document.getElementById('const-title').innerHTML = '⭐ Созвездия ' + seasonNames[season] + ' неба';
+  var filtered = window.OTD_CONSTELLATIONS.filter(function(c){ return c.season === season || c.season === 'all'; });
+  document.getElementById('constellations-list').innerHTML = filtered.map(function(c){
+    return '<div class="info-card"><h3>'+c.icon+' '+c.name+' <span style="font-size:0.8rem; font-weight:400; color:var(--muted);">('+c.latin+')</span></h3>' +
+      '<div style="margin-bottom:8px;">'+c.desc+'</div>' +
+      '<div style="font-size:0.85rem; color:var(--accent);">⭐ Ярчайшая звезда: <b>'+c.brightest+'</b></div></div>';
+  }).join('');
+
+  function openEvent(id){
+    var e = window.OTD_COSMOS_EVENTS.find(function(x){return x.id===id;});
+    if(!e) return;
+    document.getElementById('modal-box').innerHTML = 
+      '<button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">✕</button>' +
+      '<div style="font-size:3rem; text-align:center;">'+e.icon+'</div>' +
+      '<h2 style="text-align:center; margin:12px 0;">'+e.name+'</h2>' +
+      '<div style="text-align:center; color:var(--muted); margin-bottom:16px;">📅 '+e.date+'</div>' +
+      '<p style="line-height:1.6;">'+e.desc+'</p>' +
+      '<div class="fact-item" style="margin-top:16px;">💡 <b>Как наблюдать:</b><br>'+e.how+'</div>' +
+      '<button class="btn-close" onclick="markSeen(\''+e.name+'\')">✅ Я наблюдал это! (+30 XP)</button>';
+    document.getElementById('modal').classList.add('open');
+  }
+  
+  function openDeepSpace(name){
+    var obj = window.OTD_DEEP_SPACE.find(function(x){return x.name===name;});
+    if(!obj) return;
+    document.getElementById('modal-box').innerHTML = 
+      '<button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">✕</button>' +
+      '<div style="font-size:4rem; text-align:center;">'+obj.icon+'</div>' +
+      '<h2 style="text-align:center; margin:12px 0;">'+obj.name+'</h2>' +
+      '<div style="text-align:center; color:var(--muted); margin-bottom:16px;">Созвездие: '+obj.const+'</div>' +
+      '<p style="line-height:1.6; font-size:1.05rem;">'+obj.desc+'</p>' +
+      '<div class="fact-item" style="margin-top:16px; background: rgba(16,185,129,0.1); border-left-color: #10b981;">🔭 <b>Совет по наблюдению:</b><br>'+obj.tip+'</div>' +
+      '<button class="btn-close" onclick="markSeen(\''+obj.name+'\')">✅ Я нашел этот объект! (+50 XP)</button>';
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+  function markSeen(name){
+    var xp = name.includes('МКС') || name.includes('Плеяды') ? 50 : 30;
+    window.OTD_IDENTITY.addXP(xp);
+    window.OTD_CHRONICLE.add(' Наблюдал: ' + name);
+    window.OTD_COSMOS_STATS.addObservation(name);
+    if (name.includes('Персеиды') || name.includes('Геминиды') || name.includes('Квадрантиды')) {
+      window.OTD_COSMOS_STATS.markMeteor();
+    }
+    closeModal();
+    alert('✅ Отлично! +' + xp + ' XP добавлено в твою Летопись.');
+  }
+
+  document.getElementById('ai-cosmos').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>🌌 "Мы сделаны из звёздного вещества." — Карл Саган. Изучай небо!';
+</script>
+</body>
+</html>

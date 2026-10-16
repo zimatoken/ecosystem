@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⏱️ Таймер</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.timer-wrap{text-align:center;padding:30px 20px;}
+.timer-circle{width:260px;height:260px;margin:20px auto;border-radius:50%;background:var(--card);border:6px solid var(--accent);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:.4s;}
+.timer-phase{font-size:1.2rem;color:var(--muted);margin-bottom:8px;}
+.timer-count{font-size:4rem;font-weight:900;color:var(--accent);}
+.breath-picker{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;}
+.breath-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;text-align:center;}
+.breath-card.active{border-color:var(--accent);background:rgba(16,185,129,.1);}
+.dur-btn{background:var(--card);border:2px solid var(--border);color:var(--text);padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;margin:4px;}
+.dur-btn.active{background:var(--accent);color:white;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><a href="index.html" class="btn-outline">← Назад</a><h2>⏱️ Таймер</h2></div>
+  <div id="picker-view">
+    <h3 style="margin-bottom:12px;">Выбери практику</h3>
+    <div class="breath-picker" id="breath-list"></div>
+    <h3 style="margin:20px 0 12px;">Длительность</h3>
+    <div style="text-align:center;">
+      <button class="dur-btn" data-min="3">3 мин</button>
+      <button class="dur-btn active" data-min="5">5 мин</button>
+      <button class="dur-btn" data-min="10">10 мин</button>
+      <button class="dur-btn" data-min="15">15 мин</button>
+    </div>
+    <button class="btn-primary" style="font-size:1.1rem;padding:16px;margin-top:20px;" onclick="startTimer()">🧘 Начать</button>
+  </div>
+  <div id="timer-view" style="display:none;">
+    <div class="timer-wrap">
+      <div class="timer-circle" id="circle">
+        <div class="timer-phase" id="phase">Приготовься</div>
+        <div class="timer-count" id="count">3</div>
+      </div>
+      <div style="color:var(--muted);margin-top:12px;">Осталось: <span id="remaining">5:00</span></div>
+      <button class="btn-outline" style="margin-top:20px;" onclick="stopTimer()">⏹ Остановить</button>
+    </div>
+  </div>
+  <div id="finish-view" style="display:none;text-align:center;padding:40px 20px;">
+    <div style="font-size:5rem;">🧘</div>
+    <h2 style="color:var(--accent);">Завершено!</h2>
+    <p style="font-size:1.1rem;margin:16px 0;">Ты медитировал <b id="finish-min">5</b> мин</p>
+    <p style="color:var(--muted);">XP: <b id="finish-xp">10</b></p>
+    <button class="btn-primary" style="margin-top:24px;" onclick="finishSession()">✅ Сохранить</button>
+  </div>
+</div>
+<script src="../../core/theme.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="engine.js"></script>
+<script src="data/breathing.js"></script>
+<script>
+var selectedBreath='box',selectedMinutes=5,timerInterval=null,remainingSeconds=0,phaseIndex=0,phaseRemaining=0;
+document.querySelectorAll('.dur-btn').forEach(function(btn){btn.addEventListener('click',function(){document.querySelectorAll('.dur-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');selectedMinutes=parseInt(btn.dataset.min);});});
+function renderBreathList(){var list=window.OTD_MED_BREATHING;document.getElementById('breath-list').innerHTML=list.map(function(b){return '<div class="breath-card '+(b.id===selectedBreath?'active':'')+'" data-id="'+b.id+'"><div style="font-size:1.8rem;">'+b.icon+'</div><div style="font-weight:700;font-size:.9rem;">'+b.name+'</div></div>';}).join('');document.querySelectorAll('.breath-card').forEach(function(c){c.addEventListener('click',function(){selectedBreath=c.dataset.id;renderBreathList();});});}
+function startTimer(){document.getElementById('picker-view').style.display='none';document.getElementById('timer-view').style.display='block';remainingSeconds=selectedMinutes*60;phaseIndex=0;var breath=window.OTD_MED_BREATHING.find(function(b){return b.id===selectedBreath;});phaseRemaining=breath.phases[0].duration;document.getElementById('remaining').textContent=formatTime(remainingSeconds);updatePhase(breath);timerInterval=setInterval(tick,1000);}
+function tick(){var breath=window.OTD_MED_BREATHING.find(function(b){return b.id===selectedBreath;});phaseRemaining-=1;remainingSeconds-=1;if(remainingSeconds<=0){stopTimer(true);return;}document.getElementById('remaining').textContent=formatTime(remainingSeconds);if(phaseRemaining<=0){phaseIndex=(phaseIndex+1)%breath.phases.length;phaseRemaining=breath.phases[phaseIndex].duration;updatePhase(breath);}else{document.getElementById('count').textContent=phaseRemaining;}}
+function updatePhase(breath){var phase=breath.phases[phaseIndex];document.getElementById('phase').textContent=phase.name;document.getElementById('count').textContent=phase.duration;}
+function stopTimer(completed){clearInterval(timerInterval);if(completed){document.getElementById('timer-view').style.display='none';document.getElementById('finish-view').style.display='block';document.getElementById('finish-min').textContent=selectedMinutes;document.getElementById('finish-xp').textContent=selectedMinutes*2+20;}else{document.getElementById('timer-view').style.display='none';document.getElementById('picker-view').style.display='block';}}
+function finishSession(){window.OTD_MEDITATION.addSession({minutes:selectedMinutes,type:'breathing',breath:selectedBreath,completed:true});alert('✅ Сохранено! +'+(selectedMinutes*2+20)+' XP');location.href='index.html';}
+function formatTime(sec){var m=Math.floor(sec/60);var s=sec%60;return m+':'+(s<10?'0':'')+s;}
+renderBreathList();
+</script>
+</body>
+</html>

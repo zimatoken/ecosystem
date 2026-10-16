@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧘 Мир Медитации</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.med-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.med-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-decoration:none;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:8px;transition:.2s;text-align:center;cursor:pointer;}
+.med-card:hover{transform:translateY(-3px);border-color:var(--accent);}
+.med-icon{font-size:2.5rem;}.med-title{font-weight:700;font-size:1rem;}.med-desc{font-size:.8rem;color:var(--muted);}
+.stats-med{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:24px;}
+.stat-med{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+.stat-med .num{font-size:1.6rem;font-weight:800;color:var(--accent);}
+.stat-med .lbl{font-size:.8rem;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn-outline">← Назад</a>
+    <h2>🧘 Мир Медитации</h2>
+  </div>
+  <div class="ai-box"><p id="ai-med" style="font-size:1.05rem;font-style:italic;"></p></div>
+  <div class="stats-med">
+    <div class="stat-med"><div class="num" id="st-sessions">0</div><div class="lbl">Сессий</div></div>
+    <div class="stat-med"><div class="num" id="st-minutes">0</div><div class="lbl">Минут</div></div>
+    <div class="stat-med"><div class="num" id="st-hours">0</div><div class="lbl">Часов</div></div>
+    <div class="stat-med"><div class="num" id="st-streak">0</div><div class="lbl">🔥 Стрик</div></div>
+  </div>
+  <h3 style="margin-bottom:12px;">🧘 Практики</h3>
+  <div class="med-grid">
+    <a href="timer.html" class="med-card"><span class="med-icon">🌬️</span><span class="med-title">Дыхание</span><span class="med-desc">5 техник</span></a>
+    <a href="sounds.html" class="med-card"><span class="med-icon">🎵</span><span class="med-title">Звуки</span><span class="med-desc">природы</span></a>
+    <a href="mantras.html" class="med-card"><span class="med-icon">🕉️</span><span class="med-title">Мантры</span><span class="med-desc">5 мантр</span></a>
+    <a href="asanas.html" class="med-card"><span class="med-icon">🧘</span><span class="med-title">Асаны</span><span class="med-desc">12 поз</span></a>
+    <a href="knowledge.html" class="med-card"><span class="med-icon">📚</span><span class="med-title">База знаний</span><span class="med-desc">10 уроков</span></a>
+    <a href="journal.html" class="med-card"><span class="med-icon">📔</span><span class="med-title">Дневник</span><span class="med-desc">История</span></a>
+  </div>
+</div>
+<script src="../../core/theme.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="engine.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var stats = window.OTD_MEDITATION.getStats();
+  document.getElementById('st-sessions').textContent = stats.totalSessions;
+  document.getElementById('st-minutes').textContent = stats.totalMinutes;
+  document.getElementById('st-hours').textContent = stats.totalHours;
+  document.getElementById('st-streak').textContent = stats.streak.current || 0;
+  var advice = stats.totalSessions === 0 ? 'Первая медитация — самая важная. Начни с 5 минут дыхания.' : 'Ты в пути. ' + stats.totalMinutes + ' минут осознанности.';
+  document.getElementById('ai-med').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>💡 ' + advice;
+});
+</script>
+</body>
+</html>

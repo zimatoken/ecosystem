@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 Я в натуре Отдыхаю v2.0</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🌍 Отдыхаю v2.0</h1>
+    <button class="btn-outline" onclick="OTD_THEME.toggle()">🌓</button>
+  </div>
+
+  <div class="profile-badge" id="profile-badge">
+    <div class="avatar" id="p-avatar">🧘</div>
+    <div>
+      <div class="stats" id="p-tribe">Загрузка...</div>
+      <div class="stats" style="color:var(--muted); font-weight:400;">
+        ID: <span id="p-id">...</span> · Ур. <span id="p-level">1</span> · Ранг: <span id="p-rank">Новичок</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ai-box">
+    <p id="ai-greeting" style="font-size:1.05rem;font-style:italic;"></p>
+  </div>
+
+  <h3 style="margin-bottom:12px;">🌌 Миры (6)</h3>
+  <div class="grid">
+    <a href="worlds/meditation/index.html" class="btn"><span class="btn-icon">🧘</span>Медитация</a>
+    <a href="worlds/reading/index.html" class="btn"><span class="btn-icon">📖</span>Чтение</a>
+    <a href="worlds/running/index.html" class="btn"><span class="btn-icon">🏃</span>Бег</a>
+    <a href="worlds/gaming/index.html" class="btn"><span class="btn-icon">🎮</span>Игры</a>
+    <a href="worlds/cook/index.html" class="btn"><span class="btn-icon">🍳</span>Кулинария</a>
+    <a href="worlds/travel/index.html" class="btn"><span class="btn-icon">✈️</span>Путешествия</a>
+  
+    <a href="worlds/cosmos/index.html" class="btn"><span class="btn-icon">🌌</span>Космос</a>
+    <a href="worlds/recovery/index.html" class="btn"><span class="btn-icon">💆</span>Восстановление</a></div>
+
+  <h3 style="margin-bottom:12px;">🛠️ Инструменты Цивилизации</h3>
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+    <a href="modules/places/index.html" class="btn" style="flex-direction:row;justify-content:flex-start;padding:16px;">
+      <span class="btn-icon">📍</span>
+      <div style="text-align:left;"><div>Мои Места</div><div style="font-size:.8rem;color:var(--muted);font-weight:400;">Карта силы</div></div>
+    </a>
+    <a href="modules/chronicle/index.html" class="btn" style="flex-direction:row;justify-content:flex-start;padding:16px;">
+      <span class="btn-icon">📜</span>
+      <div style="text-align:left;"><div>Летопись</div><div style="font-size:.8rem;color:var(--muted);font-weight:400;">История пути</div></div>
+    </a>
+    <a href="modules/stats/index.html" class="btn" style="flex-direction:row;justify-content:flex-start;padding:16px;">
+      <span class="btn-icon">📊</span>
+      <div style="text-align:left;"><div>Статистика</div><div style="font-size:.8rem;color:var(--muted);font-weight:400;">Графики</div></div>
+    </a>
+    <a href="modules/settings/index.html" class="btn" style="flex-direction:row;justify-content:flex-start;padding:16px;">
+      <span class="btn-icon">⚙️</span>
+      <div style="text-align:left;"><div>Настройки</div><div style="font-size:.8rem;color:var(--muted);font-weight:400;">Племя, тема</div></div>
+    </a>
+  </div>
+</div>
+<script src="core/theme.js"></script>
+<script src="core/identity.js"></script>
+<script src="core/chronicle.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var p = window.OTD_IDENTITY.get();
+  var icons = {sage:"📚",engineer:"🔧",musician:"🎸",hunter:"🎣",creator:"🎨",athlete:"🏃",gourmet:"🍷",beastmaster:"🐕",social:"💬",practitioner:"🧘"};
+  var names = {sage:"📚 Мудрецы",engineer:"🔧 Инженеры",musician:"🎸 Музыканты",hunter:"🎣 Ловцы",creator:"🎨 Творцы",athlete:"🏃 Спортсмены",gourmet:"🍷 Гурманы",beastmaster:"🐕 Звероловы",social:"💬 Общающиеся",practitioner:"🧘 Практики"};
+  var ranks = ['Новичок','Ученик','Продвинутый','Мастер','Маэстро'];
+  document.getElementById('p-avatar').textContent = icons[p.tribe] || '🧘';
+  document.getElementById('p-tribe').textContent = names[p.tribe] || '📚 Мудрецы';
+  document.getElementById('p-id').textContent = p.id;
+  document.getElementById('p-level').textContent = p.level;
+  document.getElementById('p-rank').textContent = ranks[p.rank] || 'Новичок';
+  document.getElementById('ai-greeting').innerHTML = window.OTD_IDENTITY.getGreeting();
+});
+</script>
+</body>
+</html>

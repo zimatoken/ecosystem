@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>📚 База знаний</title><link rel="stylesheet" href="../../css/styles.css"><style>.k-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;cursor:pointer;}.k-card:hover{border-color:var(--accent);}.k-icon{font-size:1.8rem;}.k-title{font-size:1.1rem;font-weight:800;margin:6px 0;}.k-text{color:var(--muted);font-size:.95rem;display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}.k-card.open .k-text{display:block;}</style></head>
+<body><div class="container">
+<div class="header"><a href="index.html" class="btn-outline">← Назад</a><h2>📚 База знаний</h2></div>
+<div id="knowledge-list"></div>
+</div>
+<script src="../../core/theme.js"></script><script src="../../core/chronicle.js"></script><script src="../../core/identity.js"></script><script src="data/knowledge.js"></script>
+<script>document.getElementById('knowledge-list').innerHTML=window.OTD_MED_KNOWLEDGE.map(function(k){return '<div class="k-card" onclick="this.classList.toggle(\'open\')"><div class="k-icon">'+k.icon+'</div><div class="k-title">'+k.title+'</div><div class="k-text">'+k.text+'</div></div>';}).join('');</script>
+</body></html>

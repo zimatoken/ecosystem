@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 Мир Игр</title>
+<link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn-outline">← Назад</a>
+    <h2>🎮 Мир Игр</h2>
+  </div>
+
+  <div class="ai-box">
+    <p id="ai-gaming"></p>
+  </div>
+
+  <a href="library.html" style="display:block; text-decoration:none; background:linear-gradient(135deg,#3b82f6,#3b82f6dd); color:white; padding:20px 24px; border-radius:14px; margin-bottom:20px; font-weight:700; font-size:1.1rem; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.15); transition:.2s;">🎮 Библиотека игр <span style="display:block; font-size:0.85rem; font-weight:400; opacity:0.9; margin-top:4px;">60 игр с рейтингами Metacritic →</span></a>
+
+  <div class="card">
+    <h3>🎮 Библиотека игр</h3>
+    <input type="text" id="game-title" placeholder="Название игры">
+    <select id="game-status">
+      <option value="want">Хочу пройти</option>
+      <option value="playing">Играю сейчас</option>
+      <option value="done">Прошёл</option>
+    </select>
+    <button class="btn-primary" onclick="addGame()">➕ Добавить игру</button>
+  </div>
+
+  <div id="games-list"></div>
+
+  <div class="card">
+    <h3>📊 Статистика</h3>
+    <p>Пройдено: <b id="stat-done">0</b> игр</p>
+    <p>Играю: <b id="stat-playing">0</b></p>
+    <p>В списке: <b id="stat-want">0</b></p>
+  </div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script>
+const KEY = 'otd_gaming_games_v1';
+
+function getGames() {
+  return JSON.parse(localStorage.getItem(KEY) || '[]');
+}
+
+function addGame() {
+  const title = document.getElementById('game-title').value.trim();
+  const status = document.getElementById('game-status').value;
+  
+  if (!title) return alert('Введи название игры!');
+  
+  const games = getGames();
+  games.push({ id: Date.now(), title, status, added: new Date().toISOString() });
+  localStorage.setItem(KEY, JSON.stringify(games));
+  
+  window.OTD_IDENTITY.addXP(10);
+  window.OTD_CHRONICLE.add(`🎮 Добавлена игра: "${title}"`);
+  
+  document.getElementById('game-title').value = '';
+  render();
+}
+
+function removeGame(id) {
+  const games = getGames().filter(g => g.id !== id);
+  localStorage.setItem(KEY, JSON.stringify(games));
+  render();
+}
+
+function render() {
+  const games = getGames();
+  const want = games.filter(g => g.status === 'want');
+  const playing = games.filter(g => g.status === 'playing');
+  const done = games.filter(g => g.status === 'done');
+  
+  document.getElementById('stat-want').textContent = want.length;
+  document.getElementById('stat-playing').textContent = playing.length;
+  document.getElementById('stat-done').textContent = done.length;
+  
+  let html = '';
+  
+  if (playing.length) {
+    html += '<h3 style="margin-top:20px;">🎮 Играю сейчас</h3>';
+    html += playing.map(g => `
+      <div class="card">
+        <b>${g.title}</b><br>
+        <button class="btn-outline" style="margin-top:8px;" onclick="removeGame(${g.id})">Убрать</button>
+      </div>
+    `).join('');
+  }
+  
+  if (want.length) {
+    html += '<h3 style="margin-top:20px;">📚 Хочу пройти</h3>';
+    html += want.map(g => `
+      <div class="card">
+        <b>${g.title}</b><br>
+        <button class="btn-outline" style="margin-top:8px;" onclick="removeGame(${g.id})">Убрать</button>
+      </div>
+    `).join('');
+  }
+  
+  if (done.length) {
+    html += '<h3 style="margin-top:20px;">✅ Пройдено</h3>';
+    html += done.map(g => `
+      <div class="card" style="opacity:0.7;">
+        <b>${g.title}</b>
+      </div>
+    `).join('');
+  }
+  
+  document.getElementById('games-list').innerHTML = html || '<div class="card" style="text-align:center;color:var(--muted);">Пока нет игр. Добавь первую!</div>';
+}
+
+document.getElementById('ai-gaming').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>🎮 Игры — это искусство. Каждая история — путешествие.';
+
+render();
+</script>
+</body>
+</html>

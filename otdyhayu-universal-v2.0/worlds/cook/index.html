@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍳 Мир Кулинарии</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.cat-title{margin:24px 0 12px;font-size:1.1rem;color:var(--accent);}
+.recipes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+.r-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.2s;text-align:center;}
+.r-card:hover{transform:translateY(-3px);border-color:var(--accent);}
+.r-icon{font-size:2.5rem;}.r-name{font-weight:700;font-size:.95rem;margin:6px 0;}.r-meta{font-size:.75rem;color:var(--muted);}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:100;padding:20px;overflow-y:auto;}
+.modal.open{display:block;}
+.modal-box{max-width:600px;margin:40px auto;background:var(--card);border-radius:16px;padding:24px;}
+.ing-list{background:var(--bg);padding:12px;border-radius:8px;margin:12px 0;}
+.ing-list li{margin-left:20px;}
+.steps-list{counter-reset:s;list-style:none;padding:0;}
+.steps-list li{counter-increment:s;margin-bottom:8px;padding-left:28px;position:relative;}
+.steps-list li::before{content:counter(s);position:absolute;left:0;top:0;background:var(--accent);color:white;width:20px;height:20px;border-radius:50%;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.bju-row{display:flex;gap:10px;margin:12px 0;font-size:.85rem;}
+.bju-pill{background:var(--bg);padding:6px 12px;border-radius:8px;font-weight:700;}
+.btn-close{background:var(--accent);color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:12px;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><a href="../../index.html" class="btn-outline">← Назад</a><h2>🍳 Мир Кулинарии</h2></div>
+  <div class="ai-box"><p id="ai-cook" style="font-size:.95rem;font-style:italic;"></p></div>
+  <div id="content"></div>
+</div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/recipes.js"></script>
+<script>
+function render(){
+  var html = '';
+  Object.keys(window.OTD_COOK_RECIPES).forEach(function(cat){
+    html += '<h3 class="cat-title">'+cat+'</h3>';
+    html += '<div class="recipes-grid">';
+    window.OTD_COOK_RECIPES[cat].forEach(function(r){
+      html += '<div class="r-card" onclick="openRecipe(\''+cat+'\',\''+r.id+'\')">'
+        + '<div class="r-icon">'+r.icon+'</div>'
+        + '<div class="r-name">'+r.name+'</div>'
+        + '<div class="r-meta">⏱ '+r.time+' · 🔥 '+r.kkal+' ккал</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('content').innerHTML = html;
+}
+function openRecipe(cat, id){
+  var r = window.OTD_COOK_RECIPES[cat].find(function(x){return x.id===id;});
+  if(!r) return;
+  var html = '<button class="btn-outline" onclick="closeModal()">← Закрыть</button>'
+    + '<h2 style="margin:12px 0;">'+r.icon+' '+r.name+'</h2>'
+    + '<div style="color:var(--muted);">⏱ '+r.time+' · 🍽 '+r.servings+' порц. · 🔥 '+r.kkal+' ккал</div>'
+    + '<div class="bju-row"><span class="bju-pill">Б: '+r.bju.p+' г</span><span class="bju-pill">Ж: '+r.bju.f+' г</span><span class="bju-pill">У: '+r.bju.c+' г</span></div>'
+    + '<h3 style="margin-top:16px;">📝 Ингредиенты</h3>'
+    + '<ul class="ing-list">'+r.ing.map(function(i){return '<li>'+i+'</li>';}).join('')+'</ul>'
+    + '<h3 style="margin-top:16px;">👨‍🍳 Приготовление</h3>'
+    + '<ol class="steps-list">'+r.steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol>'
+    + '<div style="background:var(--bg);padding:12px;border-radius:8px;margin-top:16px;"><b>💡 Совет:</b> '+r.tip+'</div>'
+    + '<button class="btn-close" onclick="cookDone()">✅ Приготовил! (+30 XP)</button>';
+  document.getElementById('modal-box').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function cookDone(){
+  window.OTD_IDENTITY.addXP(30);
+  window.OTD_CHRONICLE.add('🍳 Приготовил блюдо из Кулинарии');
+  closeModal();
+  alert('✅ +30 XP!');
+}
+document.getElementById('ai-cook').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>🍳 Готовить — это творчество. Каждый рецепт — маленькое приключение.';
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📍 Мои Места</title>
+<link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn-outline">← Назад</a>
+    <h2>📍 Мои Места Силы</h2>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">Добавить новое место</h3>
+    <input type="text" id="p-name" placeholder="Название (напр., Лавочка у реки)">
+    <input type="text" id="p-tags" placeholder="Теги (напр., #тишина #закат)">
+    <textarea id="p-note" rows="3" placeholder="Впечатления..."></textarea>
+    <button class="btn-primary" onclick="addPlace()">💾 Сохранить (+25 XP)</button>
+  </div>
+  <div id="places-list"></div>
+</div>
+<script src="../../core/theme.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/placesEngine.js"></script>
+<script>
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function render(){
+  var places = window.OTD_PLACES.getAll();
+  var list = document.getElementById('places-list');
+  if(!places.length){list.innerHTML='<div class="card" style="text-align:center;color:var(--muted);">Пока нет мест. Добавь первое!</div>';return;}
+  list.innerHTML = places.map(function(p){
+    return '<div class="card"><h3>'+esc(p.name)+'</h3>'+
+      (p.tags?'<div style="color:var(--accent);font-size:0.9rem;">'+esc(p.tags)+'</div>':'')+
+      '<p style="font-style:italic;color:var(--muted);">"'+esc(p.note)+'"</p>'+
+      '<div style="font-size:0.8rem;color:var(--muted);">📅 '+p.date+'</div></div>';
+  }).join('');
+}
+function addPlace(){
+  var n=document.getElementById('p-name').value.trim();
+  var t=document.getElementById('p-tags').value.trim();
+  var note=document.getElementById('p-note').value.trim();
+  if(!n||!note){alert('Заполни название и впечатления!');return;}
+  window.OTD_PLACES.add({name:n,tags:t,note:note});
+  document.getElementById('p-name').value='';
+  document.getElementById('p-tags').value='';
+  document.getElementById('p-note').value='';
+  alert('✅ Место сохранено! +25 XP');
+  render();
+}
+render();
+</script>
+</body>
+</html>

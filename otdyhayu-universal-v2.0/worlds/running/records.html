@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏆 Личные рекорды</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.records-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.record-card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; position: relative; }
+.record-card.has-record { border-color: var(--accent); }
+.record-distance { font-size: 2rem; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+.record-time { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+.record-date { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
+.record-pace { font-size: 0.9rem; color: var(--text); font-weight: 600; }
+.no-record { color: var(--muted); font-size: 0.9rem; }
+.progress-section { margin-bottom: 32px; }
+.progress-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.progress-label { font-weight: 700; font-size: 1rem; }
+.progress-value { font-weight: 700; color: var(--accent); }
+.progress-bar { background: var(--bg); border-radius: 8px; height: 12px; overflow: hidden; }
+.progress-fill { background: linear-gradient(90deg, var(--accent), #06b6d4); height: 100%; transition: width 0.5s; }
+.chart-container { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 32px; }
+.chart-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; }
+.chart-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.chart-tab { padding: 8px 16px; background: var(--bg); border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; transition: .2s; }
+.chart-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.chart-svg { width: 100%; height: 200px; }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+.chart-dot { fill: var(--accent); }
+.chart-axis { stroke: var(--border); stroke-width: 1; }
+.chart-label { font-size: 0.75rem; fill: var(--muted); }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+.stat-value { font-size: 1.8rem; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+.stat-label { font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="index.html" class="btn btn-outline">← Назад к Бегу</a>
+    <h2>🏆 Личные рекорды</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p style="font-size: 1rem; font-style: italic; margin: 0;">Твои лучшие результаты и прогресс тренировок.</p>
+  </div>
+
+  <!-- РЕКОРДЫ -->
+  <h3 style="margin-bottom: 16px;">🏅 Рекорды по дистанциям</h3>
+  <div class="records-grid" id="records-grid"></div>
+
+  <!-- ПРОГРЕСС ДО СЛЕДУЮЩЕГО РЕКОРДА -->
+  <div class="progress-section">
+    <h3 style="margin-bottom: 16px;">📈 Прогресс к следующему рекорду</h3>
+    <div id="progress-list"></div>
+  </div>
+
+  <!-- ГРАФИК ТЕМПА -->
+  <div class="chart-container">
+    <div class="chart-title">📊 График темпа</div>
+    <div class="chart-tabs">
+      <div class="chart-tab active" onclick="setChartPeriod(7)">7 дней</div>
+      <div class="chart-tab" onclick="setChartPeriod(30)">30 дней</div>
+    </div>
+    <svg class="chart-svg" id="pace-chart"></svg>
+  </div>
+
+  <!-- ДЕТАЛЬНАЯ СТАТИСТИКА -->
+  <h3 style="margin-bottom: 16px;">📋 Детальная статистика</h3>
+  <div class="stats-grid" id="stats-grid"></div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/achievements.js"></script>
+<script>
+var chartPeriod = 7;
+
+function getRecords() {
+  var stats = window.OTD_RUN_STATS.get();
+  var records = {};
+  var distances = [1, 5, 10, 21, 42];
+  distances.forEach(function(d) {
+    var best = null;
+    stats.runs.forEach(function(r) {
+      if (Math.abs(r.distance - d) < 0.5 && (!best || r.time < best)) best = r.time;
+    });
+    if (best) records[d] = best;
+  });
+  return records;
+}
+
+function renderRecords() {
+  var records = getRecords();
+  var distances = [1, 5, 10, 21, 42];
+  var distanceLabels = {1: '1 км', 5: '5 км', 10: '10 км', 21: '21 км (полумарафон)', 42: '42 км (марафон)'};
+  
+  document.getElementById('records-grid').innerHTML = distances.map(function(d) {
+    var hasRecord = records[d];
+    if (hasRecord) {
+      var pace = hasRecord / d;
+      var paceMin = Math.floor(pace);
+      var paceSec = Math.round((pace - paceMin) * 60);
+      var timeMin = Math.floor(hasRecord);
+      var timeSec = Math.round((hasRecord - timeMin) * 60);
+      return '<div class="record-card has-record">' +
+        '<div class="record-distance">' + distanceLabels[d] + '</div>' +
+        '<div class="record-time">' + timeMin + ':' + (timeSec < 10 ? '0' : '') + timeSec + '</div>' +
+        '<div class="record-pace">Темп: ' + paceMin + ':' + (paceSec < 10 ? '0' : '') + paceSec + ' мин/км</div>' +
+      '</div>';
+    } else {
+      return '<div class="record-card">' +
+        '<div class="record-distance">' + distanceLabels[d] + '</div>' +
+        '<div class="no-record">Нет рекорда</div>' +
+      '</div>';
+    }
+  }).join('');
+}
+
+function renderProgress() {
+  var records = getRecords();
+  var stats = window.OTD_RUN_STATS.get();
+  var nextRecords = [
+    {distance: 1, target: 4.5, label: '1 км < 4:30'},
+    {distance: 5, target: 24, label: '5 км < 24 мин'},
+    {distance: 10, target: 50, label: '10 км < 50 мин'},
+    {distance: 21, target: 100, label: '21 км < 1:40'},
+    {distance: 42, target: 210, label: '42 км < 3:30'}
+  ];
+  
+  document.getElementById('progress-list').innerHTML = nextRecords.map(function(nr) {
+    var current = records[nr.distance] || nr.target + 10;
+    var progress = Math.max(0, Math.min(100, ((nr.target + 10 - current) / 10) * 100));
+    return '<div class="progress-item">' +
+      '<div class="progress-header">' +
+        '<div class="progress-label">' + nr.label + '</div>' +
+        '<div class="progress-value">' + (records[nr.distance] ? Math.floor(records[nr.distance]) + ' мин' : '—') + '</div>' +
+      '</div>' +
+      '<div class="progress-bar"><div class="progress-fill" style="width: ' + progress + '%"></div></div>' +
+    '</div>';
+  }).join('');
+}
+
+function setChartPeriod(period) {
+  chartPeriod = period;
+  document.querySelectorAll('.chart-tab').forEach(function(tab, i) {
+    tab.classList.toggle('active', [7, 30][i] === period);
+  });
+  renderChart();
+}
+
+function renderChart() {
+  var stats = window.OTD_RUN_STATS.get();
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - chartPeriod);
+  var recentRuns = stats.runs.filter(function(r) { return new Date(r.date) >= cutoff; });
+  
+  var svg = document.getElementById('pace-chart');
+  var width = svg.clientWidth || 600;
+  var height = 200;
+  svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+  
+  if (recentRuns.length === 0) {
+    svg.innerHTML = '<text x="' + (width/2) + '" y="' + (height/2) + '" text-anchor="middle" fill="var(--muted)">Нет данных за период</text>';
+    return;
+  }
+  
+  var paces = recentRuns.map(function(r) { return r.time / r.distance; });
+  var maxPace = Math.max.apply(null, paces) + 1;
+  var minPace = Math.min.apply(null, paces) - 1;
+  var range = maxPace - minPace;
+  
+  var points = paces.map(function(pace, i) {
+    var x = (i / (paces.length - 1 || 1)) * (width - 40) + 20;
+    var y = height - 20 - ((pace - minPace) / range) * (height - 40);
+    return x + ',' + y;
+  }).join(' ');
+  
+  var svgContent = '<line class="chart-axis" x1="20" y1="' + (height-20) + '" x2="' + (width-20) + '" y2="' + (height-20) + '"/>';
+  svgContent += '<polyline class="chart-line" points="' + points + '"/>';
+  svgContent += paces.map(function(pace, i) {
+    var x = (i / (paces.length - 1 || 1)) * (width - 40) + 20;
+    var y = height - 20 - ((pace - minPace) / range) * (height - 40);
+    return '<circle class="chart-dot" cx="' + x + '" cy="' + y + '" r="4"/>';
+  }).join('');
+  
+  svg.innerHTML = svgContent;
+}
+
+function renderStats() {
+  var stats = window.OTD_RUN_STATS.get();
+  var totalRuns = stats.runs.length;
+  var totalDistance = stats.totalDistance;
+  var totalTime = stats.totalTime;
+  var totalCalories = stats.totalCalories;
+  var avgPace = totalRuns > 0 ? totalTime / totalDistance : 0;
+  var avgPaceMin = Math.floor(avgPace);
+  var avgPaceSec = Math.round((avgPace - avgPaceMin) * 60);
+  var longestRun = totalRuns > 0 ? Math.max.apply(null, stats.runs.map(function(r) { return r.distance; })) : 0;
+  var fastestPace = totalRuns > 0 ? Math.min.apply(null, stats.runs.map(function(r) { return r.time / r.distance; })) : 0;
+  var fastestPaceMin = Math.floor(fastestPace);
+  var fastestPaceSec = Math.round((fastestPace - fastestPaceMin) * 60);
+  
+  var statsData = [
+    {value: totalRuns, label: 'Всего пробежек'},
+    {value: totalDistance.toFixed(1) + ' км', label: 'Общая дистанция'},
+    {value: totalTime + ' мин', label: 'Общее время'},
+    {value: totalCalories, label: 'Ккал сожжено'},
+    {value: avgPaceMin + ':' + (avgPaceSec < 10 ? '0' : '') + avgPaceSec, label: 'Средний темп'},
+    {value: longestRun.toFixed(1) + ' км', label: 'Самая длинная'},
+    {value: fastestPaceMin + ':' + (fastestPaceSec < 10 ? '0' : '') + fastestPaceSec, label: 'Лучший темп'},
+    {value: stats.streak, label: '🔥 Стрик дней'}
+  ];
+  
+  document.getElementById('stats-grid').innerHTML = statsData.map(function(s) {
+    return '<div class="stat-card"><div class="stat-value">' + s.value + '</div><div class="stat-label">' + s.label + '</div></div>';
+  }).join('');
+}
+
+renderRecords();
+renderProgress();
+renderChart();
+renderStats();
+</script>
+</body>
+</html>

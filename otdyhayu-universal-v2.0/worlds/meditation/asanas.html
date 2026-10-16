@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>🧘 Асаны</title><link rel="stylesheet" href="../../css/styles.css"><style>.asana-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}.asana-icon{font-size:2rem;}.asana-name{font-size:1.15rem;font-weight:800;margin:6px 0;}.asana-level{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700;background:#dcfce7;color:#166534;}.asana-desc{color:var(--muted);margin:8px 0;}.asana-steps{padding-left:20px;line-height:1.8;}</style></head>
+<body><div class="container">
+<div class="header"><a href="index.html" class="btn-outline">← Назад</a><h2>🧘 Асаны</h2></div>
+<div id="asanas-list"></div>
+</div>
+<script src="../../core/theme.js"></script><script src="../../core/chronicle.js"></script><script src="../../core/identity.js"></script><script src="data/asanas.js"></script>
+<script>document.getElementById('asanas-list').innerHTML=window.OTD_MED_ASANAS.map(function(a){return '<div class="asana-card"><div class="asana-icon">'+a.icon+'</div><div class="asana-name">'+a.name+'</div><span class="asana-level">'+a.level+'</span><div class="asana-desc">'+a.desc+'</div><ol class="asana-steps">'+a.steps.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ol><div style="color:var(--accent);font-size:.9rem;margin-top:8px;">✨ '+a.benefits.join(' · ')+' · ~'+a.duration+' мин</div></div>';}).join('');</script>
+</body></html>

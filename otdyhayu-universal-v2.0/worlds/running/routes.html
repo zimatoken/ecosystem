@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>️ Библиотека маршрутов</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.search-bar input { flex: 1; min-width: 200px; padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text); font-size: 1rem; }
+.genre-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.genre-tab { padding: 10px 18px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; font-weight: 600; transition: .2s; }
+.genre-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.routes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.route-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; cursor: pointer; transition: .2s; position: relative; }
+.route-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.route-card.added { border-left: 5px solid var(--success); }
+.route-header { display: flex; gap: 12px; margin-bottom: 12px; }
+.route-icon { font-size: 2.5rem; }
+.route-info { flex: 1; }
+.route-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; }
+.route-meta { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+.route-details { display: flex; gap: 10px; margin: 10px 0; font-size: 0.85rem; flex-wrap: wrap; }
+.route-detail { background: var(--bg); padding: 4px 10px; border-radius: 6px; }
+.route-rating { color: #f59e0b; font-weight: 700; }
+.route-desc { font-size: 0.9rem; line-height: 1.5; color: var(--text); margin-bottom: 12px; }
+.route-type { display: inline-block; padding: 4px 10px; background: var(--bg); border-radius: 6px; font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+.btn-add { width: 100%; padding: 10px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; margin-top: 10px; }
+.btn-add:hover { opacity: 0.9; }
+.btn-add.added { background: #64748b; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1000; padding: 20px; overflow-y: auto; backdrop-filter: blur(4px); }
+.modal.open { display: flex; align-items: center; justify-content: center; }
+.modal-box { max-width: 600px; width: 100%; background: var(--card); border-radius: 20px; padding: 28px; position: relative; max-height: 90vh; overflow-y: auto; }
+.landmarks { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.landmark { background: var(--bg); padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="index.html" class="btn btn-outline">← Назад к Бегу</a>
+    <h2>🗺️ Библиотека маршрутов</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p id="ai-routes" style="font-size: 1rem; font-style: italic; margin: 0;"></p>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="🔍 Поиск по названию или городу...">
+  </div>
+
+  <div class="genre-tabs" id="genre-tabs"></div>
+
+  <div class="routes-grid" id="routes-grid"></div>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/routes_park.js"></script>
+<script src="data/routes_embankment.js"></script>
+<script src="data/routes_nature.js"></script>
+<script src="data/routes_city.js"></script>
+<script src="data/routes_world.js"></script>
+<script src="data/routes_special.js"></script>
+<script>
+var GENRES = [
+  {id:'all', name:'Все', icon:'🗺️'},
+  {id:'park', name:'Парковые', icon:''},
+  {id:'embankment', name:'Набережные', icon:'🌊'},
+  {id:'nature', name:'Природные', icon:'🏔️'},
+  {id:'city', name:'Городские', icon:'🏙️'},
+  {id:'world', name:'Мировые', icon:'🌍'},
+  {id:'special', name:'Специальные', icon:'🏟️'}
+];
+
+var currentGenre = 'all';
+var searchQuery = '';
+
+function getAllRoutes() {
+  var routes = [];
+  if (window.OTD_ROUTES_PARK) routes = routes.concat(window.OTD_ROUTES_PARK);
+  if (window.OTD_ROUTES_EMBANKMENT) routes = routes.concat(window.OTD_ROUTES_EMBANKMENT);
+  if (window.OTD_ROUTES_NATURE) routes = routes.concat(window.OTD_ROUTES_NATURE);
+  if (window.OTD_ROUTES_CITY) routes = routes.concat(window.OTD_ROUTES_CITY);
+  if (window.OTD_ROUTES_WORLD) routes = routes.concat(window.OTD_ROUTES_WORLD);
+  if (window.OTD_ROUTES_SPECIAL) routes = routes.concat(window.OTD_ROUTES_SPECIAL);
+  return routes;
+}
+
+function getAddedRoutes() {
+  return JSON.parse(localStorage.getItem('otd_running_routes_added') || '[]');
+}
+
+function renderGenreTabs() {
+  document.getElementById('genre-tabs').innerHTML = GENRES.map(function(g) {
+    return '<div class="genre-tab ' + (g.id === currentGenre ? 'active' : '') + '" onclick="setGenre(\'' + g.id + '\')">' + g.icon + ' ' + g.name + '</div>';
+  }).join('');
+}
+
+function setGenre(id) {
+  currentGenre = id;
+  renderGenreTabs();
+  renderRoutes();
+}
+
+function renderRoutes() {
+  var routes = getAllRoutes();
+  var added = getAddedRoutes();
+  
+  if (currentGenre !== 'all') {
+    routes = routes.filter(function(r) { return r.type === currentGenre; });
+  }
+  
+  if (searchQuery) {
+    var q = searchQuery.toLowerCase();
+    routes = routes.filter(function(r) {
+      return r.name.toLowerCase().includes(q) || r.city.toLowerCase().includes(q);
+    });
+  }
+  
+  document.getElementById('routes-grid').innerHTML = routes.map(function(r) {
+    var isAdded = added.indexOf(r.id) !== -1;
+    var stars = '★'.repeat(Math.round(r.rating)) + '☆'.repeat(5 - Math.round(r.rating));
+    return '<div class="route-card ' + (isAdded ? 'added' : '') + '" onclick="openRoute(\'' + r.id + '\')">' +
+      '<div class="route-header">' +
+        '<div class="route-icon">' + r.icon + '</div>' +
+        '<div class="route-info">' +
+          '<div class="route-title">' + r.name + '</div>' +
+          '<div class="route-meta">' + r.city + ' · ' + r.country + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="route-details">' +
+        '<span class="route-detail">📏 ' + r.distance + ' км</span>' +
+        '<span class="route-detail">️ ' + r.surface + '</span>' +
+        '<span class="route-detail">⛰️ ' + r.terrain + '</span>' +
+      '</div>' +
+      '<div style="margin: 10px 0;"><span class="route-rating">Наш рейтинг: ' + stars + ' ' + r.rating.toFixed(1) + '</span></div>' +
+      '<div class="route-desc">' + r.desc + '</div>' +
+      '<span class="route-type">' + (GENRES.find(function(g) { return g.id === r.type; }) || GENRES[0]).icon + ' ' + (GENRES.find(function(g) { return g.id === r.type; }) || GENRES[0]).name + '</span>' +
+      '<button class="btn-add ' + (isAdded ? 'added' : '') + '" onclick="event.stopPropagation();toggleRoute(\'' + r.id + '\', \'' + r.name + '\')">' + (isAdded ? '✅ В списке' : '🏃 Хочу пробежать (+10 XP)') + '</button>' +
+    '</div>';
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">Ничего не найдено</div>';
+}
+
+function openRoute(id) {
+  var r = getAllRoutes().find(function(x) { return x.id === id; });
+  if (!r) return;
+  var added = getAddedRoutes();
+  var isAdded = added.indexOf(r.id) !== -1;
+  var stars = '★'.repeat(Math.round(r.rating)) + '☆'.repeat(5 - Math.round(r.rating));
+  
+  document.getElementById('modal-box').innerHTML =
+    '<button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">✕</button>' +
+    '<div style="font-size:4rem; text-align:center;">' + r.icon + '</div>' +
+    '<h2 style="text-align:center; margin:12px 0;">' + r.name + '</h2>' +
+    '<div style="text-align:center; color:var(--muted); margin-bottom:16px;">' + r.city + ' · ' + r.country + '</div>' +
+    '<div style="display:flex; justify-content:center; gap:20px; margin-bottom:20px;">' +
+      '<div style="text-align:center;"><div style="font-size:1.5rem; color:#f59e0b;">' + stars + '</div><div style="font-size:0.85rem; color:var(--muted);">Наш рейтинг</div></div>' +
+    '</div>' +
+    '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">' +
+      '<div style="background:var(--bg);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:1.2rem;font-weight:700;">' + r.distance + ' км</div><div style="font-size:0.8rem;color:var(--muted);">Дистанция</div></div>' +
+      '<div style="background:var(--bg);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:1.2rem;font-weight:700;">' + r.surface + '</div><div style="font-size:0.8rem;color:var(--muted);">Покрытие</div></div>' +
+      '<div style="background:var(--bg);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:1.2rem;font-weight:700;">' + r.terrain + '</div><div style="font-size:0.8rem;color:var(--muted);">Рельеф</div></div>' +
+    '</div>' +
+    '<p style="line-height:1.6; font-size:1.05rem; margin-bottom:20px;">' + r.desc + '</p>' +
+    '<h3 style="margin-bottom:12px;"> Что посмотреть</h3>' +
+    '<div class="landmarks">' + r.landmarks.map(function(l) { return '<div class="landmark">' + l + '</div>'; }).join('') + '</div>' +
+    '<button class="btn-add ' + (isAdded ? 'added' : '') + '" style="margin-top:20px;" onclick="toggleRoute(\'' + r.id + '\', \'' + r.name + '\'); closeModal();">' + (isAdded ? '✅ Уже в списке' : '🏃 Хочу пробежать (+10 XP)') + '</button>';
+  document.getElementById('modal').classList.add('open');
+}
+
+function toggleRoute(id, name) {
+  var added = getAddedRoutes();
+  var idx = added.indexOf(id);
+  if (idx === -1) {
+    added.push(id);
+    localStorage.setItem('otd_running_routes_added', JSON.stringify(added));
+    window.OTD_IDENTITY.addXP(10);
+    window.OTD_CHRONICLE.add('️ Добавил маршрут: ' + name);
+    alert('✅ Добавлено! +10 XP');
+  } else {
+    added.splice(idx, 1);
+    localStorage.setItem('otd_running_routes_added', JSON.stringify(added));
+    alert('Убрано из списка');
+  }
+  renderRoutes();
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+document.getElementById('search-input').addEventListener('input', function(e) {
+  searchQuery = e.target.value;
+  renderRoutes();
+});
+
+document.getElementById('ai-routes').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>🗺️ 60 проверенных маршрутов для бега по всему миру!';
+
+renderGenreTabs();
+renderRoutes();
+</script>
+</body>
+</html>

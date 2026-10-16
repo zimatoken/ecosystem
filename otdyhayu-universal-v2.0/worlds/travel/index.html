@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✈️ Мир Путешествий</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.region-title{margin:24px 0 12px;font-size:1.1rem;color:var(--accent);}
+.places-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
+.p-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:.2s;text-align:center;}
+.p-card:hover{transform:translateY(-3px);border-color:var(--accent);}
+.p-icon{font-size:2.5rem;}.p-name{font-weight:700;font-size:.95rem;margin:6px 0;}
+.p-meta{font-size:.75rem;color:var(--muted);}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;z-index:100;padding:20px;overflow-y:auto;}
+.modal.open{display:block;}
+.modal-box{max-width:640px;margin:40px auto;background:var(--card);border-radius:16px;padding:24px;}
+.top-list{padding-left:20px;}
+.top-list li{margin-bottom:6px;}
+.budget-row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap;}
+.budget-pill{background:var(--bg);padding:8px 12px;border-radius:8px;font-size:.85rem;}
+.budget-pill b{color:var(--accent);}
+.btn-close{background:var(--accent);color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:700;margin-top:12px;}
+.fact-item{background:var(--bg);padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:.9rem;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><a href="../../index.html" class="btn-outline">← Назад</a><h2>✈️ Мир Путешествий</h2></div>
+  <div class="ai-box"><p id="ai-travel" style="font-size:.95rem;font-style:italic;"></p></div>
+  <div id="content"></div>
+</div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/places_ru.js"></script>
+<script src="data/places_eu.js"></script>
+<script src="data/places_world.js"></script>
+<script>
+var REGIONS = [
+  {name: "🇷🇺 Россия",       key: "OTD_TRAVEL_RU"},
+  {name: "🇪🇺 Европа",       key: "OTD_TRAVEL_EU"},
+  {name: "🌏 Остальной мир", key: "OTD_TRAVEL_WORLD"}
+];
+
+function render(){
+  var html = '';
+  REGIONS.forEach(function(reg){
+    var places = window[reg.key];
+    if (!places || !places.length) return;
+    html += '<h3 class="region-title">'+reg.name+' ('+places.length+')</h3>';
+    html += '<div class="places-grid">';
+    places.forEach(function(p){
+      html += '<div class="p-card" onclick="openPlace(\''+reg.key+'\',\''+p.id+'\')">'
+        + '<div class="p-icon">'+p.icon+'</div>'
+        + '<div class="p-name">'+p.name+'</div>'
+        + '<div class="p-meta">'+p.region+'</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('content').innerHTML = html || '<div class="card" style="text-align:center;color:var(--muted);">Нет данных. Проверь places_*.js</div>';
+}
+
+function getTop(p){
+  // Поддержка top5 (РФ, ЕС) и top3 (мир)
+  return p.top5 || p.top3 || [];
+}
+function getFood(p){
+  // Поддержка массива и строки
+  if (Array.isArray(p.food)) return p.food.join(' · ');
+  return p.food || '';
+}
+
+function openPlace(key, id){
+  var p = window[key].find(function(x){return x.id===id;});
+  if(!p){ alert('Не найдено: '+id); return; }
+  var top = getTop(p);
+  var html = '<button class="btn-outline" onclick="closeModal()">← Закрыть</button>'
+    + '<h2 style="margin:12px 0;">'+p.icon+' '+p.name+'</h2>'
+    + '<div style="color:var(--muted);margin-bottom:12px;">📍 '+p.region+' · 🌅 '+(p.best_season||'—')+'</div>'
+    + '<div style="background:var(--bg);padding:10px;border-radius:8px;margin-bottom:12px;">🛂 <b>Виза:</b> '+(p.visa||'—')+'</div>'
+    + '<h3>💰 Бюджет (₽)</h3><div class="budget-row">'
+    + '<span class="budget-pill">Эконом: <b>'+p.budget.eco.toLocaleString('ru')+'</b></span>'
+    + '<span class="budget-pill">Средний: <b>'+p.budget.mid.toLocaleString('ru')+'</b></span>'
+    + '<span class="budget-pill">Комфорт: <b>'+p.budget.comfort.toLocaleString('ru')+'</b></span>'
+    + '</div>'
+    + '<h3>🏛 Топ-места</h3><ul class="top-list">'+top.map(function(t){return '<li>'+t+'</li>';}).join('')+'</ul>'
+    + '<h3>🍽 Кухня</h3><p>'+getFood(p)+'</p>'
+    + '<h3>🚌 Транспорт</h3><p>'+(p.transport||'—')+'</p>'
+    + '<h3>💡 Факты</h3>'+p.facts.map(function(f){return '<div class="fact-item">• '+f+'</div>';}).join('')
+    + '<button class="btn-close" onclick="visited()">✅ Был здесь! (+50 XP)</button>';
+  document.getElementById('modal-box').innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+function visited(){
+  window.OTD_IDENTITY.addXP(50);
+  window.OTD_CHRONICLE.add('✈️ Отметил посещение направления');
+  closeModal();
+  alert('✅ +50 XP!');
+}
+
+document.getElementById('ai-travel').innerHTML = window.OTD_IDENTITY.getGreeting() + '<br><br>✈️ Путешествия — единственная покупка, которая делает тебя богаче.';
+render();
+</script>
+</body>
+</html>

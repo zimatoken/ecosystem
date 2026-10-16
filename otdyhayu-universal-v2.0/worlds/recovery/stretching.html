@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧘 Растяжка и Дыхание</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<style>
+.section-tabs { display: flex; gap: 12px; margin-bottom: 24px; }
+.tab-btn { flex: 1; padding: 16px; background: var(--card); border: 2px solid var(--border); border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 1rem; transition: .2s; }
+.tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+.exercise-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.exercise-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; cursor: pointer; transition: .2s; position: relative; }
+.exercise-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.exercise-card.done { border-left: 5px solid var(--success); }
+.ex-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.ex-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 6px; }
+.ex-time { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+.ex-level { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+.level-easy { background: #dcfce7; color: #166534; }
+.level-medium { background: #fef3c7; color: #92400e; }
+.level-hard { background: #fee2e2; color: #991b1b; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1000; padding: 20px; overflow-y: auto; backdrop-filter: blur(4px); }
+.modal.open { display: flex; align-items: center; justify-content: center; }
+.modal-box { max-width: 600px; width: 100%; background: var(--card); border-radius: 20px; padding: 28px; position: relative; max-height: 90vh; overflow-y: auto; }
+.timer-display { font-size: 4rem; font-weight: 900; color: var(--accent); text-align: center; margin: 20px 0; font-variant-numeric: tabular-nums; }
+.timer-phase { font-size: 1.5rem; font-weight: 700; text-align: center; color: var(--text); margin-bottom: 20px; }
+.timer-controls { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+.timer-btn { padding: 12px 24px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 1rem; }
+.timer-start { background: var(--accent); color: white; }
+.timer-stop { background: #dc2626; color: white; }
+.timer-reset { background: var(--border); color: var(--text); }
+.breath-circle { width: 200px; height: 200px; margin: 20px auto; border-radius: 50%; background: radial-gradient(circle, var(--accent), transparent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: white; transition: transform 1s ease-in-out; }
+.breath-circle.inhale { transform: scale(1.3); }
+.breath-circle.exhale { transform: scale(0.8); }
+.breath-circle.hold { transform: scale(1); }
+.routine-card { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; cursor: pointer; transition: .2s; }
+.routine-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+.routine-icon { font-size: 3rem; margin-bottom: 12px; }
+.routine-name { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px; }
+.routine-duration { font-size: 0.9rem; opacity: 0.9; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="index.html" class="btn btn-outline">← Назад к Восстановлению</a>
+    <h2> Растяжка и Дыхание</h2>
+  </div>
+
+  <div class="card" style="border-left: 5px solid var(--accent);">
+    <p style="font-size: 1rem; font-style: italic; margin: 0;">Тело — храм души. Заботься о нём каждый день.</p>
+  </div>
+
+  <div class="section-tabs">
+    <button class="tab-btn active" onclick="switchTab('exercises')"> Растяжка</button>
+    <button class="tab-btn" onclick="switchTab('breathing')">🫁 Дыхание</button>
+    <button class="tab-btn" onclick="switchTab('routines')">📋 Комплексы</button>
+  </div>
+
+  <div id="content-area"></div>
+</div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<script src="../../core/theme.js"></script>
+<script src="../../core/identity.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script src="data/exercises.js"></script>
+<script src="data/breathing.js"></script>
+<script>
+var currentTab = 'exercises';
+var timerInterval = null;
+var timerSeconds = 0;
+var breathPhase = 0;
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b, i) {
+    b.classList.toggle('active', ['exercises','breathing','routines'][i] === tab);
+  });
+  render();
+}
+
+function render() {
+  var area = document.getElementById('content-area');
+  if (currentTab === 'exercises') renderExercises(area);
+  else if (currentTab === 'breathing') renderBreathing(area);
+  else renderRoutines(area);
+}
+
+function renderExercises(area) {
+  var exercises = window.OTD_STRETCH_EXERCISES;
+  var done = JSON.parse(localStorage.getItem('otd_recovery_done_exercises') || '[]');
+  area.innerHTML = '<div class="exercise-grid">' + exercises.map(function(ex) {
+    var isDone = done.indexOf(ex.id) !== -1;
+    return '<div class="exercise-card ' + (isDone ? 'done' : '') + '" onclick="openExercise(\'' + ex.id + '\')">' +
+      '<div class="ex-icon">' + ex.icon + '</div>' +
+      '<div class="ex-name">' + ex.name + '</div>' +
+      '<div class="ex-time">⏱️ ' + ex.time + '</div>' +
+      '<span class="ex-level level-' + ex.level + '">' + (ex.level === 'easy' ? '😊 Легко' : ex.level === 'medium' ? '🤔 Средне' : '💪 Сложно') + '</span>' +
+      (isDone ? '<div style="position:absolute;top:12px;right:12px;font-size:1.5rem;">✅</div>' : '') +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function renderBreathing(area) {
+  var practices = window.OTD_BREATHING_PRACTICES;
+  area.innerHTML = '<div class="exercise-grid">' + practices.map(function(p) {
+    return '<div class="exercise-card" onclick="openBreathing(\'' + p.id + '\')">' +
+      '<div class="ex-icon">' + p.icon + '</div>' +
+      '<div class="ex-name">' + p.name + '</div>' +
+      '<div class="ex-time">⏱️ ' + p.time + '</div>' +
+      '<div style="font-size:0.85rem;color:var(--muted);margin-top:8px;">' + p.when + '</div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function renderRoutines(area) {
+  var routines = window.OTD_STRETCH_ROUTINES;
+  area.innerHTML = routines.map(function(r) {
+    return '<div class="routine-card" onclick="startRoutine(\'' + r.id + '\')">' +
+      '<div class="routine-icon">' + r.icon + '</div>' +
+      '<div class="routine-name">' + r.name + '</div>' +
+      '<div class="routine-duration">⏱️ ' + r.duration + ' · ' + r.exercises.length + ' упражнений</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openExercise(id) {
+  var ex = window.OTD_STRETCH_EXERCISES.find(function(x) { return x.id === id; });
+  if (!ex) return;
+  var done = JSON.parse(localStorage.getItem('otd_recovery_done_exercises') || '[]');
+  var isDone = done.indexOf(ex.id) !== -1;
+  
+  document.getElementById('modal-box').innerHTML =
+    '<button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">✕</button>' +
+    '<div style="font-size:4rem; text-align:center;">' + ex.icon + '</div>' +
+    '<h2 style="text-align:center; margin:12px 0;">' + ex.name + '</h2>' +
+    '<div style="text-align:center; color:var(--muted); margin-bottom:16px;">⏱️ ' + ex.time + ' · ' + (ex.level === 'easy' ? 'Легко' : ex.level === 'medium' ? 'Средне' : 'Сложно') + '</div>' +
+    '<p style="line-height:1.6; font-size:1.05rem; margin-bottom:20px;">' + ex.desc + '</p>' +
+    '<h3 style="margin-bottom:12px;">📋 Шаги выполнения</h3>' +
+    '<ol style="padding-left:20px; line-height:1.8;">' + ex.steps.map(function(s) { return '<li>' + s + '</li>'; }).join('') + '</ol>' +
+    '<h3 style="margin:20px 0 12px;">✨ Польза</h3>' +
+    '<div style="display:flex; gap:8px; flex-wrap:wrap;">' + ex.benefits.map(function(b) { return '<span style="background:var(--bg);padding:6px 12px;border-radius:8px;font-size:0.85rem;">' + b + '</span>'; }).join('') + '</div>' +
+    '<button class="btn-track" style="margin-top:20px;background:' + (isDone ? '#64748b' : 'var(--accent)') + ';" onclick="markExerciseDone(\'' + ex.id + '\', \'' + ex.name + '\')">' + (isDone ? '✅ Выполнено' : '✅ Отметить выполненным (+15 XP)') + '</button>';
+  document.getElementById('modal').classList.add('open');
+}
+
+function markExerciseDone(id, name) {
+  var done = JSON.parse(localStorage.getItem('otd_recovery_done_exercises') || '[]');
+  if (done.indexOf(id) === -1) {
+    done.push(id);
+    localStorage.setItem('otd_recovery_done_exercises', JSON.stringify(done));
+    window.OTD_IDENTITY.addXP(15);
+    window.OTD_CHRONICLE.add('🧘 Выполнено упражнение: ' + name);
+    alert('✅ Отлично! +15 XP');
+  }
+  closeModal();
+  render();
+}
+
+function openBreathing(id) {
+  var p = window.OTD_BREATHING_PRACTICES.find(function(x) { return x.id === id; });
+  if (!p) return;
+  
+  document.getElementById('modal-box').innerHTML =
+    '<button onclick="closeModal();stopTimer();" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">✕</button>' +
+    '<div style="font-size:4rem; text-align:center;">' + p.icon + '</div>' +
+    '<h2 style="text-align:center; margin:12px 0;">' + p.name + '</h2>' +
+    '<div style="text-align:center; color:var(--muted); margin-bottom:16px;">️ ' + p.time + '</div>' +
+    '<p style="line-height:1.6; font-size:1.05rem; margin-bottom:20px;">' + p.desc + '</p>' +
+    '<div style="background:var(--bg);padding:16px;border-radius:12px;margin-bottom:20px;">' +
+      '<h3 style="margin-bottom:12px;">🔄 Паттерн дыхания</h3>' +
+      p.pattern.map(function(step, i) {
+        return '<div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--card);border-radius:8px;margin-bottom:6px;">' +
+          '<span>' + step.action + '</span><b>' + step.duration + ' сек</b></div>';
+      }).join('') +
+    '</div>' +
+    '<div style="background:rgba(16,185,129,0.1);padding:12px;border-radius:8px;margin-bottom:20px;">' +
+      '<b>💡 Когда использовать:</b> ' + p.when +
+    '</div>' +
+    '<h3 style="margin-bottom:12px;">✨ Польза</h3>' +
+    '<div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">' + p.benefits.map(function(b) { return '<span style="background:var(--bg);padding:6px 12px;border-radius:8px;font-size:0.85rem;">' + b + '</span>'; }).join('') + '</div>' +
+    '<div class="breath-circle" id="breath-circle">Готов?</div>' +
+    '<div class="timer-display" id="timer-display">0:00</div>' +
+    '<div class="timer-phase" id="timer-phase">Нажми Старт</div>' +
+    '<div class="timer-controls">' +
+      '<button class="timer-btn timer-start" onclick="startBreathingTimer(\'' + p.id + '\')">▶️ Старт</button>' +
+      '<button class="timer-btn timer-stop" onclick="stopTimer()">⏹ Стоп</button>' +
+      '<button class="timer-btn timer-reset" onclick="resetTimer()">🔄 Сброс</button>' +
+    '</div>' +
+    '<button class="btn-track" style="margin-top:20px;" onclick="markBreathingDone(\'' + p.id + '\', \'' + p.name + '\')">✅ Завершил практику (+25 XP)</button>';
+  document.getElementById('modal').classList.add('open');
+}
+
+function startBreathingTimer(id) {
+  var p = window.OTD_BREATHING_PRACTICES.find(function(x) { return x.id === id; });
+  if (!p) return;
+  stopTimer();
+  timerSeconds = 0;
+  breathPhase = 0;
+  var totalCycle = p.pattern.reduce(function(s, step) { return s + step.duration; }, 0);
+  var totalSeconds = parseInt(p.time) * 60;
+  
+  timerInterval = setInterval(function() {
+    timerSeconds++;
+    var cyclePos = timerSeconds % totalCycle;
+    var accumulated = 0;
+    var currentStep = p.pattern[0];
+    for (var i = 0; i < p.pattern.length; i++) {
+      if (cyclePos < accumulated + p.pattern[i].duration) {
+        currentStep = p.pattern[i];
+        breathPhase = i;
+        break;
+      }
+      accumulated += p.pattern[i].duration;
+    }
+    var remaining = currentStep.duration - (cyclePos - accumulated);
+    var mins = Math.floor((totalSeconds - timerSeconds) / 60);
+    var secs = (totalSeconds - timerSeconds) % 60;
+    document.getElementById('timer-display').textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
+    document.getElementById('timer-phase').textContent = currentStep.action + ' (' + remaining + ' сек)';
+    var circle = document.getElementById('breath-circle');
+    circle.className = 'breath-circle';
+    if (currentStep.action.toLowerCase().includes('вдох')) circle.classList.add('inhale');
+    else if (currentStep.action.toLowerCase().includes('выдох')) circle.classList.add('exhale');
+    else circle.classList.add('hold');
+    
+    if (timerSeconds >= totalSeconds) {
+      stopTimer();
+      document.getElementById('timer-phase').textContent = '✅ Практика завершена!';
+      window.OTD_IDENTITY.addXP(25);
+      window.OTD_CHRONICLE.add('🫁 Дыхательная практика: ' + p.name);
+      alert('✅ Отлично! +25 XP');
+    }
+  }, 1000);
+}
+
+function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+function resetTimer() { stopTimer(); timerSeconds = 0; document.getElementById('timer-display').textContent = '0:00'; document.getElementById('timer-phase').textContent = 'Нажми Старт'; var c = document.getElementById('breath-circle'); if (c) c.className = 'breath-circle'; }
+
+function markBreathingDone(id, name) {
+  window.OTD_IDENTITY.addXP(25);
+  window.OTD_CHRONICLE.add('🫁 Дыхательная практика: ' + name);
+  closeModal();
+  alert('✅ Практика завершена! +25 XP');
+}
+
+function startRoutine(id) {
+  var r = window.OTD_STRETCH_ROUTINES.find(function(x) { return x.id === id; });
+  if (!r) return;
+  var exercises = r.exercises.map(function(eid) { return window.OTD_STRETCH_EXERCISES.find(function(x) { return x.id === eid; }); }).filter(Boolean);
+  document.getElementById('modal-box').innerHTML =
+    '<button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;"></button>' +
+    '<div style="font-size:4rem; text-align:center;">' + r.icon + '</div>' +
+    '<h2 style="text-align:center; margin:12px 0;">' + r.name + '</h2>' +
+    '<div style="text-align:center; color:var(--muted); margin-bottom:20px;">⏱️ ' + r.duration + '</div>' +
+    '<h3 style="margin-bottom:12px;">Упражнения комплекса</h3>' +
+    exercises.map(function(ex, i) {
+      return '<div style="background:var(--bg);padding:12px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">' +
+        '<div style="font-size:1.5rem;">' + ex.icon + '</div>' +
+        '<div style="flex:1;"><b>' + (i+1) + '. ' + ex.name + '</b><br><span style="font-size:0.85rem;color:var(--muted);">' + ex.time + '</span></div>' +
+      '</div>';
+    }).join('') +
+    '<button class="btn-track" style="margin-top:20px;" onclick="completeRoutine(\'' + r.id + '\', \'' + r.name + '\')">✅ Завершил комплекс (+50 XP)</button>';
+  document.getElementById('modal').classList.add('open');
+}
+
+function completeRoutine(id, name) {
+  window.OTD_IDENTITY.addXP(50);
+  window.OTD_CHRONICLE.add('📋 Завершён комплекс: ' + name);
+  closeModal();
+  alert('✅ Комплекс завершён! +50 XP');
+}
+
+function closeModal() { stopTimer(); document.getElementById('modal').classList.remove('open'); }
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📜 Летопись</title>
+<link rel="stylesheet" href="../../css/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="../../index.html" class="btn-outline">← Назад</a>
+    <h2>📜 Летопись Пути</h2>
+  </div>
+  <div class="card"><p style="color:var(--muted);">История твоего развития. Каждое действие оставляет след.</p></div>
+  <div id="chronicle-list"></div>
+</div>
+<script src="../../core/theme.js"></script>
+<script src="../../core/chronicle.js"></script>
+<script>
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+var entries = window.OTD_CHRONICLE.getAll();
+var list = document.getElementById('chronicle-list');
+if(!entries.length){list.innerHTML='<div class="card" style="text-align:center;">Летопись пуста. Соверши первое действие!</div>';}
+else{
+  list.innerHTML = entries.map(function(e){
+    return '<div class="card"><div style="font-size:0.8rem;color:var(--muted);">'+esc(e.date)+'</div><div>'+esc(e.text)+'</div></div>';
+  }).join('');
+}
+</script>
+</body>
+</html>
