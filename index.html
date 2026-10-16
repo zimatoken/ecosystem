@@ -64,6 +64,11 @@
     border-radius: 6px;
   }
   .app-badge.gray { background: #64748b; }
+  .app-badge.new { background: #f59e0b; }
+  .app.featured {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #1e293b, #10b98110);
+  }
   .footer {
     text-align: center;
     margin-top: 40px;
@@ -84,10 +89,10 @@
 <body>
 <div class="container">
   <h1>🌌 Я в натуре...</h1>
-  <p class="subtitle">Экосистема жизни — 8 приложений</p>
+  <p class="subtitle">Экосистема жизни — 9 приложений</p>
 
   <div class="stats">
-    📦 В облаке: <b style="color: #10b981;">6 из 8</b> · Осталось: Отдыхаю, Хаб
+    📦 В облаке: <b style="color: #10b981;">9 из 9</b> · Все приложения работают! 🎉
   </div>
 
   <div class="apps">
@@ -127,21 +132,27 @@
       <div class="app-name">Айболит</div>
       <div class="app-desc">15 модулей · 12 SOS · 44 препарата</div>
     </a>
-    <a href="#" class="app" style="opacity: 0.5; pointer-events: none;">
-      <span class="app-badge gray">скоро</span>
-      <div class="app-icon">🌌</div>
+    <a href="otdyhayu-universal-v2.0/" class="app featured">
+      <span class="app-badge new">NEW v2.0</span>
+      <div class="app-icon">🌍</div>
       <div class="app-name">Отдыхаю</div>
-      <div class="app-desc">Цивилизация · в разработке</div>
+      <div class="app-desc">8 миров · 60 книг · 60 игр · рецепты · маршруты</div>
+    </a>
+    <a href="life-hub-v2.0/" class="app">
+      <span class="app-badge">v2.0</span>
+      <div class="app-icon">🏠</div>
+      <div class="app-name">Хаб «Моя Жизнь»</div>
+      <div class="app-desc">Профиль · XP · агрегатор</div>
     </a>
     <a href="#" class="app" style="opacity: 0.5; pointer-events: none;">
       <span class="app-badge gray">скоро</span>
-      <div class="app-icon">🏠</div>
-      <div class="app-name">Хаб</div>
-      <div class="app-desc">Профиль и XP · в разработке</div>
+      <div class="app-icon">🌍</div>
+      <div class="app-name">Географ</div>
+      <div class="app-desc">Карты мира · в разработке</div>
     </a>
   </div>
 
-  <p class="footer">Максим + Turbo ZX = Экосистема «Я в натуре...» 🚀</p>
+  <p class="footer">Максим + Turbo ZX + Джин ЛИ = Экосистема «Я в натуре...» 🚀</p>
 </div>
 </body>
 </html>
